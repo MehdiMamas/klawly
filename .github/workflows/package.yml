@@ -86,26 +86,12 @@ jobs:
             tar -czf ".build/package/Klawly-${target}.tar.gz" -C "$(dirname "$built")" "$(basename "$built")"
           fi
 
-      # Installers: the Windows setup (KlawlySetup.exe) and the Linux .deb carry the product name too.
+      # Installers: the Windows setup (KlawlySetup.exe) carries the product name too.
       - name: Windows installer
         if: runner.os == 'Windows'
         run: |
           npm run gulp vscode-win32-x64-user-setup
           cp .build/win32-x64/user-setup/KlawlySetup.exe .build/package/KlawlySetup.exe
-
-      - name: Linux .deb
-        if: runner.os == 'Linux'
-        run: |
-          # The dependency check downloads a script from GitHub, which rate-limits (429) now and then: try three times.
-          for attempt in 1 2 3; do
-            npm run gulp vscode-linux-x64-prepare-deb && break
-            [ "$attempt" = 3 ] && exit 1
-            sleep 60
-          done
-          npm run gulp vscode-linux-x64-build-deb
-          cp .build/linux/deb/amd64/deb/*.deb .build/package/
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload app
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
