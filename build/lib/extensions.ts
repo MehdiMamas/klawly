@@ -221,7 +221,7 @@ function fromLocalEsbuild(extensionPath: string, esbuildConfigFileName: string):
 	return result.pipe(createStatsStream(path.basename(extensionPath)));
 }
 
-const userAgent = 'VSCode Build';
+const userAgent = 'Klawly Build';
 const baseHeaders = {
 	'X-Market-Client-Id': 'VSCode Build',
 	'User-Agent': userAgent,

@@ -21,11 +21,6 @@ const excludedLiteralDynamicImports = new Set([
 		path.join(repositoryRoot, 'src/vs/platform/agentHost/node/agentHostServerMain.ts'),
 		'../test/node/mockAgent.js'
 	),
-	// Built products use the downloaded SDK path; the bare package import is a dev fallback.
-	literalDynamicImportKey(
-		path.join(repositoryRoot, 'src/vs/platform/agentHost/node/claude/claudeAgentSdkService.ts'),
-		'@anthropic-ai/claude-agent-sdk'
-	),
 ]);
 
 suite('Agent Host dependencies', () => {
@@ -52,7 +47,7 @@ suite('Agent Host dependencies', () => {
 	test('collects literal dynamic imports with narrow exclusions', () => {
 		const regularSource = ts.createSourceFile(
 			path.join(repositoryRoot, 'src/regular.ts'),
-			`import('node-pty'); import(\`ws\`); import('node-addon-api', { with: { type: 'json' } }); import('../test/node/mockAgent.js'); import('@anthropic-ai/claude-agent-sdk'); import(variable);`,
+			`import('node-pty'); import(\`ws\`); import('node-addon-api', { with: { type: 'json' } }); import('../test/node/mockAgent.js'); import(variable);`,
 			ts.ScriptTarget.Latest,
 			true,
 			ts.ScriptKind.TS
@@ -64,22 +59,13 @@ suite('Agent Host dependencies', () => {
 			true,
 			ts.ScriptKind.TS
 		);
-		const claudeSdkServiceSource = ts.createSourceFile(
-			path.join(repositoryRoot, 'src/vs/platform/agentHost/node/claude/claudeAgentSdkService.ts'),
-			`import('@anthropic-ai/claude-agent-sdk'); import('node-pty');`,
-			ts.ScriptTarget.Latest,
-			true,
-			ts.ScriptKind.TS
-		);
 
 		assert.deepStrictEqual({
 			regular: getRuntimeModuleSpecifiers(regularSource),
 			mockAgentServer: getRuntimeModuleSpecifiers(mockAgentServerSource),
-			claudeSdkService: getRuntimeModuleSpecifiers(claudeSdkServiceSource),
 		}, {
-			regular: ['node-pty', 'ws', 'node-addon-api', '../test/node/mockAgent.js', '@anthropic-ai/claude-agent-sdk'],
+			regular: ['node-pty', 'ws', 'node-addon-api', '../test/node/mockAgent.js'],
 			mockAgentServer: ['node-pty'],
-			claudeSdkService: ['node-pty'],
 		});
 	});
 });

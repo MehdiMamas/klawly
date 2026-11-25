@@ -134,7 +134,7 @@ export async function fetchLicenseFromGitRepo(repositoryUrl: string, commitHash:
 // =============================================================================
 
 /** The User-Agent crates.io requires -- it rejects requests without a descriptive one. */
-const CRATES_IO_USER_AGENT = 'vscode-oss-scanner';
+const CRATES_IO_USER_AGENT = 'klawly-oss-scanner';
 
 export interface CrateInfo {
 	crate: { id: string; repository: string };
@@ -1084,7 +1084,7 @@ async function main(): Promise<void> {
 	console.log('SECTION 1: Scanning built-in extension dependencies');
 	console.log('  Why: CG skips all packages with engines.vscode in their package.json.');
 	console.log('  This is a CG workaround for consumers of VS Code extensions, but we');
-	console.log('  ARE VS Code -- our built-in extensions ship in the product.');
+	console.log('  ARE Klawly -- our built-in extensions ship in the product.');
 	console.log('=========================================================================');
 	console.log('');
 

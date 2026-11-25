@@ -534,7 +534,7 @@ async function launchVSCode(executable, launchArgs, env, opts = {}) {
 	let exitError = /** @type {Error | null} */ (null);
 	child.once('exit', (code, signal) => {
 		if (!exitError) {
-			exitError = new Error(`VS Code exited before CDP connected (code=${code} signal=${signal})`);
+			exitError = new Error(`Klawly exited before CDP connected (code=${code} signal=${signal})`);
 		}
 	});
 

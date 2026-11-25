@@ -17,3 +17,14 @@ export interface IConfig {
 export const Config: IConfig = {
 	gitHubClientId: '01ab8ac9400c4e429b23'
 };
+
+/**
+ * Klawly (issue 446): Klawly signs in with its own GitHub OAuth App ("Klawly", device flow, no
+ * client secret), whose client ID is `klawlyGitHubClientId` in product.json, so GitHub shows users
+ * Klawly as the app they authorize. Without it the upstream client ID above stays.
+ */
+export function applyProductClientId(product: { readonly klawlyGitHubClientId?: unknown } | undefined): void {
+	if (typeof product?.klawlyGitHubClientId === 'string' && /^[\w.-]+$/.test(product.klawlyGitHubClientId)) {
+		Config.gitHubClientId = product.klawlyGitHubClientId;
+	}
+}

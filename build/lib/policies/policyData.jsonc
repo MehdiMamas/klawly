@@ -82,7 +82,7 @@
             "localization": {
                 "description": {
                     "key": "chat.agent.networkFilter",
-                    "value": "When enabled, network access by agent tools (fetch tool, integrated browser) is restricted according to `#chat.agent.sandbox.network.allowedDomains#` and `#chat.agent.sandbox.network.deniedDomains#`. Domain filtering is also applied to those tools when `#chat.agent.sandbox.enabled#` is enabled.\n\nChanges may not take full effect until VS Code is restarted."
+                    "value": "When enabled, network access by agent tools (fetch tool, integrated browser) is restricted according to `#chat.agent.sandbox.network.allowedDomains#` and `#chat.agent.sandbox.network.deniedDomains#`. Domain filtering is also applied to those tools when `#chat.agent.sandbox.enabled#` is enabled.\n\nChanges may not take full effect until Klawly is restarted."
                 }
             },
             "type": "boolean",
@@ -150,7 +150,7 @@
             "localization": {
                 "description": {
                     "key": "chat.agent.allowedNetworkDomains",
-                    "value": "Allowed domains for network access by agent tools (fetch tool, integrated browser) when `#chat.agent.networkFilter#` is enabled. In Copilot Agent Host sessions with sandboxing (`#chat.agent.sandbox.enabled#`) enabled, also restricts the integrated browser when outbound network access (`#chat.agent.sandbox.network.allowNetwork#`) is allowed; an empty allow list adds no sandbox restriction. This list does not enable outbound access. Supports wildcards like `*.example.com`. Outside sandboxing, when both allowed and denied lists are empty, all domains are blocked. Denied domains (see `#chat.agent.sandbox.network.deniedDomains#`) take precedence.\n\nChanges may not take full effect until VS Code is restarted."
+                    "value": "Allowed domains for network access by agent tools (fetch tool, integrated browser) when `#chat.agent.networkFilter#` is enabled. In Copilot Agent Host sessions with sandboxing (`#chat.agent.sandbox.enabled#`) enabled, also restricts the integrated browser when outbound network access (`#chat.agent.sandbox.network.allowNetwork#`) is allowed; an empty allow list adds no sandbox restriction. This list does not enable outbound access. Supports wildcards like `*.example.com`. Outside sandboxing, when both allowed and denied lists are empty, all domains are blocked. Denied domains (see `#chat.agent.sandbox.network.deniedDomains#`) take precedence.\n\nChanges may not take full effect until Klawly is restarted."
                 }
             },
             "type": "array",
@@ -186,7 +186,7 @@
             "localization": {
                 "description": {
                     "key": "chat.agent.deniedNetworkDomains",
-                    "value": "Denied domains for network access by agent tools (fetch tool, integrated browser) when `#chat.agent.networkFilter#` is enabled. Also applies to the integrated browser in sandboxed Copilot Agent Host sessions (`#chat.agent.sandbox.enabled#`); allowing outbound network access (`#chat.agent.sandbox.network.allowNetwork#`) does not bypass this list. Takes precedence over `#chat.agent.sandbox.network.allowedDomains#`. Supports wildcards like `*.example.com`.\n\nChanges may not take full effect until VS Code is restarted."
+                    "value": "Denied domains for network access by agent tools (fetch tool, integrated browser) when `#chat.agent.networkFilter#` is enabled. Also applies to the integrated browser in sandboxed Copilot Agent Host sessions (`#chat.agent.sandbox.enabled#`); allowing outbound network access (`#chat.agent.sandbox.network.allowNetwork#`) does not bypass this list. Takes precedence over `#chat.agent.sandbox.network.allowedDomains#`. Supports wildcards like `*.example.com`.\n\nChanges may not take full effect until Klawly is restarted."
                 }
             },
             "type": "array",
@@ -204,7 +204,7 @@
             "localization": {
                 "description": {
                     "key": "chat.agentHost.claudeAgent.enabled.policy",
-                    "value": "Enable Claude Agent sessions in VS Code. Start and resume agentic coding sessions powered by Anthropic Claude Agent SDK directly in the editor. Uses your existing Copilot subscription."
+                    "value": "Enable Claude Agent sessions in Klawly. Start and resume agentic coding sessions powered by Anthropic Claude Agent SDK directly in the editor. Uses your existing Copilot subscription."
                 }
             },
             "type": "boolean",
@@ -225,7 +225,7 @@
             "localization": {
                 "description": {
                     "key": "chat.agentHost.codexAgent.enabled.policy",
-                    "value": "Enable Codex Agent sessions in VS Code. Start and resume agentic coding sessions powered by OpenAI Codex. Usage can be routed through GitHub Copilot or authenticated directly with an OpenAI account."
+                    "value": "Enable Codex Agent sessions in Klawly. Start and resume agentic coding sessions powered by OpenAI Codex. Usage can be routed through GitHub Copilot or authenticated directly with an OpenAI account."
                 }
             },
             "type": "boolean",
@@ -549,7 +549,7 @@
             "localization": {
                 "description": {
                     "key": "chat.editor.preferCopilotHarness.policy",
-                    "value": "Configure whether VS Code uses the Agent Host Copilot SDK instead of the local harness for new editor chat sessions."
+                    "value": "Configure whether Klawly uses the Agent Host Copilot SDK instead of the local harness for new editor chat sessions."
                 }
             },
             "type": "boolean",
@@ -612,7 +612,7 @@
                     },
                     {
                         "key": "chat.mcp.access.registry",
-                        "value": "Allows access to MCP servers listed in the registry that VS Code is connected to."
+                        "value": "Allows access to MCP servers listed in the registry that Klawly is connected to."
                     },
                     {
                         "key": "chat.mcp.access.any",
@@ -891,6 +891,60 @@
             "included": true,
             "agentHost": {
                 "status": "notEnforced"
+            }
+        },
+        {
+            "key": "claude.managedSettings",
+            "name": "ClaudeManagedSettings",
+            "category": "InteractiveSession",
+            "minimumVersion": "1.141",
+            "localization": {
+                "description": {
+                    "key": "claudeManagedSettings.policy",
+                    "value": "Claude Code settings, as JSON, applied to every Claude session in Klawly. Claude Code keeps only restrictive keys such as permissions.deny and sandbox locks, and ignores them when Claude Code's own managed settings exist unless those allow it."
+                }
+            },
+            "type": "object",
+            "default": {},
+            "included": false,
+            "agentHost": {
+                "status": "notApplicable"
+            }
+        },
+        {
+            "key": "claude.sandbox.allowUnsandboxedCommands",
+            "name": "ClaudeSandboxAllowUnsandboxedCommands",
+            "category": "InteractiveSession",
+            "minimumVersion": "1.141",
+            "localization": {
+                "description": {
+                    "key": "claudeSandboxAllowUnsandboxed.policy",
+                    "value": "Let Claude in Klawly ask to run a command outside the sandbox. Set to false to make every command run sandboxed."
+                }
+            },
+            "type": "boolean",
+            "default": true,
+            "included": true,
+            "agentHost": {
+                "status": "notApplicable"
+            }
+        },
+        {
+            "key": "claude.sandbox.enabled",
+            "name": "ClaudeSandboxEnabled",
+            "category": "InteractiveSession",
+            "minimumVersion": "1.141",
+            "localization": {
+                "description": {
+                    "key": "claudeSandboxEnabled.policy",
+                    "value": "Run the commands Claude starts in Klawly in Claude Code's sandbox."
+                }
+            },
+            "type": "boolean",
+            "default": false,
+            "included": true,
+            "agentHost": {
+                "status": "notApplicable"
             }
         },
         {

@@ -34,7 +34,10 @@ async function ensureNodeModules() {
 
 async function getElectron() {
 	const { shouldDownloadElectron } = await import('./electronVersion.ts');
-	if (shouldDownloadElectron(rootDir)) {
+	// Klawly: also refresh when the app or file-type icons changed (issue 751)
+	const { isIconStampCurrent } = await import('../klawly/electron-icons.ts');
+	const iconsStale = process.env['VSCODE_SKIP_PRELAUNCH'] !== '1' && !(await isIconStampCurrent());
+	if (shouldDownloadElectron(rootDir) || iconsStale) {
 		await runProcess(npm, ['run', 'electron']);
 	}
 }

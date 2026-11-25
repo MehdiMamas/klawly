@@ -27,13 +27,13 @@ if ($WaitForExit) {
 		Start-Sleep -Milliseconds 250
 	} while ($stopwatch.ElapsedMilliseconds -lt 30000)
 
-	throw "Code OSS processes still use the bootstrap profile after 30 seconds."
+	throw "Klawly processes still use the bootstrap profile after 30 seconds."
 }
 
 $Repo = (Resolve-Path -LiteralPath $Repo).Path
 $codeBat = Join-Path $Repo 'scripts\code.bat'
 if (-not (Test-Path -LiteralPath $codeBat -PathType Leaf)) {
-	throw "Could not find a Code OSS launcher at $codeBat. Pass -Repo <vscode-repo-root>."
+	throw "Could not find a Klawly launcher at $codeBat. Pass -Repo <vscode-repo-root>."
 }
 
 $UserDataDir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($UserDataDir)
@@ -87,9 +87,9 @@ if ($readyStatus -ne 0) {
 		Start-Sleep -Milliseconds 250
 	} while ($stopwatch.ElapsedMilliseconds -lt 30000)
 	if (-not (Test-Path -LiteralPath $exitMarker -PathType Leaf)) {
-		throw "Code OSS bootstrap window did not become ready (status $readyStatus), and its process tree could not be stopped.`n$logTail"
+		throw "Klawly bootstrap window did not become ready (status $readyStatus), and its process tree could not be stopped.`n$logTail"
 	}
-	throw "Code OSS bootstrap window did not become ready (status $readyStatus).`n$logTail"
+	throw "Klawly bootstrap window did not become ready (status $readyStatus).`n$logTail"
 }
 
 [PSCustomObject]@{

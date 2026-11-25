@@ -91,8 +91,8 @@ steps:
       # Add Windows SDK to PATH for patchWin32DependenciesTask signtool usage.
       $sdk = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64"
       $env:PATH = "$sdk;$env:PATH"
-      exec { npm run gulp "vscode-win32-$(VSCODE_ARCH)-min-ci" }
-      exec { npm run gulp "vscode-win32-$(VSCODE_ARCH)-inno-updater" }
+      exec { npm run gulp "klawly-win32-$(VSCODE_ARCH)-min-ci" }
+      exec { npm run gulp "klawly-win32-$(VSCODE_ARCH)-inno-updater" }
     env:
       GITHUB_TOKEN: "$(github-token-code-oss)"
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
@@ -110,9 +110,9 @@ steps:
         $sdk = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64"
         $env:PATH = "$sdk;$env:PATH"
         $AppxName = if ('$(VSCODE_QUALITY)' -eq 'stable') { 'code' } else { 'code_insider' }
-        makeappx pack /d "$(Agent.BuildDirectory)/VSCode-win32-$(VSCODE_ARCH)/appx/manifest" /p "$(Agent.BuildDirectory)/VSCode-win32-$(VSCODE_ARCH)/appx/${AppxName}_$(VSCODE_ARCH).appx" /nv
+        makeappx pack /d "$(Agent.BuildDirectory)/Klawly-win32-$(VSCODE_ARCH)/appx/manifest" /p "$(Agent.BuildDirectory)/Klawly-win32-$(VSCODE_ARCH)/appx/${AppxName}_$(VSCODE_ARCH).appx" /nv
         # Remove the raw manifest folder
-        Remove-Item -Path "$(Agent.BuildDirectory)/VSCode-win32-$(VSCODE_ARCH)/appx/manifest" -Recurse -Force
+        Remove-Item -Path "$(Agent.BuildDirectory)/Klawly-win32-$(VSCODE_ARCH)/appx/manifest" -Recurse -Force
       displayName: Prepare appx package
 
   - powershell: |
@@ -121,8 +121,8 @@ steps:
       # Add Windows SDK to PATH for patchWin32DependenciesTask signtool usage.
       $sdk = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64"
       $env:PATH = "$sdk;$env:PATH"
-      exec { npm run gulp "vscode-reh-win32-$(VSCODE_ARCH)-min-ci" }
-      mv ..\vscode-reh-win32-$(VSCODE_ARCH) ..\vscode-server-win32-$(VSCODE_ARCH) # TODO@joaomoreno
+      exec { npm run gulp "klawly-reh-win32-$(VSCODE_ARCH)-min-ci" }
+      mv ..\klawly-reh-win32-$(VSCODE_ARCH) ..\vscode-server-win32-$(VSCODE_ARCH) # TODO@joaomoreno
     env:
       GITHUB_TOKEN: "$(github-token-code-oss)"
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
@@ -139,8 +139,8 @@ steps:
       # Add Windows SDK to PATH for patchWin32DependenciesTask signtool usage.
       $sdk = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64"
       $env:PATH = "$sdk;$env:PATH"
-      exec { npm run gulp "vscode-reh-web-win32-$(VSCODE_ARCH)-min-ci" }
-      mv ..\vscode-reh-web-win32-$(VSCODE_ARCH) ..\vscode-server-win32-$(VSCODE_ARCH)-web # TODO@joaomoreno
+      exec { npm run gulp "klawly-reh-web-win32-$(VSCODE_ARCH)-min-ci" }
+      mv ..\klawly-reh-web-win32-$(VSCODE_ARCH) ..\vscode-server-win32-$(VSCODE_ARCH)-web # TODO@joaomoreno
     env:
       GITHUB_TOKEN: "$(github-token-code-oss)"
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)

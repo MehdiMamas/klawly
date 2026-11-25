@@ -35,7 +35,7 @@ function getDebPackageArch(arch: string): string {
 }
 
 function prepareDebPackage(arch: string) {
-	const binaryDir = '../VSCode-linux-' + arch;
+	const binaryDir = '../Klawly-linux-' + arch;
 	const debArch = getDebPackageArch(arch);
 	const destination = '.build/linux/deb/' + debArch + '/' + product.applicationName + '-' + debArch;
 
@@ -146,7 +146,7 @@ function getRpmPackageArch(arch: string): string {
 }
 
 function prepareRpmPackage(arch: string) {
-	const binaryDir = '../VSCode-linux-' + arch;
+	const binaryDir = '../Klawly-linux-' + arch;
 	const rpmArch = getRpmPackageArch(arch);
 	const stripBinary = process.env['STRIP'] ?? '/usr/bin/strip';
 
@@ -236,7 +236,7 @@ function getSnapBuildPath(arch: string): string {
 }
 
 function prepareSnapPackage(arch: string) {
-	const binaryDir = '../VSCode-linux-' + arch;
+	const binaryDir = '../Klawly-linux-' + arch;
 	const destination = getSnapBuildPath(arch);
 
 	return function () {
@@ -293,19 +293,19 @@ const BUILD_TARGETS = [
 
 BUILD_TARGETS.forEach(({ arch }) => {
 	const debArch = getDebPackageArch(arch);
-	const prepareDebTask = task.define(`vscode-linux-${arch}-prepare-deb`, task.series(rimraf(`.build/linux/deb/${debArch}`), prepareDebPackage(arch)));
+	const prepareDebTask = task.define(`klawly-linux-${arch}-prepare-deb`, task.series(rimraf(`.build/linux/deb/${debArch}`), prepareDebPackage(arch)));
 	task.task(prepareDebTask);
-	const buildDebTask = task.define(`vscode-linux-${arch}-build-deb`, buildDebPackage(arch));
+	const buildDebTask = task.define(`klawly-linux-${arch}-build-deb`, buildDebPackage(arch));
 	task.task(buildDebTask);
 
 	const rpmArch = getRpmPackageArch(arch);
-	const prepareRpmTask = task.define(`vscode-linux-${arch}-prepare-rpm`, task.series(rimraf(`.build/linux/rpm/${rpmArch}`), prepareRpmPackage(arch)));
+	const prepareRpmTask = task.define(`klawly-linux-${arch}-prepare-rpm`, task.series(rimraf(`.build/linux/rpm/${rpmArch}`), prepareRpmPackage(arch)));
 	task.task(prepareRpmTask);
-	const buildRpmTask = task.define(`vscode-linux-${arch}-build-rpm`, buildRpmPackage(arch));
+	const buildRpmTask = task.define(`klawly-linux-${arch}-build-rpm`, buildRpmPackage(arch));
 	task.task(buildRpmTask);
 
-	const prepareSnapTask = task.define(`vscode-linux-${arch}-prepare-snap`, task.series(rimraf(`.build/linux/snap/${arch}`), prepareSnapPackage(arch)));
+	const prepareSnapTask = task.define(`klawly-linux-${arch}-prepare-snap`, task.series(rimraf(`.build/linux/snap/${arch}`), prepareSnapPackage(arch)));
 	task.task(prepareSnapTask);
-	const buildSnapTask = task.define(`vscode-linux-${arch}-build-snap`, task.series(prepareSnapTask, buildSnapPackage(arch)));
+	const buildSnapTask = task.define(`klawly-linux-${arch}-build-snap`, task.series(prepareSnapTask, buildSnapPackage(arch)));
 	task.task(buildSnapTask);
 });

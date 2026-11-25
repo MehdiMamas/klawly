@@ -60,7 +60,7 @@ for (let index = 2; index < process.argv.length; index++) {
 		case '-h':
 			process.stdout.write(`Usage: monaco-paste.ts [--append] [--no-verify] [--session NAME] [text]
 
-Pastes text into the focused Code OSS Chat input through an attached
+Pastes text into the focused Klawly Chat input through an attached
 @playwright/cli session. If text is omitted, it is read from stdin.
 `);
 			process.exit(0);

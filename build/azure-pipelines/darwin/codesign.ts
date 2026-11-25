@@ -22,8 +22,8 @@ async function main() {
 
 	const clientFolder = `${pipelineWorkspace}/vscode_client_darwin_${arch}_archive`;
 	const dmgFolder = `${pipelineWorkspace}/vscode_client_darwin_${arch}_dmg`;
-	const clientGlob = `VSCode-darwin-${arch}.zip`;
-	const dmgGlob = `VSCode-darwin-${arch}.dmg`;
+	const clientGlob = `Klawly-darwin-${arch}.zip`;
+	const dmgGlob = `Klawly-darwin-${arch}.dmg`;
 
 	const serverFolder = `${buildSourcesDirectory}/.build/darwin/server`;
 	const serverGlob = `vscode-server-darwin-${arch}.zip`;

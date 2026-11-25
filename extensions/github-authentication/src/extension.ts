@@ -8,9 +8,24 @@ import { GitHubSessionEngine, UriEventHandler } from './github';
 import { GitHubEnterpriseAuthenticationProvider } from './githubEnterprise';
 import { enterpriseUrisSetting, getEnterpriseUris } from './common/enterpriseConfiguration';
 import { enterpriseUriSetting } from './common/enterpriseStorage';
+import { applyProductClientId } from './config';
 import { getSafeNotificationMessage } from './common/notification';
 
+/** Klawly (issue 446): reads Klawly's GitHub OAuth App client ID from product.json before any sign-in. */
+async function readProductClientId(): Promise<void> {
+	if (!vscode.env.appRoot) {
+		return;
+	}
+	try {
+		const bytes = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(vscode.Uri.file(vscode.env.appRoot), 'product.json'));
+		applyProductClientId(JSON.parse(new TextDecoder().decode(bytes)));
+	} catch {
+		// No product.json next to the app (web): keep the built-in client ID.
+	}
+}
+
 export async function activate(context: vscode.ExtensionContext) {
+	await readProductClientId();
 	const uriHandler = new UriEventHandler();
 	context.subscriptions.push(uriHandler);
 	context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));

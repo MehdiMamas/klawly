@@ -121,11 +121,11 @@ function parseArgs() {
 					'  --resume <path>     Resume a previous run, adding more iterations to increase',
 					'                       confidence. Merges new runs with existing rawRuns data',
 					'  --threshold <frac>  Regression threshold fraction (default: 0.2 = 20%)',
-					'  --production-build  Build a local bundled package (via gulp vscode) for',
+					'  --production-build  Build a local bundled package (via gulp klawly) for',
 					'                       apples-to-apples comparison against a release baseline',
-					'  --setting <k=v>     Set a VS Code setting override for all builds (repeatable)',
-					'  --test-setting <k=v> Set a VS Code setting override for test build only',
-					'  --baseline-setting <k=v> Set a VS Code setting override for baseline build only',
+					'  --setting <k=v>     Set a Klawly setting override for all builds (repeatable)',
+					'  --test-setting <k=v> Set a Klawly setting override for test build only',
+					'  --baseline-setting <k=v> Set a Klawly setting override for baseline build only',
 					'                       e.g. --setting chat.experimental.incrementalRendering.enabled=true',
 					'  --no-cache          Ignore cached baseline data, always run fresh',
 					'  --force             Skip build mode mismatch confirmation',
@@ -164,7 +164,7 @@ function detectBuildMode(electronPath) {
 	if (electronPath.includes('.vscode-test')) {
 		return 'release';
 	}
-	if (electronPath.includes('VSCode-')) {
+	if (electronPath.includes('Klawly-')) {
 		return 'production';
 	}
 	return 'dev';
@@ -186,25 +186,25 @@ function buildModeLabel(mode) {
 // -- Production build --------------------------------------------------------
 
 /**
- * Build a local production (bundled) VS Code package using `gulp vscode`.
+ * Build a local production (bundled) VS Code package using `gulp klawly`.
  * Returns the path to the Electron executable in the packaged output.
  *
  * The gulp task compiles TypeScript, bundles JS, and packages with Electron
- * into `../VSCode-<platform>-<arch>/`.  This is the same process used for
+ * into `../Klawly-<platform>-<arch>/`.  This is the same process used for
  * release builds, minus minification and mangling.
  */
 function buildProductionBuild() {
 	const product = require(path.join(ROOT, 'product.json'));
 	const platform = process.platform;
 	const arch = process.arch;
-	const destDir = path.join(ROOT, '..', `VSCode-${platform}-${arch}`);
+	const destDir = path.join(ROOT, '..', `Klawly-${platform}-${arch}`);
 
-	console.log('[chat-simulation] Building local production package (gulp vscode)...');
+	console.log('[chat-simulation] Building local production package (gulp klawly)...');
 	console.log('[chat-simulation] This may take a few minutes on the first run.');
 
 	const { execSync } = require('child_process');
 	try {
-		execSync('npm run gulp -- vscode', {
+		execSync('npm run gulp -- klawly', {
 			cwd: ROOT,
 			stdio: 'inherit',
 			timeout: 10 * 60 * 1000, // 10 minute timeout
@@ -213,7 +213,7 @@ function buildProductionBuild() {
 		// The copilot shim step may fail locally when the copilot SDK is not
 		// fully packaged (it is normally supplied via CI).  As long as the
 		// Electron executable was produced we can still benchmark.
-		console.warn('[chat-simulation] gulp vscode exited with errors (see above). Checking if executable was still produced...');
+		console.warn('[chat-simulation] gulp klawly exited with errors (see above). Checking if executable was still produced...');
 	}
 
 	/** @type {string} */
@@ -370,17 +370,17 @@ function exceedsThreshold(threshold, change, absoluteDelta) {
 async function runOnce(electronPath, scenario, mockServer, verbose, runIndex, runDir, role, settingsOverrides, runOpts) {
 	const takeHeapSnapshots = runOpts?.heapSnapshots ?? false;
 	const { userDataDir, extDir, logsDir } = prepareRunDir(runIndex, mockServer, settingsOverrides);
-	const isDevBuild = !electronPath.includes('.vscode-test') && !electronPath.includes('VSCode-');
+	const isDevBuild = !electronPath.includes('.vscode-test') && !electronPath.includes('Klawly-');
 	// Extract a clean build label from the path.
 	// Dev:          .build/electron/Code - OSS.app/.../Code - OSS  → "dev"
 	// Stable:       .vscode-test/vscode-darwin-arm64-1.115.0/Visual Studio Code.app/.../Electron → "1.115.0"
-	// Production:   ../VSCode-darwin-arm64/Code - OSS.app/.../Code - OSS → "production"
+	// Production:   ../Klawly-darwin-arm64/Code - OSS.app/.../Code - OSS → "production"
 	let buildLabel = 'dev';
 	if (!isDevBuild) {
 		const vscodeTestMatch = electronPath.match(/vscode-test\/vscode-[^/]*?-(\d+\.\d+\.\d+)/);
 		if (vscodeTestMatch) {
 			buildLabel = vscodeTestMatch[1];
-		} else if (electronPath.includes('VSCode-')) {
+		} else if (electronPath.includes('Klawly-')) {
 			buildLabel = 'production';
 		} else {
 			buildLabel = path.basename(electronPath);
@@ -1465,7 +1465,7 @@ async function main() {
 
 	// -- Normal (non-resume) flow -------------------------------------------
 	// --production-build: build a local bundled (non-dev) package from the
-	// current source tree using `gulp vscode`.  This produces the same
+	// current source tree using `gulp klawly`.  This produces the same
 	// packaging as a release build (bundled JS, no VSCODE_DEV) while still
 	// testing your local changes.
 	if (opts.productionBuild && !opts.build) {

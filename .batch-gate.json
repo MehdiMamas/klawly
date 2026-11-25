@@ -1,0 +1,1 @@
+{"check":"node build/klawly/batch-check.ts","label":"ready-batch","debounceMinutes":10,"maxBatch":5,"retryRed":1,"parallel":4,"runner":"workflow:heavy-tests.yml","workflowInputs":{"ref":"{branch}","tier":"2"}}

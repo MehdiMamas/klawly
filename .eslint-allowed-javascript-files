@@ -23,6 +23,9 @@ build/next/devTunnelsShims/empty.cjs
 build/next/devTunnelsShims/process.js
 build/next/devTunnelsShims/utf8Validate.cjs
 build/next/devTunnelsShims/vscodeJsonrpc.cjs
+design/assets/app.js
+design/assets/tailwind.config.js
+design/assets/vendor/tailwindcss-3.4.17.js
 eslint.config.js
 extensions/copilot/.mocha-multi-reporters.js
 extensions/copilot/.mocharc.js

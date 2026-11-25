@@ -25,17 +25,17 @@ if [[ -n "$EXIT_MARKER" ]]; then
 		fi
 		sleep 0.25
 	done
-	echo "Code OSS processes still use the bootstrap profile after 30 seconds." >&2
+	echo "Klawly processes still use the bootstrap profile after 30 seconds." >&2
 	exit 1
 fi
 
 if [[ ! -d "$REPO" ]]; then
-	echo "VS Code checkout does not exist: $REPO" >&2
+	echo "Klawly checkout does not exist: $REPO" >&2
 	exit 2
 fi
 REPO=$(cd "$REPO" && pwd -P)
 if [[ ! -x "$REPO/scripts/code.sh" ]]; then
-	echo "Could not find an executable Code OSS launcher at $REPO/scripts/code.sh." >&2
+	echo "Could not find an executable Klawly launcher at $REPO/scripts/code.sh." >&2
 	exit 2
 fi
 
@@ -119,7 +119,7 @@ if ! READY_MS=$(node "$WAIT_FOR_CDP" "$PID" "$CDP_PORT" "${CODE_OSS_BOOTSTRAP_RE
 		[[ -f "$EXIT_MARKER" ]] && break
 		sleep 0.25
 	done
-	echo "Code OSS bootstrap window did not become ready. Log tail:" >&2
+	echo "Klawly bootstrap window did not become ready. Log tail:" >&2
 	tail -n 40 "$LOG_FILE" >&2
 	if [[ ! -f "$EXIT_MARKER" ]]; then
 		echo "Bootstrap process tree did not stop after readiness failure." >&2

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch Code OSS (VS Code from sources) with:
+# Launch Klawly (from sources) with:
 #   - a fresh, slimmed copy of the authenticated user-data-dir (so Copilot/GitHub auth works)
 #   - an isolated --shared-data-dir (otherwise two instances share ~/.vscode-oss-shared and crash each other)
 #   - unique debug ports for renderer (CDP), extension host, main process, and agent host
@@ -83,7 +83,7 @@ if [[ -z "$REPO" ]]; then
 	fi
 fi
 if [[ ! -d "$REPO" ]]; then
-	echo "VS Code checkout does not exist: $REPO" >&2
+	echo "Klawly checkout does not exist: $REPO" >&2
 	exit 2
 fi
 REPO=$(cd "$REPO" && pwd -P)
@@ -99,7 +99,7 @@ fi
 
 CODE_SH="$REPO/scripts/code.sh"
 if [[ ! -x "$CODE_SH" ]]; then
-	echo "Could not find an executable Code OSS launcher at $CODE_SH. Pass --repo <vscode-repo-root>." >&2
+	echo "Could not find an executable Klawly launcher at $CODE_SH. Pass --repo <vscode-repo-root>." >&2
 	exit 2
 fi
 
@@ -143,7 +143,7 @@ DEST_UDD="$RUN_DIR/user-data"
 SHARED_DATA_DIR="$RUN_DIR/shared-data"
 mkdir -p "$DEST_UDD" "$SHARED_DATA_DIR"
 
-# Excludes (deny-list, so future VS Code additions copy through by default).
+# Excludes (deny-list, so future Klawly additions copy through by default).
 # Anchored excludes (starting with /) match only at the top level so we don't
 # accidentally strip files inside subdirs that share a name.
 EXCLUDES=(
@@ -213,7 +213,7 @@ if [[ -n "$SESSION_TITLE" ]]; then
 fi
 PROFILE_READY_MS=$(monotonic_ms)
 
-# Strip host-only process configuration commonly inherited from VS Code's
+# Strip host-only process configuration commonly inherited from Klawly's
 # integrated terminal and agent runtimes.
 unset ELECTRON_RUN_AS_NODE GIT_CONFIG_COUNT GIT_CONFIG_PARAMETERS
 

@@ -171,7 +171,7 @@ steps:
       GITHUB_TOKEN: "$(github-token-code-oss)"
     displayName: Compile
 
-  - powershell: npm run gulp "vscode-symbols-win32-${{ parameters.VSCODE_ARCH }}"
+  - powershell: npm run gulp "klawly-symbols-win32-${{ parameters.VSCODE_ARCH }}"
     env:
       GITHUB_TOKEN: "$(github-token-code-oss)"
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)

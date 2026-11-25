@@ -13,6 +13,7 @@ import { getElectronVersion } from './electronVersion.ts';
 import { getVersion } from './getVersion.ts';
 import { downloadFeedPackage } from './azureFeed.ts';
 import electron from '@vscode/gulp-electron';
+import { writeIconStamp } from '../klawly/electron-icons.ts';
 
 type DarwinDocumentSuffix = 'document' | 'script' | 'file' | 'source code';
 type DarwinDocumentType = {
@@ -143,14 +144,14 @@ const electronAssetResolver = electronFeed
 export const config = {
 	version: electronVersion,
 	productAppName: product.nameLong,
-	companyName: 'Microsoft Corporation',
-	copyright: 'Copyright (C) 2026 Microsoft. All rights reserved',
+	companyName: 'Klawly contributors',
+	copyright: 'Copyright (C) 2026 Klawly contributors. All rights reserved',
 	darwinExecutable: product.nameShort,
 	darwinIcon: 'resources/darwin/code.icns',
 	darwinBundleIdentifier: product.darwinBundleIdentifier,
 	darwinApplicationCategoryType: 'public.app-category.developer-tools',
-	darwinHelpBookFolder: 'VS Code HelpBook',
-	darwinHelpBookName: 'VS Code HelpBook',
+	darwinHelpBookFolder: 'Klawly HelpBook',
+	darwinHelpBookName: 'Klawly HelpBook',
 	darwinBundleDocumentTypes: [
 		...darwinBundleDocumentTypes({ 'C header file': 'h', 'C source code': 'c' }, 'c'),
 		...darwinBundleDocumentTypes({ 'Git configuration file': ['gitattributes', 'gitconfig', 'gitignore'] }, 'config'),
@@ -191,7 +192,7 @@ export const config = {
 		// Default icon with specified names
 		...darwinBundleDocumentTypes({
 			'Clojure source code': ['clj', 'cljs', 'cljx', 'clojure'],
-			'VS Code workspace file': 'code-workspace',
+			'Klawly workspace file': 'code-workspace',
 			'CoffeeScript source code': 'coffee',
 			'Comma Separated Values': 'csv',
 			'CMake script': 'cmake',
@@ -268,6 +269,7 @@ async function main(arch: string = process.arch): Promise<void> {
 	const electronPath = path.join(root, '.build', 'electron');
 	await util.rimraf(electronPath)();
 	await util.streamToPromise(getElectron(arch)());
+	await writeIconStamp(); // Klawly: preLaunch refreshes the dev build when icons change (issue 751)
 }
 
 if (import.meta.main) {

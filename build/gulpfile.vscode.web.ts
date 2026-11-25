@@ -92,9 +92,9 @@ const dashed = (str: string) => (str ? `-${str}` : ``);
 
 ['', 'min'].forEach(minified => {
 	const sourceFolderName = `out-vscode-web${dashed(minified)}`;
-	const destinationFolderName = `vscode-web`;
+	const destinationFolderName = `klawly-web`;
 
-	const vscodeWebTaskCI = task.define(`vscode-web${dashed(minified)}-ci`, task.series(
+	const vscodeWebTaskCI = task.define(`klawly-web${dashed(minified)}-ci`, task.series(
 		copyCodiconsTask,
 		compileWebExtensionsBuildTask,
 		minified ? esbuildBundleVSCodeWebMinTask : esbuildBundleVSCodeWebTask,
@@ -103,7 +103,7 @@ const dashed = (str: string) => (str ? `-${str}` : ``);
 	));
 	task.task(vscodeWebTaskCI);
 
-	const vscodeWebTask = task.define(`vscode-web${dashed(minified)}`, task.series(
+	const vscodeWebTask = task.define(`klawly-web${dashed(minified)}`, task.series(
 		compileApiProposalNamesTask,
 		writeISODate('out-build'),
 		vscodeWebTaskCI

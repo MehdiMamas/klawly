@@ -36,7 +36,8 @@ test/componentFixtures/.screenshots/*
 dist
 .playwright-cli
 .playwright-mcp
-.claude/
+.claude/*
+!.claude/skills/
 .agents/agents/*.local.md
 .github/agents/*.local.md
 .agents/agents/*.local.agent.md
@@ -54,3 +55,14 @@ dist
 .v[0-9]*/
 # Local agent validation evidence
 .agent-validation/
+
+# phasing: worktrees, code graph, machine-only settings
+.worktrees/
+graphify-out/
+.claude/settings.local.json
+
+# design-parity: fixture workspace, profiles and screenshots
+design/.parity/
+
+# design-sync: generated on every compile and in CI, never committed (conflicted on every parallel design PR)
+design/STALE.md

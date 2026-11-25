@@ -235,7 +235,8 @@ zone.js/dist/**
 @github/copilot-win32-arm64/**
 @github/copilot-win32-x64/**
 
-# The selected SDK platform package is re-added during packaging.
+# Klawly: the SDK platform packages (the Copilot runtime, ~130 MB) never ship; Klawly registers
+# no Copilot agent and does not re-add the selected one during packaging (issue 659).
 @github/copilot-sdk-darwin-arm64/**
 @github/copilot-sdk-darwin-x64/**
 @github/copilot-sdk-linux-arm64/**
@@ -266,6 +267,17 @@ zone.js/dist/**
 @github/copilot-sdk/node_modules/@github/copilot-linuxmusl-x64/**
 @github/copilot-sdk/node_modules/@github/copilot-win32-arm64/**
 @github/copilot-sdk/node_modules/@github/copilot-win32-x64/**
+
+# Klawly: the mxc-sdk sandbox binaries (~50 MB per arch) never ship. On Windows only upstream's
+# Copilot agent and its chat agent mode terminal sandbox (`chat.agent.sandbox.enabled`) run them;
+# Klawly registers no Copilot agent. The mxc-sdk JS goes too: sandboxHelper.ts loads it lazily and
+# treats a missing package as "no sandbox" (issues 659, 697).
+@microsoft/mxc-sdk/**
+
+# The Copilot SDK's JS: only copilotAgent.ts and copilotPermissionAttribution.ts import it as a value,
+# and nothing Klawly registers reaches them (agentHostMain.ts registers no Copilot agent); every
+# other import is `import type` and is erased (issue 697).
+@github/copilot-sdk/**
 
 # @github/copilot-sdk uses Koffi only for its in-process FFI transport.
 # VS Code uses RuntimeConnection.forStdio.

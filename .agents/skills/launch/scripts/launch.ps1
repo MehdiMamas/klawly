@@ -1,4 +1,4 @@
-# Launch Code OSS (VS Code from sources) with an isolated, slimmed copy of a
+# Launch Klawly (from sources) with an isolated, slimmed copy of a
 # user-data-dir and unique debugger ports. Prints exactly one JSON line to
 # stdout after the renderer CDP endpoint is ready; all diagnostics use stderr.
 
@@ -215,7 +215,9 @@ function Assert-AuthCriticalProfileFiles([string]$destination) {
 		-not (Test-Path -LiteralPath (Join-Path $destination $_))
 	})
 	if ($missingPaths.Count -gt 0) {
-		throw "Profile copy is missing auth-critical path(s): $($missingPaths -join ', '). Refusing to launch a profile that cannot preserve Windows authentication."
+		# A source profile that holds only extensions has nothing to preserve; the
+		# launched instance starts with a fresh profile and prompts for sign-in.
+		Write-LaunchError "[launch.ps1] WARNING: profile copy is missing auth-critical path(s): $($missingPaths -join ', '). The launched instance may prompt you to sign in."
 	}
 }
 
@@ -416,7 +418,7 @@ try {
 
 	$codeBat = Join-Path $repo 'scripts\code.bat'
 	if (-not (Test-Path -LiteralPath $codeBat -PathType Leaf)) {
-		Exit-Usage "Could not find a Code OSS launcher at $codeBat. Pass --repo <vscode-repo-root>."
+		Exit-Usage "Could not find a Klawly launcher at $codeBat. Pass --repo <vscode-repo-root>."
 	}
 
 	if ([string]::IsNullOrWhiteSpace($sourceUserDataDir)) {

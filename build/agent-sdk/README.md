@@ -6,7 +6,7 @@ The runtime side (`src/vs/platform/agentHost/`) downloads and caches the SDK tar
 
 ## How the pipeline uses this
 
-The platform packaging jobs (Linux, macOS, Windows, Alpine) each include the shared template `build/azure-pipelines/common/agent-sdk-produce.yml` before the existing `gulp vscode-<platform>-<arch>-min-ci` step:
+The platform packaging jobs (Linux, macOS, Windows, Alpine) each include the shared template `build/azure-pipelines/common/agent-sdk-produce.yml` before the existing `gulp klawly-<platform>-<arch>-min-ci` step:
 
 ```yaml
 - template: ../../common/agent-sdk-produce.yml@self
@@ -32,7 +32,7 @@ arch, sdk)` via `getSdkTargetForBuild`, runs `buildOne` for each in parallel, an
 
 Inside `packageTask`'s `jsonEditor` callback (the same one that injects `commit` / `date` / `checksums` / `version`), `readAgentSdkResults()` loads the results file (returns `{}` when the env var is unset) and merges `agentSdks` into `product.json`. The REH gulpfile only writes `agentSdks` for `type === 'reh'`; the REH-web variant skips it because the agent host is node-only and the SDK config has no consumer in a browser-served server.
 
-Local `gulp vscode-darwin-arm64` invocations don't set `AGENT_SDK_RESULTS_FILE` and don't have `VSCODE_PUBLISH=true`, so `readAgentSdkResults()` returns `{}` and product.json ships without `agentSdks` — same UX as today's no-config build.
+Local `gulp klawly-darwin-arm64` invocations don't set `AGENT_SDK_RESULTS_FILE` and don't have `VSCODE_PUBLISH=true`, so `readAgentSdkResults()` returns `{}` and product.json ships without `agentSdks` — same UX as today's no-config build.
 
 ## Why two steps, not inline-in-gulp
 

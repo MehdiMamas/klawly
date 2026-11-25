@@ -24,12 +24,14 @@ import { getProductionDependencies } from './lib/dependencies.ts';
 import { config } from './lib/electron.ts';
 import { createAsar } from './lib/asar.ts';
 import minimist from 'minimist';
-import { compileNonNativeExtensionsBuildTask, compileNativeExtensionsBuildTask, compileAllExtensionsBuildTask, compileExtensionMediaBuildTask, cleanExtensionsBuildTask, compileCopilotExtensionBuildTask } from './gulpfile.extensions.ts';
+import { compileNonNativeExtensionsBuildTask, compileNativeExtensionsBuildTask, compileAllExtensionsBuildTask, compileExtensionMediaBuildTask, cleanExtensionsBuildTask } from './gulpfile.extensions.ts';
 import { checkApiProposalNamesTask, copyCodiconsTask } from './lib/compilation.ts';
-import { ensureCopilotPlatformPackage, getCopilotExcludeFilter, getCopilotRuntimePrebuildFiles, getCopilotRuntimeVersion, getCopilotTgrepExcludeFilter, getRipgrepExcludeFilter, prepareBuiltInCopilotRipgrepShim } from './lib/copilot.ts';
+import { assertPackage } from './klawly/check-package.ts';
+import { getCopilotExcludeFilter, getCopilotRuntimeVersion, getCopilotTgrepExcludeFilter, getRipgrepExcludeFilter } from './lib/copilot.ts';
 import { ensureOSProxyResolverPlatformPackage, getOSProxyResolverExcludeFilter, getOSProxyResolverPlatformFiles } from './lib/osProxyResolver.ts';
 import { readAgentSdkResults } from './agent-sdk/common.ts';
 import { readDictationRuntimeResults } from './dictation-runtime/common.ts';
+import { bundledDictationTarget, foundryLocalFilter } from './klawly/bundled-dictation.ts';
 import { promisify } from 'util';
 import globCallback from 'glob';
 import rceditCallback from 'rcedit';
@@ -60,9 +62,10 @@ function getLockedPackageVersion(packageName: string): string {
 }
 
 const sourceMappingURLBase = `https://main.vscode-cdn.net/sourcemaps/${commit}`;
-const isCI = !!process.env['CI'] || !!process.env['BUILD_ARTIFACTSTAGINGDIRECTORY'] || !!process.env['GITHUB_WORKSPACE'];
-const useCdnSourceMapsForPackagingTasks = isCI;
-const stripSourceMapsInPackagingTasks = isCI;
+// Klawly: source maps never ship and never point at Microsoft's CDN, built locally or in CI.
+// They become a private release asset instead (build/klawly/sourcemaps.ts, issue 548).
+const useCdnSourceMapsForPackagingTasks = false;
+const stripSourceMapsInPackagingTasks = true;
 
 task.task(task.define('core-ci', task.series(
 	checkApiProposalNamesTask,
@@ -116,15 +119,8 @@ function computeChecksum(filename: string): string {
 	return hash;
 }
 
-// foundry-local-sdk (on-device chat dictation) loads its N-API addons and shared
-// libraries from the per-user runtime cache. Exclude the package's native files,
-// which may require a newer glibc than VS Code's supported maximum.
-function getFoundryLocalExcludeFilter(): string[] {
-	return [
-		'**',
-		'!**/foundry-local-sdk/prebuilds/**',
-	];
-}
+// foundry-local-sdk (on-device chat dictation): Klawly keeps the native files of the
+// target when they are complete and leaves out the rest (build/klawly/bundled-dictation.ts).
 
 function packageTask(platform: string, arch: string, sourceFolderName: string, destinationFolderName: string, _opts?: { stats?: boolean }) {
 	const destination = path.join(path.dirname(root), destinationFolderName);
@@ -132,6 +128,7 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
 
 	const task = () => {
 		const out = sourceFolderName;
+		const dictationTarget = bundledDictationTarget(path.join(import.meta.dirname, '..', 'node_modules', 'foundry-local-sdk'), platform, arch);
 		const versionedResourcesFolder = util.getVersionedResourcesFolder(platform, commit!);
 
 		const checksums = computeChecksums(out, [
@@ -160,10 +157,11 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
 			return !set.has(platform);
 		}).map(ext => `!.build/extensions/${ext.name}/**`);
 
-		const extensions = gulp.src(['.build/extensions/**', ...platformSpecificBuiltInExtensionsExclusions], { base: '.build', dot: true });
+		// Klawly is Claude-only: the built-in Copilot extension never ships (issue 548).
+		const extensions = gulp.src(['.build/extensions/**', '!.build/extensions/copilot/**', ...platformSpecificBuiltInExtensionsExclusions], { base: '.build', dot: true });
 
 		const sourceFilterPattern = stripSourceMapsInPackagingTasks
-			? ['**', '!**/*.{js,css}.map']
+			? ['**', '!**/*.map']
 			: ['**'];
 		const sources = es.merge(src, extensions)
 			.pipe(filter(sourceFilterPattern, { dot: true }));
@@ -216,6 +214,9 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
 				if (dictationRuntime) {
 					json.dictationRuntime = dictationRuntime;
 				}
+				if (dictationTarget) {
+					json.klawlyDictationBundled = true;
+				}
 				return json;
 			}))
 			.pipe(es.through(function (file) {
@@ -237,25 +238,24 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
 
 		const depFilterPattern = ['**', `!**/${config.version}/**`, '!**/bin/darwin-arm64-87/**', '!**/package-lock.json', '!**/yarn.lock'];
 		if (stripSourceMapsInPackagingTasks) {
-			depFilterPattern.push('!**/*.{js,css}.map');
+			depFilterPattern.push('!**/*.map');
 		}
 
 		const cleanedDeps = gulp.src(dependenciesSrc, { base: '.', dot: true })
 			.pipe(filter(depFilterPattern))
 			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, '.moduleignore')))
 			.pipe(util.cleanNodeModules(path.join(import.meta.dirname, `.moduleignore.${process.platform}`)));
-		ensureCopilotPlatformPackage(platform, arch);
-		const copilotRuntimePrebuilds = gulp.src(getCopilotRuntimePrebuildFiles(platform, arch), { base: '.', dot: true, allowEmpty: true });
+		// Klawly registers no Copilot agent: the Copilot SDK runtime is not re-added after .moduleignore strips it (issue 659).
 		ensureOSProxyResolverPlatformPackage(platform, arch);
 		const osProxyResolverPlatformPackage = gulp.src(getOSProxyResolverPlatformFiles(platform, arch), { base: '.', dot: true, allowEmpty: true });
-		const deps = es.merge(cleanedDeps, copilotRuntimePrebuilds, osProxyResolverPlatformPackage)
+		const deps = es.merge(cleanedDeps, osProxyResolverPlatformPackage)
 			.pipe(filter(getCopilotExcludeFilter(platform, arch)))
 			.pipe(filter(getCopilotTgrepExcludeFilter(platform, arch)))
 			.pipe(filter(getRipgrepExcludeFilter(platform, arch)))
-			.pipe(filter(getFoundryLocalExcludeFilter()))
+			.pipe(filter(foundryLocalFilter(dictationTarget)))
 			.pipe(filter(getOSProxyResolverExcludeFilter(platform, arch)))
 			.pipe(jsFilter)
-			.pipe(util.rewriteSourceMappingURL(sourceMappingURLBase))
+			.pipe(useCdnSourceMapsForPackagingTasks ? util.rewriteSourceMappingURL(sourceMappingURLBase) : es.through())
 			.pipe(jsFilter.restore)
 			.pipe(createAsar(path.join(process.cwd(), 'node_modules'), [
 				'**/*.node',
@@ -265,6 +265,8 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
 				// The Dev Container CLI is spawned as an external Node process,
 				// so its bundled entrypoint must be available outside the ASAR.
 				'**/@devcontainers/cli/**',
+				// Klawly: the dictation runtime's libraries load from disk next to its addons (issue 547).
+				'**/foundry-local-sdk/prebuilds/**',
 				'**/node-pty/build/Release/*',
 				'**/node-pty/build/Release/conpty/*',
 				'**/node-pty/lib/worker/conoutSocketWorker.js',
@@ -461,7 +463,8 @@ function packageTask(platform: string, arch: string, sourceFolderName: string, d
 function hasAuthenticodeSignature(filePath: string): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		const proc = cp.spawn('signtool.exe', ['verify', '/pa', filePath]);
-		proc.on('error', reject);
+		// Klawly: without the Windows SDK there is nothing to re-sign, so an unsigned build leaves the signature for rcedit to overwrite.
+		proc.on('error', error => (error as NodeJS.ErrnoException).code === 'ENOENT' ? resolve(false) : reject(error));
 		proc.on('exit', code => resolve(code === 0));
 	});
 }
@@ -515,11 +518,11 @@ function patchWin32DependenciesTask(destinationFolderName: string) {
 			await rcedit(fullPath, {
 				'file-version': baseVersion,
 				'version-string': {
-					'CompanyName': 'Microsoft Corporation',
+					'CompanyName': 'Klawly contributors',
 					'FileDescription': product.nameLong,
 					'FileVersion': packageJson.version,
 					'InternalName': basename,
-					'LegalCopyright': 'Copyright (C) 2026 Microsoft. All rights reserved',
+					'LegalCopyright': 'Copyright (C) 2026 Klawly contributors. All rights reserved',
 					'OriginalFilename': basename,
 					'ProductName': product.nameLong,
 					'ProductVersion': packageJson.version,
@@ -528,23 +531,6 @@ function patchWin32DependenciesTask(destinationFolderName: string) {
 		});
 
 		await Promise.all(patchPromises);
-	};
-}
-
-function prepareCopilotRipgrepShimTask(platform: string, arch: string, destinationFolderName: string) {
-	const outputDir = path.join(path.dirname(root), destinationFolderName);
-
-	return async () => {
-		// On Windows with win32VersionedUpdate, app resources live under a
-		// commit-hash prefix: {output}/{commitHash}/resources/app/
-		const versionedResourcesFolder = util.getVersionedResourcesFolder(platform, commit!);
-		const appBase = platform === 'darwin'
-			? path.join(outputDir, `${product.nameLong}.app`, 'Contents', 'Resources', 'app')
-			: path.join(outputDir, versionedResourcesFolder, 'resources', 'app');
-		const appNodeModulesDir = path.join(appBase, 'node_modules.asar.unpacked');
-
-		const builtInCopilotExtensionDir = path.join(appBase, 'extensions', 'copilot');
-		prepareBuiltInCopilotRipgrepShim(platform, arch, builtInCopilotExtensionDir, appNodeModulesDir);
 	};
 }
 
@@ -578,13 +564,12 @@ BUILD_TARGETS.forEach(buildTarget => {
 
 	const [vscode, vscodeMin] = ['', 'min'].map(minified => {
 		const sourceFolderName = `out-vscode${dashed(minified)}`;
-		const destinationFolderName = `VSCode${dashed(platform)}${dashed(arch)}`;
+		const destinationFolderName = `Klawly${dashed(platform)}${dashed(arch)}`;
 
 		const packageTasks: task.Task[] = [
 			compileNativeExtensionsBuildTask,
 			util.rimraf(path.join(buildRoot, destinationFolderName)),
-			packageTask(platform, arch, sourceFolderName, destinationFolderName, opts),
-			prepareCopilotRipgrepShimTask(platform, arch, destinationFolderName)
+			packageTask(platform, arch, sourceFolderName, destinationFolderName, opts)
 		];
 
 		if (platform === 'win32') {
@@ -593,8 +578,10 @@ BUILD_TARGETS.forEach(buildTarget => {
 		if (shouldGenerateNodeCompileCache(platform, arch, product)) {
 			packageTasks.push(generateNodeCompileCacheTask(platform, destinationFolderName));
 		}
+		// Klawly: fail the build when the package ships maps, Copilot or a bundled Claude Code (issue 548).
+		packageTasks.push(task.define(`check-package${dashed(platform)}${dashed(arch)}${dashed(minified)}`, async () => assertPackage(path.join(buildRoot, destinationFolderName))));
 
-		const vscodeTaskCI = task.define(`vscode${dashed(platform)}${dashed(arch)}${dashed(minified)}-ci`, task.series(...packageTasks));
+		const vscodeTaskCI = task.define(`klawly${dashed(platform)}${dashed(arch)}${dashed(minified)}-ci`, task.series(...packageTasks));
 		task.task(vscodeTaskCI);
 
 		const esbuildBundleTask = task.define(
@@ -607,11 +594,10 @@ BUILD_TARGETS.forEach(buildTarget => {
 				minified && useCdnSourceMapsForPackagingTasks ? `${sourceMappingURLBase}/core` : undefined
 			)
 		);
-		const vscodeTask = task.define(`vscode${dashed(platform)}${dashed(arch)}${dashed(minified)}`, task.series(
+		const vscodeTask = task.define(`klawly${dashed(platform)}${dashed(arch)}${dashed(minified)}`, task.series(
 			copyCodiconsTask,
 			cleanExtensionsBuildTask,
 			compileNonNativeExtensionsBuildTask,
-			compileCopilotExtensionBuildTask,
 			compileExtensionMediaBuildTask,
 			writeISODate('out-build'),
 			esbuildBundleTask,
@@ -623,15 +609,15 @@ BUILD_TARGETS.forEach(buildTarget => {
 	});
 
 	if (process.platform === platform && process.arch === arch) {
-		task.task(task.define('vscode', task.series(vscode)));
-		task.task(task.define('vscode-min', task.series(vscodeMin)));
+		task.task(task.define('klawly', task.series(vscode)));
+		task.task(task.define('klawly-min', task.series(vscodeMin)));
 	}
 });
 
 // #region nls
 
 task.task(task.define(
-	'vscode-translations-export',
+	'klawly-translations-export',
 	task.series(
 		task.task('core-ci') as task.Task,
 		compileAllExtensionsBuildTask,
@@ -644,16 +630,16 @@ task.task(task.define(
 				gulp.src(pathToMetadata).pipe(i18n.createXlfFilesForCoreBundle()),
 				gulp.src(pathToSetup).pipe(i18n.createXlfFilesForIsl()),
 				gulp.src(pathToExtensions).pipe(i18n.createXlfFilesForExtensions())
-			).pipe(vfs.dest('../vscode-translations-export'));
+			).pipe(vfs.dest('../klawly-translations-export'));
 		}
 	)
 ));
 
-task.task('vscode-translations-import', function () {
+task.task('klawly-translations-import', function () {
 	const options = minimist(process.argv.slice(2), {
 		string: 'location',
 		default: {
-			location: '../vscode-translations-import'
+			location: '../klawly-translations-import'
 		}
 	});
 	return es.merge([...i18n.defaultLanguages, ...i18n.extraLanguages].map(language => {

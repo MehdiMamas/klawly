@@ -59,6 +59,8 @@ export default class MergeConflictCodeLensProvider implements vscode.CodeLensPro
 		}
 
 		const items: vscode.CodeLens[] = [];
+		// Klawly (issue 877): Resolve with Claude on each conflict, only where Klawly registers the command.
+		const hasClaude = (await vscode.commands.getCommands(true)).includes('claude.resolveConflicts');
 
 		conflicts.forEach(conflict => {
 			const acceptCurrentCommand: vscode.Command = {
@@ -92,6 +94,13 @@ export default class MergeConflictCodeLensProvider implements vscode.CodeLensPro
 				new vscode.CodeLens(range, acceptBothCommand),
 				new vscode.CodeLens(range, diffCommand)
 			);
+			if (hasClaude) {
+				items.push(new vscode.CodeLens(range, {
+					command: 'claude.resolveConflicts',
+					title: vscode.l10n.t("Resolve with Claude"),
+					arguments: [document.uri]
+				}));
+			}
 		});
 
 		return items;

@@ -44,8 +44,8 @@ async function main() {
 	// Package client
 	if (process.env['BUILT_CLIENT']) {
 		printBanner('Package client');
-		const clientArchivePath = `.build/win32-${arch}/VSCode-win32-${arch}.zip`;
-		await $`7z.exe a -tzip ${clientArchivePath} ../VSCode-win32-${arch}/* "-xr!CodeSignSummary*.md"`.pipe(process.stdout);
+		const clientArchivePath = `.build/win32-${arch}/Klawly-win32-${arch}.zip`;
+		await $`7z.exe a -tzip ${clientArchivePath} ../Klawly-win32-${arch}/* "-xr!CodeSignSummary*.md"`.pipe(process.stdout);
 		await $`7z.exe l ${clientArchivePath}`.pipe(process.stdout);
 	}
 
@@ -68,7 +68,7 @@ async function main() {
 	// Sign setup
 	if (process.env['BUILT_CLIENT']) {
 		printBanner('Sign setup packages (system, user)');
-		const task = $`npm exec -- npm-run-all2 -lp "gulp vscode-win32-${arch}-system-setup -- --sign" "gulp vscode-win32-${arch}-user-setup -- --sign"`;
+		const task = $`npm exec -- npm-run-all2 -lp "gulp klawly-win32-${arch}-system-setup -- --sign" "gulp klawly-win32-${arch}-user-setup -- --sign"`;
 		await streamProcessOutputAndCheckResult('Sign setup packages (system, user)', task);
 	}
 }

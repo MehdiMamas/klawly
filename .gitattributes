@@ -9,3 +9,9 @@ ThirdPartyNotices.txt eol=crlf
 *.sh eol=lf
 *.rtf -text
 **/*.json linguist-language=jsonc
+
+# Generated design baseline: parallel UI branches never conflict on it. The driver is wired by
+# `npm install` (build/klawly/merge-design-sync.ts --install); without it git merges it as text.
+design/sync.json merge=klawly-design-sync
+
+# UI reference captures: stored byte for byte, no text diffs, not counted as project code.

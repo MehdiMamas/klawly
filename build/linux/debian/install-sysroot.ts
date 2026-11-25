@@ -20,7 +20,7 @@ const REPO_ROOT = path.dirname(path.dirname(path.dirname(import.meta.dirname)));
 
 const ghApiHeaders: Record<string, string> = {
 	Accept: 'application/vnd.github.v3+json',
-	'User-Agent': 'VSCode Build',
+	'User-Agent': 'Klawly Build',
 };
 
 if (process.env.GITHUB_TOKEN) {

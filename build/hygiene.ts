@@ -23,6 +23,13 @@ const copyrightHeaderLines = [
 	' *--------------------------------------------------------------------------------------------*/',
 ];
 
+const klawlyCopyrightHeaderLines = [
+	'/*---------------------------------------------------------------------------------------------',
+	' *  Copyright (c) Klawly contributors. All rights reserved.',
+	' *  Licensed under the MIT License. See License.txt in the project root for license information.',
+	' *--------------------------------------------------------------------------------------------*/',
+];
+
 interface VinylFileWithLines extends VinylFile {
 	__lines: string[];
 }
@@ -92,7 +99,8 @@ export function hygiene(some: NodeJS.ReadWriteStream | string[] | undefined, run
 	const productJson = es.through(function (file: VinylFile) {
 		const product = JSON.parse(file.contents!.toString('utf8'));
 
-		if (product.extensionsGallery) {
+		// Klawly: the gallery is Open VSX (docs/rules/60-build-release.md); any other gallery is still an error.
+		if (product.extensionsGallery && !/^https:\/\/open-vsx\.org\//.test(product.extensionsGallery.serviceUrl ?? '')) {
 			console.error(`product.json: Contains 'extensionsGallery'`);
 			errorCount++;
 		}
@@ -162,12 +170,17 @@ export function hygiene(some: NodeJS.ReadWriteStream | string[] | undefined, run
 	const copyrights = es.through(function (file: VinylFileWithLines) {
 		const lines = file.__lines;
 
-		for (let i = 0; i < copyrightHeaderLines.length; i++) {
-			if (lines[i] !== copyrightHeaderLines[i]) {
-				console.error(file.relative + ': Missing or bad copyright statement');
-				errorCount++;
-				break;
-			}
+		// Klawly-owned folders use the Klawly header; everything else keeps upstream's.
+		const relativePath = file.relative.replace(/\\/g, '/');
+		const isKlawlyFile = relativePath.startsWith('src/vs/platform/claude/')
+			|| relativePath.startsWith('src/vs/workbench/services/claude/')
+			|| relativePath.startsWith('src/vs/workbench/contrib/claude')
+			|| relativePath.startsWith('build/klawly/');
+		const header = isKlawlyFile ? klawlyCopyrightHeaderLines : copyrightHeaderLines;
+		const headerOk = header.every((line, i) => lines[i] === line);
+		if (!headerOk) {
+			console.error(file.relative + ': Missing or bad copyright statement');
+			errorCount++;
 		}
 
 		this.emit('data', file);

@@ -151,6 +151,27 @@ export default defineConfig(
 			]
 		},
 	},
+	{
+		files: [
+			'src/vs/platform/claude/**/*.ts',
+			'src/vs/workbench/services/claude/**/*.ts',
+			'src/vs/workbench/contrib/claude/**/*.ts',
+			'src/vs/workbench/contrib/claudeBackground/**/*.ts',
+			'build/klawly/**/*.ts',
+		],
+		rules: {
+			'header/header': [
+				2,
+				'block',
+				[
+					'---------------------------------------------------------------------------------------------',
+					' *  Copyright (c) Klawly contributors. All rights reserved.',
+					' *  Licensed under the MIT License. See License.txt in the project root for license information.',
+					' *--------------------------------------------------------------------------------------------'
+				]
+			]
+		}
+	},
 	// Production filesystem operations must not block the event loop.
 	{
 		files: [
@@ -1782,8 +1803,6 @@ export default defineConfig(
 						'@vscode/fs-copyfile', // used by agentHost for file copying after worktree creation
 						'@vscode/tree-sitter-wasm', // used by agentHost for command auto-approval
 						'@vscode/copilot-api', // used by agentHost for Copilot API requests
-						'@anthropic-ai/sdk', // used by agentHost for Anthropic API requests
-						'@anthropic-ai/claude-agent-sdk', // used by agentHost for Claude Agent SDK session enumeration / queries
 						'@modelcontextprotocol/sdk/**/*', // used by agentHost for Claude client-tool MCP result types (Phase 10)
 						'@github/copilot-sdk',
 						'zod', // used by agentHost for Claude client-tool MCP input schemas
@@ -1801,6 +1820,20 @@ export default defineConfig(
 							'when': 'test',
 							'pattern': 'websocket'
 						}
+					]
+				},
+				{
+					'target': 'src/vs/platform/claude/~',
+					'layer': 'node',
+					'restrictions': [
+						'vs/base/~',
+						'vs/base/parts/*/~',
+						'vs/platform/*/~',
+						'tas-client',
+						'@microsoft/1ds-core-js',
+						'@microsoft/1ds-post-js',
+						'@xterm/headless',
+						'@vscode/tree-sitter-wasm',
 					]
 				},
 				{

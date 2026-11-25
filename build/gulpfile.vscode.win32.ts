@@ -20,7 +20,7 @@ const require = createRequire(import.meta.url);
 
 const repoPath = path.dirname(import.meta.dirname);
 const commit = getVersion(repoPath);
-const buildPath = (arch: string) => path.join(path.dirname(repoPath), `VSCode-win32-${arch}`);
+const buildPath = (arch: string) => path.join(path.dirname(repoPath), `Klawly-win32-${arch}`);
 const setupDir = (arch: string, target: string) => path.join(repoPath, '.build', `win32-${arch}`, `${target}-setup`);
 const innoSetupPath = path.join(path.dirname(path.dirname(require.resolve('innosetup'))), 'bin', 'ISCC.exe');
 const signWin32Path = path.join(repoPath, 'build', 'azure-pipelines', 'common', 'sign-win32.ts');
@@ -131,7 +131,7 @@ function buildWin32Setup(arch: string, target: string): task.CallbackTask {
 
 function defineWin32SetupTasks(arch: string, target: string) {
 	const cleanTask = util.rimraf(setupDir(arch, target));
-	task.task(task.define(`vscode-win32-${arch}-${target}-setup`, task.series(cleanTask, buildWin32Setup(arch, target))));
+	task.task(task.define(`klawly-win32-${arch}-${target}-setup`, task.series(cleanTask, buildWin32Setup(arch, target))));
 }
 
 defineWin32SetupTasks('x64', 'system');
@@ -153,5 +153,5 @@ function updateIcon(executablePath: string): task.CallbackTask {
 	};
 }
 
-task.task(task.define('vscode-win32-x64-inno-updater', task.series(copyInnoUpdater('x64'), updateIcon(path.join(buildPath('x64'), 'tools', 'inno_updater.exe')))));
-task.task(task.define('vscode-win32-arm64-inno-updater', task.series(copyInnoUpdater('arm64'), updateIcon(path.join(buildPath('arm64'), 'tools', 'inno_updater.exe')))));
+task.task(task.define('klawly-win32-x64-inno-updater', task.series(copyInnoUpdater('x64'), updateIcon(path.join(buildPath('x64'), 'tools', 'inno_updater.exe')))));
+task.task(task.define('klawly-win32-arm64-inno-updater', task.series(copyInnoUpdater('arm64'), updateIcon(path.join(buildPath('arm64'), 'tools', 'inno_updater.exe')))));

@@ -1,0 +1,3 @@
+[lfs]
+	# Upstream test fixtures that Klawly never runs; skip them in every clone (#1628).
+	fetchexclude = extensions/copilot/test/simulation/cache/**

@@ -1,10 +1,9 @@
 name: @@NAME@@
 version: '@@VERSION@@'
-summary: Code editing. Redefined.
+summary: The code editor with an AI agent built in.
 description: |
-  Visual Studio Code is a new choice of tool that combines the
-  simplicity of a code editor with what developers need for the core
-  edit-build-debug cycle.
+  Klawly is a desktop code editor.
+  Source and issues: https://github.com/MehdiMamas/klawly-ide
 
 architectures:
   - build-on: amd64

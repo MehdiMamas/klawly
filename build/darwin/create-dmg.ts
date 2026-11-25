@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { execFile } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { spawn } from '@malept/cross-spawn-promise';
@@ -133,10 +134,77 @@ async function ensureDmgBuild(): Promise<void> {
 async function runDmgBuild(settingsFile: string, volumeName: string, artifactPath: string): Promise<void> {
 	await ensureDmgBuild();
 
+	allowForcedDetach();
+
 	const pythonPath = getPythonPath();
-	await spawn(pythonPath, ['-m', 'dmgbuild', '-s', settingsFile, volumeName, artifactPath], {
-		stdio: 'inherit'
-	});
+	// While dmgbuild runs, log the processes (of this user; lsof without root sees no others) that hold
+	// files on a mounted volume, so a busy volume names its cause.
+	const holders = watchVolumeHolders();
+	try {
+		await spawn(pythonPath, ['-m', 'dmgbuild', '-s', settingsFile, '--detach-retries', '8', volumeName, artifactPath], {
+			stdio: 'inherit'
+		});
+	} finally {
+		holders.stop();
+	}
+}
+
+/**
+ * On the self-hosted Mac a process the runner cannot see keeps the new volume busy (since about
+ * 2026-10-14, when its hdiutil started printing deprecation warnings): alpha 10 failed three times on
+ * "couldn't unmount - Resource busy", once after 17 minutes of retries. dmgbuild has already synced
+ * the volume by then, and it force-detaches before giving up, so let that forced detach count as
+ * success; main() verifies the finished image.
+ */
+function allowForcedDetach(): void {
+	const libPath = path.join(getVenvPath(), 'lib');
+	const python = fs.readdirSync(libPath).find(name => name.startsWith('python'));
+	const corePath = path.join(libPath, python ?? '', 'site-packages', 'dmgbuild', 'core.py');
+	const core = fs.readFileSync(corePath, 'utf8');
+	const strict = [
+		'        hdiutil("detach", "-force", device, plist=False)',
+		'        raise DMGError(callback, f"Unable to detach device cleanly: {output}")',
+	].join('\n');
+	const forced = [
+		'        print(f"Clean detach failed ({output.strip()}); forcing it after sync", flush=True)',
+		'        ret, output = hdiutil("detach", "-force", device, plist=False)',
+		'    if ret:',
+		'        raise DMGError(callback, f"Unable to detach device: {output}")',
+	].join('\n');
+	if (core.includes(forced)) {
+		return;
+	}
+	if (!core.includes(strict)) {
+		throw new Error(`dmgbuild's detach code changed; update allowForcedDetach() for ${DMGBUILD_COMMIT}`);
+	}
+	fs.writeFileSync(corePath, core.replace(strict, forced));
+}
+
+function watchVolumeHolders(): { stop(): void } {
+	const seen = new Set<string>();
+	let stopped = false;
+	const poll = () => {
+		if (stopped) {
+			return;
+		}
+		// -F cn: one field per line, c = command name, n = file name.
+		execFile('lsof', ['-F', 'cn'], { maxBuffer: 64 * 1024 * 1024 }, (_error, stdout) => {
+			let command = '';
+			for (const line of (stdout ?? '').split('\n')) {
+				if (line.startsWith('c')) {
+					command = line.slice(1);
+				} else if (line.startsWith('n/Volumes/') && !seen.has(command)) {
+					seen.add(command);
+					console.log(`Process with files open on a volume: ${command} (${line.slice(1)})`);
+				}
+			}
+			if (!stopped) {
+				timer = setTimeout(poll, 10_000);
+			}
+		});
+	};
+	let timer = setTimeout(poll, 10_000);
+	return { stop: () => { stopped = true; clearTimeout(timer); } };
 }
 
 async function main(buildDir?: string, outDir?: string): Promise<void> {
@@ -155,23 +223,23 @@ async function main(buildDir?: string, outDir?: string): Promise<void> {
 		throw new Error('Output directory argument is required');
 	}
 
-	const appRoot = path.join(buildDir, `VSCode-darwin-${arch}`);
+	const appRoot = path.join(buildDir, `Klawly-darwin-${arch}`);
 	const appName = product.nameLong + '.app';
 	const appPath = path.join(appRoot, appName);
-	const dmgName = `VSCode-darwin-${arch}`;
+	const dmgName = `Klawly-darwin-${arch}`;
 	const artifactPath = path.join(outDir, `${dmgName}.dmg`);
 	const backgroundPath = path.join(import.meta.dirname, `dmg-background-${quality}.tiff`);
 	const diskIconPath = path.join(root, 'resources', 'darwin', 'code.icns');
-	let title = 'Code OSS';
+	let title = 'Klawly';
 	switch (quality) {
 		case 'stable':
-			title = 'VS Code';
+			title = 'Klawly';
 			break;
 		case 'insider':
-			title = 'VS Code Insiders';
+			title = 'Klawly Insiders';
 			break;
 		case 'exploration':
-			title = 'VS Code Exploration';
+			title = 'Klawly Exploration';
 			break;
 	}
 
@@ -212,6 +280,9 @@ async function main(buildDir?: string, outDir?: string): Promise<void> {
 	if (!fs.existsSync(artifactPath)) {
 		throw new Error(`DMG was not created at expected path: ${artifactPath}`);
 	}
+
+	// The detach may have been forced (see allowForcedDetach), so check the image's checksums.
+	await spawn('hdiutil', ['verify', artifactPath], { stdio: 'inherit' });
 
 	const stats = fs.statSync(artifactPath);
 	console.log(`Successfully created DMG: ${artifactPath} (${(stats.size / 1024 / 1024).toFixed(2)} MB)`);
