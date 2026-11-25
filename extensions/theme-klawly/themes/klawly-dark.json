@@ -248,6 +248,7 @@
 		"editorCommentsWidget.rangeActiveBackground": "#93a0f02e",
 		"editorGroup.border": "#ffffff14",
 		"editorGroupHeader.tabsBackground": "#1b1b1b",
+		"editorGroupHeader.connectedTabsBackground": "#1b1b1b",
 		"editorGroupHeader.tabsBorder": "#00000000",
 		"editorGroupHeader.noTabsBackground": "#1b1b1b",
 		"agents.background": "#131313",
