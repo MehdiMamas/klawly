@@ -6,7 +6,7 @@ Klawly is a fork of [Code - OSS](https://github.com/microsoft/vscode), so editin
 
 > Klawly is an independent project, not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic, PBC.
 
-<!-- Screenshot: add docs/screenshots/klawly.png and link it here. -->
+![Klawly: the editor with the Agent pane open](docs/images/klawly.png)
 
 - [FEATURES.md](FEATURES.md): what Klawly adds
 - [KLAWLY_MASTER_PLAN.md](KLAWLY_MASTER_PLAN.md): the build spec
@@ -17,9 +17,9 @@ Klawly is a fork of [Code - OSS](https://github.com/microsoft/vscode), so editin
 
 ## Install
 
-Alpha builds are on the [Releases](https://github.com/MehdiMamas/klawly-ide/releases) page. They are unsigned, so each OS warns on first launch.
+Builds are on the [Releases](https://github.com/MehdiMamas/klawly-ide/releases) page. The macOS build is signed and notarized. Windows and Linux builds are not published yet; build them from source for now (see below). They are unsigned, so the OS warns on first launch.
 
-- **macOS (Apple silicon):** open `Klawly-darwin-arm64-<version>.dmg` and drag Klawly onto Applications. The first time, right-click Klawly in Applications, choose Open, then Open again. If no Open button appears, go to System Settings, Privacy & Security, and choose Open Anyway.
+- **macOS (Apple silicon):** open `Klawly-darwin-arm64-<version>.dmg` and drag Klawly onto Applications.
 - **Windows (x64):** run `KlawlyUserSetup-x64-<version>.exe` (this user only) or `KlawlySetup-x64-<version>.exe` (all users), or extract the archive and run `Klawly.exe`. When SmartScreen warns, choose More info, then Run anyway.
 - **Linux (ARM64):**
 
