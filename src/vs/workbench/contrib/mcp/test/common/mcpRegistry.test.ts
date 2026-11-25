@@ -596,7 +596,7 @@ suite('Workbench - MCP - Registry', () => {
 			});
 		});
 
-		test('keeps VS Code variable resolution for other sources, such as .vscode/mcp.json', async () => {
+		test('keeps Klawly variable resolution for other sources, such as .vscode/mcp.json', async () => {
 			assert.deepStrictEqual(await resolve({
 				...baseDefinition,
 				launch: stdioLaunch,

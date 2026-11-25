@@ -721,7 +721,7 @@ suite('MCP configuration entry points', () => {
 			});
 		}
 
-		test('shows the active VS Code profile destination rather than the default profile', async () => {
+		test('shows the active Klawly profile destination rather than the default profile', async () => {
 			const fixture = setupGlobal();
 			const profileResource = URI.file('/user/profiles/custom/mcp.json');
 			fixture.instantiation.stub(IUserDataProfileService, upcastDeepPartial<IUserDataProfileService>({ currentProfile: { mcpResource: profileResource } }));
@@ -734,7 +734,7 @@ suite('MCP configuration entry points', () => {
 			]);
 		});
 
-		test('unavailable host falls back to VS Code user configuration', async () => {
+		test('unavailable host falls back to Klawly user configuration', async () => {
 			const fixture = setupGlobal();
 			fixture.instantiation.stub(IMcpCopilotGlobalConfigurationService, { getConfigurationResource: async () => undefined });
 			fixture.quickInput.selections.push('Command (stdio)', 'Global');
@@ -825,7 +825,7 @@ suite('MCP configuration entry points', () => {
 			});
 		}
 
-		test('package-assisted additions can still select VS Code user configuration', async () => {
+		test('package-assisted additions can still select Klawly user configuration', async () => {
 			const fixture = setupGlobal();
 			setupPackage(fixture, { type: 'mapped', name: 'test', server: installable.config });
 			fixture.quickInput.selections.push('NPM Package', 'Global', 'User Configuration (deprecated)');
@@ -899,7 +899,7 @@ suite('MCP configuration entry points', () => {
 		});
 
 		for (const choice of ['User Configuration (deprecated)', undefined]) {
-			test(`Copilot manifest inputs require explicit VS Code fallback: ${choice}`, async () => {
+			test(`Copilot manifest inputs require explicit Klawly fallback: ${choice}`, async () => {
 				const fixture = setupGlobal();
 				const inputs = [{ id: 'token', type: McpServerVariableType.PROMPT, description: 'Token', password: true }];
 				const config: IMcpServerConfiguration = { type: McpServerType.LOCAL, command: 'node', args: ['${input:token}'] };
@@ -952,7 +952,7 @@ suite('MCP configuration entry points', () => {
 			fixture.quickInput.inputs.push('test-package', 'test');
 			await new AddConfigurationAction().run(fixture.instantiation);
 			assert.deepStrictEqual({ adds: fixture.agentHostAdds, installs: fixture.installs, errors: fixture.errors.map(String) },
-				{ adds: [], installs: [], errors: ['Error: This server requires VS Code input variables. Add it to a VS Code configuration file instead of the current agent session.'] });
+				{ adds: [], installs: [], errors: ['Error: This server requires Klawly input variables. Add it to a Klawly configuration file instead of the current agent session.'] });
 		});
 
 		test('server-name cancellation has no writes or saved inputs', async () => {

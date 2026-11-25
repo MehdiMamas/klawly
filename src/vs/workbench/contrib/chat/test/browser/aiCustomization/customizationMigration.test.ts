@@ -239,9 +239,9 @@ suite('customizationMigration', () => {
 				PromptsConfig.SKILLS_LOCATION_KEY,
 				PromptsConfig.INSTRUCTIONS_LOCATION_KEY,
 			],
-			card: 'Found 1 customization in a location observed only by the Local agent harness. Copilot picks it up when running in VS Code. Move it to a supported location for use outside VS Code.',
-			actionAriaLabel: 'Migrate customizations from VS Code-configured locations',
-			confirmationDetail: 'This moves 1 customization out of a VS Code-configured location. If all customizations that use the affected location setting migrate successfully, that setting is cleared.',
+			card: 'Found 1 customization in a location observed only by the Local agent harness. Copilot picks it up when running in Klawly. Move it to a supported location for use outside Klawly.',
+			actionAriaLabel: 'Migrate customizations from Klawly-configured locations',
+			confirmationDetail: 'This moves 1 customization out of a Klawly-configured location. If all customizations that use the affected location setting migrate successfully, that setting is cleared.',
 		});
 	});
 
@@ -363,7 +363,7 @@ suite('customizationMigration', () => {
 			failed: category.getFailedMessage(['reviewer.agent.md'], 0),
 		}, {
 			agent: {
-				card: 'User data customizations are only used by VS Code. Found 1 agent that Copilot ignores. Move it to keep it available.',
+				card: 'User data customizations are only used by Klawly. Found 1 agent that Copilot ignores. Move it to keep it available.',
 				confirmation: {
 					message: 'Migrate user data customizations to \'~/.copilot/agents\'?',
 					detail: 'This moves 1 agent out of user data.',
@@ -372,11 +372,11 @@ suite('customizationMigration', () => {
 				},
 			},
 			instruction: {
-				card: 'User data customizations are only used by VS Code. Found 1 instruction file that Copilot ignores. Move it to keep it available.',
+				card: 'User data customizations are only used by Klawly. Found 1 instruction file that Copilot ignores. Move it to keep it available.',
 				confirmation: 'This moves 1 instruction file out of user data.',
 			},
 			mixed: {
-				card: 'User data customizations are only used by VS Code. Found 2 customizations that Copilot ignores. Move them to keep them available.',
+				card: 'User data customizations are only used by Klawly. Found 2 customizations that Copilot ignores. Move them to keep them available.',
 				confirmation: 'This moves 2 customizations out of user data.',
 			},
 			migrated: 'Migrated 1 user data customization.',

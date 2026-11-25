@@ -405,16 +405,16 @@ class ESRPReleaseService {
 			owners: [{ owner: { userPrincipalName: 'lszomoru@microsoft.com' } }],
 			approvers: [{ approver: { userPrincipalName: 'lszomoru@microsoft.com' }, isAutoApproved: true, isMandatory: false }],
 			releaseInfo: {
-				title: 'VS Code',
+				title: 'Klawly',
 				properties: {
 					'ReleaseContentType': 'InstallPackage'
 				},
 				minimumNumberOfApprovers: 1
 			},
 			productInfo: {
-				name: 'VS Code',
+				name: 'Klawly',
 				version,
-				description: 'VS Code'
+				description: 'Klawly'
 			},
 			accessPermissionsInfo: {
 				mainPublisher: 'VSCode',

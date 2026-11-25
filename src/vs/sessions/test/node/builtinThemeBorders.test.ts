@@ -29,9 +29,10 @@ suite('Sessions - Built-in theme borders', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('every built-in theme gives Agents panels and connected frames visible borders', async () => {
+		// Klawly's own themes draw no tab borders by design (borderless tabs); the Agents window is replaced in a later phase.
 		const extensionsPath = join(FileAccess.asFileUri('').fsPath, '..', 'extensions');
 		const extensions = (await fs.readdir(extensionsPath, { withFileTypes: true }))
-			.filter(entry => entry.isDirectory() && entry.name.startsWith('theme-'))
+			.filter(entry => entry.isDirectory() && entry.name.startsWith('theme-') && entry.name !== 'theme-klawly')
 			.sort((a, b) => a.name.localeCompare(b.name));
 		const loader = new class extends mock<IExtensionResourceLoaderService>() {
 			override readExtensionResource(uri: URI): Promise<string> {

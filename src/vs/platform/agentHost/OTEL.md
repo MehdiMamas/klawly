@@ -90,7 +90,7 @@ Host duplicate completion signals are suppressed by the existing tracker; render
 
 File export writes these spans to the configured JSONL file (commonly `agent-host-traces.jsonl`). OTLP/HTTP JSON and SQLite DB mode use the existing metadata routes. As with session metadata, protobuf/gRPC external forwarding is not supported for these host-produced spans: enable DB mode to retain them locally, or use file/HTTP JSON. Console export remains a summary, not a structured measurement sink. Export destination/resource configuration is user-owned; the diagnostics add no workspace paths, content or credentials.
 
-### VS Code provider preparation and progress diagnostics
+### Klawly provider preparation and progress diagnostics
 
 Copilot sends also export `vscode.agent_host.provider_timing` metadata spans and `agentHost.providerTiming` product events. They use the existing independent OTel and product-telemetry consent paths, with no new setting or protocol change. `[AgentHostProviderTiming]` logs contain the same bounded measurements at Debug level. The log-level check precedes JSON serialization; normal Info logging does not construct or write this payload. Filter product events by `initiatorConnectionKind == 'local'` for local-host analysis; do not infer the host OS from a remote client's OS.
 
@@ -103,23 +103,23 @@ Product events use **schema version 2**, with at most seven events per turn. The
 | `schemaVersion` | Numeric `1` |
 | `kind`, `name` | `operation` aggregate or first-observation `milestone`, and an allowlisted name |
 | `startMs`, `endMs` | First admission and last settlement offsets on the host turn clock; equal for a milestone |
-| `queueMs`, `executionMs` | Cumulative wait for the VS Code sequencer and admitted execution time |
+| `queueMs`, `executionMs` | Cumulative wait for the Klawly sequencer and admitted execution time |
 | `queueBeforeProgressMs`, `executionBeforeProgressMs` | The same intervals clipped at first host progress, or terminal observation when no progress occurs |
 | `count`, `errorCount` | Invocation count and observed thrown/rejected operation count; an RPC returning an unsuccessful value is not necessarily a rejection |
 | `incompleteCount` | Invocations still queued/executing at terminal observation; their durations are partial, not successful completion |
 | `result` | Terminal **turn** outcome, independent of operation rejections |
 
-Preparation includes attachment conversion; command resolution/invocation; agent-mode RPC; permission queue, options RPC, mode RPC and managed-settings retry wait; sandbox queue, RPC and diagnostics; shell queue, file materialization and RPC; MCP queue, listing and enable/disable work; execution admission and the persistence marker; SDK send; and permission, input, elicitation, MCP-auth, exit-plan and unsandboxed-confirmation callbacks. Callback durations include VS Code handling and user waiting, not just CPU execution. Repeated operations aggregate, including retries. Parent operations include their children: **never sum nested operation rows**. No-op queue callbacks can have zero execution time; individual RPC rows distinguish them from actual SDK calls.
+Preparation includes attachment conversion; command resolution/invocation; agent-mode RPC; permission queue, options RPC, mode RPC and managed-settings retry wait; sandbox queue, RPC and diagnostics; shell queue, file materialization and RPC; MCP queue, listing and enable/disable work; execution admission and the persistence marker; SDK send; and permission, input, elicitation, MCP-auth, exit-plan and unsandboxed-confirmation callbacks. Callback durations include Klawly handling and user waiting, not just CPU execution. Repeated operations aggregate, including retries. Parent operations include their children: **never sum nested operation rows**. No-op queue callbacks can have zero execution time; individual RPC rows distinguish them from actual SDK calls.
 
 Milestones include SDK send invocation/return/rejection, first root SDK callback, user-message acknowledgement, assistant-turn start, nonempty text/reasoning, tool start, error and idle, prompt-hook invocation, permission/input/elicitation/ MCP-auth callbacks, first mapped root model-call completion, and existing host progress/substantive-progress observations. SDK callbacks are observed after send invocation and exclude subagent envelopes and cancelled-root events. Permission/input hooks are session callbacks during the active turn, not proof that a human saw or answered a prompt. Milestones remain first-only even if SDK events repeat. A resumed/replaced turn does not inherit an earlier recorder. Zero-message continuations receive a fresh execution recorder through the resume context, covering preparation, execution admission and SDK send/return/rejection milestones just like new sends. The protocol turn ID can remain unchanged across these separately timed executions.
 
-The SDK send promise is an API acknowledgement, **not model-request dispatch or first token**. An assistant-turn-start callback is likewise not a network dispatch timestamp. SDK text/reasoning observations precede VS Code processing and can differ from host progress (for example, provisional output). Host progress is not renderer receipt or paint. Join the existing renderer/UI events for those separately defined measurements; never subtract independent clocks. Native model-call telemetry retains its own model-call-to-turn correlation. Exact transport dispatch, response headers, first protocol chunk and runtime internal preparation remain unknown when the SDK does not expose them.
+The SDK send promise is an API acknowledgement, **not model-request dispatch or first token**. An assistant-turn-start callback is likewise not a network dispatch timestamp. SDK text/reasoning observations precede Klawly processing and can differ from host progress (for example, provisional output). Host progress is not renderer receipt or paint. Join the existing renderer/UI events for those separately defined measurements; never subtract independent clocks. Native model-call telemetry retains its own model-call-to-turn correlation. Exact transport dispatch, response headers, first protocol chunk and runtime internal preparation remain unknown when the SDK does not expose them.
 
 Records are emitted at terminal observation, including errors/cancellation. Pending work is clipped there and late settlements cannot modify exported rows. Crashes, permanent hangs and turns dropped by session disposal can still have no terminal record. These events do not establish an uncensored latency sample.
 
 ### Existing product telemetry and logs
 
-The renderer reports `agentHost.firstResponse` and writes a content-free `[AgentHostFirstResponse]` JSON record to its existing log. Schema version 1 contains `requestId`, `provider`, `connectionKind`, optional backend `agentSessionId` / `chatId`, `sessionTurnKind` (`first`, `later`, or `unknown`), `outcome` (`success`, `cancelled`, `error`, or `notDispatched`), `hasResponseText`, optional `firstResponseTextMs`, and `totalElapsedMs`. The log additionally retains `sessionId`, identical to `agentSessionId`, for compatibility, and includes `turnId`, identical to `requestId`, for AHP joins. The telemetry property uses `agentSessionId` to avoid colliding with the common VS Code `sessionID` property. Durations use a local monotonic clock starting at agent invocation, before trust/authentication/session preparation. `invocationKind` is `newTurn`, `existingTurn`, `subagent`, or `unknown` before hydration. Exclude `existingTurn` and `subagent` records from first-response comparisons rather than treating them as successful turns without an answer. The endpoint is the first nonwhitespace live root markdown emission, including final-only responses, not physical submit, paint, or a semantic guarantee of an answer. Reasoning, tool output, restored history and server-initiated observation do not start this metric. Existing first-progress measurements are unchanged.
+The renderer reports `agentHost.firstResponse` and writes a content-free `[AgentHostFirstResponse]` JSON record to its existing log. Schema version 1 contains `requestId`, `provider`, `connectionKind`, optional backend `agentSessionId` / `chatId`, `sessionTurnKind` (`first`, `later`, or `unknown`), `outcome` (`success`, `cancelled`, `error`, or `notDispatched`), `hasResponseText`, optional `firstResponseTextMs`, and `totalElapsedMs`. The log additionally retains `sessionId`, identical to `agentSessionId`, for compatibility, and includes `turnId`, identical to `requestId`, for AHP joins. The telemetry property uses `agentSessionId` to avoid colliding with the common Klawly `sessionID` property. Durations use a local monotonic clock starting at agent invocation, before trust/authentication/session preparation. `invocationKind` is `newTurn`, `existingTurn`, `subagent`, or `unknown` before hydration. Exclude `existingTurn` and `subagent` records from first-response comparisons rather than treating them as successful turns without an answer. The endpoint is the first nonwhitespace live root markdown emission, including final-only responses, not physical submit, paint, or a semantic guarantee of an answer. Reasoning, tool output, restored history and server-initiated observation do not start this metric. Existing first-progress measurements are unchanged.
 
 `connectionKind` reuses `AgentHostClientConnectionKind`, assigned by the owning client transport/integration and exposed through `IAgentConnection`. Values are `local`, `direct_websocket`, `dev_tunnel`, `dev_container`, `ssh`, `wsl`, `remote_extension_host`, `web_pub_sub`, `mission_control`, and `unknown`. The invocation captures this classification once, independently of provider names, host identities, or the configured-host registry, so it survives disconnection. Missing or unrecognized classifications become `unknown`; older diagnostic payloads can omit the field. The log and OTel diagnostic carry the same value, with no environment IDs, addresses, or credentials.
 
@@ -139,7 +139,7 @@ The usage sidecar diagnostics are separate from provider OTel and product teleme
 
 ## Sandbox Connection Product Scorecard
 
-The renderer's [cloud sandbox telemetry owner](../../workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxTelemetry.ts) uses ordinary VS Code product telemetry, not provider OTel. Existing telemetry-level and administrator controls apply; no additional setting or exporter is needed.
+The renderer's [cloud sandbox telemetry owner](../../workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxTelemetry.ts) uses ordinary Klawly product telemetry, not provider OTel. Existing telemetry-level and administrator controls apply; no additional setting or exporter is needed.
 
 - `cloudSandboxConnectionOutcome`: one `connect` or `recover` outcome (`success`, `failure`, `cancelled`) and `durationMs`. Public connects start before credential minting, waking and sealed-token waits; direct factory dials start at connection setup. `stage` is the last observed credentials, connection, relay, protocol, authentication or restoration stage. Readiness means authenticated AHP initialization/state restoration, not WebSocket open. Reuse is excluded. Retries, backoff and outer-client replacement stay in the same operation; an initial handshake retry is not a healthy connection drop.
 - `cloudSandboxProvisioningOutcome`: one task/VM creation outcome (`success`, `failure`, `cancelled`) and client-observed `durationMs`, before connection tracking starts. Includes account resolution, HTTP, response validation and failure cleanup. Success means a usable environment/session binding was returned, not that AHP or the repository is ready. This event does not contain a connection identifier; analyze provisioning separately rather than joining individual attempts.
@@ -177,7 +177,7 @@ Agent Host owns transport routing, optional interception and persistence, resour
 - **Claude:** the Claude runtime's native OTel implementation and launch environment.
 - **Codex:** the Codex app-server's native OTel implementation and launch overrides.
 
-Do not copy provider-native span, event, metric, or environment-variable catalogs into this document. Keep this reference focused on the VS Code-owned integration boundary. The extension-host Copilot CLI bridge under `extensions/copilot/src/extension/chatSessions/copilotcli/` is a deprecated compatibility path and is not the Agent Host architecture.
+Do not copy provider-native span, event, metric, or environment-variable catalogs into this document. Keep this reference focused on the Klawly-owned integration boundary. The extension-host Copilot CLI bridge under `extensions/copilot/src/extension/chatSessions/copilotcli/` is a deprecated compatibility path and is not the Agent Host architecture.
 
 ## Two Modes
 
@@ -242,7 +242,7 @@ Agent Host is one logical system with several native OTel producers. Agent Host-
 | Claude runtime | `claude-code` |
 | Codex app-server | `codex-app-server` |
 
-Unrelated inherited resource attributes are preserved. A conflicting inherited `service.namespace` is replaced only inside Agent Host-owned telemetry and provider launch environments; no global VS Code namespace is set. Provider launch environments do not inherit a host `OTEL_SERVICE_NAME`.
+Unrelated inherited resource attributes are preserved. A conflicting inherited `service.namespace` is replaced only inside Agent Host-owned telemetry and provider launch environments; no global Klawly namespace is set. Provider launch environments do not inherit a host `OTEL_SERVICE_NAME`.
 
 Claude honors these standard resource variables for traces, logs, and metrics while retaining its native `claude-code` service name. The current Codex app-server hardcodes `codex-app-server` and does not consume standard resource overrides; Agent Host preserves that native name and adds the shared namespace to intercepted traces. Direct Codex logs/metrics cannot carry the namespace until Codex adds standard resource-attribute support.
 
@@ -254,12 +254,12 @@ Sessions created by Run Multiple Agents add bounded correlation attributes to th
 
 | Attribute | Description |
 |---|---|
-| `vscode.agent_host.comparison.id` | Hashed random comparison identifier, matching the correlation key in the VS Code comparison telemetry events. |
+| `vscode.agent_host.comparison.id` | Hashed random comparison identifier, matching the correlation key in the Klawly comparison telemetry events. |
 | `vscode.agent_host.comparison.role` | `attempt`, `judge`, or `synthesis`. |
 | `vscode.agent_host.comparison.attempt_index` | Zero-based attempt ordinal; present only for attempts. |
 | `vscode.agent_host.comparison.attempt_count` | Number of implementation attempts in the comparison. |
 
-These attributes contain no prompt, title, path, model label, or tool content and do not require content capture. They are emitted only when Agent Host OTel is already enabled; comparisons do not enable or reconfigure OTel. Token consumption comes from the provider-native chat spans in the same trace (`gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens`) rather than VS Code telemetry.
+These attributes contain no prompt, title, path, model label, or tool content and do not require content capture. They are emitted only when Agent Host OTel is already enabled; comparisons do not enable or reconfigure OTel. Token consumption comes from the provider-native chat spans in the same trace (`gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens`) rather than Klawly telemetry.
 
 ## Session Title Metadata
 
@@ -274,7 +274,7 @@ When content capture is enabled, the agent host emits a zero-duration `vscode.ag
 Title text is user-derived content, so these spans are emitted only when `chat.agentHost.otel.captureContent` is enabled. Host-produced title spans copy `OTEL_SERVICE_NAME` and `OTEL_RESOURCE_ATTRIBUTES` so collectors group them with the SDK telemetry. They are persisted in DB mode and use the configured OTLP, file, or console forwarder. Synthetic OTLP forwarding currently uses OTLP/HTTP JSON; when `http/protobuf` or gRPC is configured, title spans remain available in DB mode but are not sent to that external endpoint.
 
 
-## VS Code Settings
+## Klawly Settings
 
 Open **Settings** (`Ctrl+,`) and search for `agentHost otel`:
 
@@ -307,9 +307,9 @@ The workbench-side starter translates the settings above into the following env 
 | `OTEL_RESOURCE_ATTRIBUTES` | (inherited or enterprise policy) | Extra resource attributes (`k=v,k2=v2`); set from the managed `telemetry.resourceAttributes`. |
 | `OTEL_EXPORTER_OTLP_HEADERS` | (inherited) | Auth headers (for example, `Authorization=<value>`). **Not** delivered from managed settings — env delivery would leak the secret to tool subprocesses; managed headers apply to the Copilot Chat extension only. |
 
-Inside Agent Host, OTel activates when `COPILOT_OTEL_ENABLED` or `COPILOT_OTEL_DB_SPAN_EXPORTER_ENABLED` is truthy, or when an OTLP endpoint or file-exporter path is non-empty. This allows inherited environment configuration to enable OTel without a local VS Code setting.
+Inside Agent Host, OTel activates when `COPILOT_OTEL_ENABLED` or `COPILOT_OTEL_DB_SPAN_EXPORTER_ENABLED` is truthy, or when an OTLP endpoint or file-exporter path is non-empty. This allows inherited environment configuration to enable OTel without a local Klawly setting.
 
-> **Activation timing.** Env vars are bound at agent host **spawn time**. When settled enterprise OTel policy changes after startup, VS Code automatically respawns the local agent host with the new policy. Temporary policy-refresh values and windows still resolving their initial account do not restart an existing host. Changes to personal settings still require a manual agent host or window restart.
+> **Activation timing.** Env vars are bound at agent host **spawn time**. When settled enterprise OTel policy changes after startup, Klawly automatically respawns the local agent host with the new policy. Temporary policy-refresh values and windows still resolving their initial account do not restart an existing host. Changes to personal settings still require a manual agent host or window restart.
 
 ## Local SQLite Span Store
 

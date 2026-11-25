@@ -408,7 +408,7 @@ suite('BrowserTunnelAgentHostService', () => {
 			resolveSelection,
 			{} as IRemoteAgentHostLocationPreferenceService,
 			{} as IDialogService,
-			'VS Code',
+			'Klawly',
 			{ token: 'token', provider: 'github' },
 			tunnel,
 			true,
@@ -416,7 +416,7 @@ suite('BrowserTunnelAgentHostService', () => {
 
 		assert.deepStrictEqual({ result, calls, completeCalls: connector.completeCalls, cancelCalls: connector.cancelCalls }, {
 			result: connection,
-			calls: [{ productName: 'VS Code', userInitiated: true }],
+			calls: [{ productName: 'Klawly', userInitiated: true }],
 			completeCalls: [{ selectionId: 'selection-id', selection: { instanceId: 'editor-id' } }],
 			cancelCalls: [],
 		});
@@ -441,7 +441,7 @@ suite('BrowserTunnelAgentHostService', () => {
 			async () => undefined,
 			{} as IRemoteAgentHostLocationPreferenceService,
 			{} as IDialogService,
-			'VS Code',
+			'Klawly',
 			{ token: 'token', provider: 'github' },
 			tunnel,
 			true,

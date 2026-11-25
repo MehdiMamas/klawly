@@ -11,7 +11,7 @@ suite('Agent session initiator metadata', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('retains exact creating-client identity and other metadata', () => {
-		const initiator = { name: 'vscode-agents-window', title: 'VS Code Agents Window', version: '1.0' };
+		const initiator = { name: 'vscode-agents-window', title: 'Klawly Agents Window', version: '1.0' };
 		const meta = withSessionInitiator({ other: true }, initiator);
 		assert.deepStrictEqual({
 			read: readSessionInitiator({ _meta: meta }),

@@ -1697,9 +1697,9 @@ suite('AgentHostChatContribution', () => {
 		};
 		const cases: { name: string; meta?: Record<string, unknown>; expected: IChatResponseErrorDetails }[] = [
 			{ name: 'Copilot D error detail reaches the live Chat result without enabling command links', meta: copilotMeta, expected: copilotError },
-			{ name: 'VS Code forwarded errors retain their existing live presentation', meta: vscodeMeta, expected: vscodeError },
-			{ name: 'valid VS Code error detail wins when both styles are present', meta: { ...copilotMeta, ...vscodeMeta }, expected: vscodeError },
-			{ name: 'malformed VS Code error detail falls back to Copilot D', meta: { ...copilotMeta, chatError: { fetchError: {} } }, expected: copilotError },
+			{ name: 'Klawly forwarded errors retain their existing live presentation', meta: vscodeMeta, expected: vscodeError },
+			{ name: 'valid Klawly error detail wins when both styles are present', meta: { ...copilotMeta, ...vscodeMeta }, expected: vscodeError },
+			{ name: 'malformed Klawly error detail falls back to Copilot D', meta: { ...copilotMeta, chatError: { fetchError: {} } }, expected: copilotError },
 			{ name: 'missing optional metadata keeps the ordinary error fallback', expected: { message: 'Error: (rate_limit) Slow down' } },
 		];
 
@@ -1725,11 +1725,11 @@ suite('AgentHostChatContribution', () => {
 			});
 		}
 
-		for (const style of ['VS Code', 'Copilot D', 'Copilot D PTY'] as const) {
+		for (const style of ['Klawly', 'Copilot D', 'Copilot D PTY'] as const) {
 			test(`${style} tool data reaches the live invocation without mixing output with arguments`, async () => {
 				const { startRequest, fire } = await openWireSession();
 				const { turnId, progress, finish } = await startRequest();
-				const meta = style === 'VS Code' ? { toolKind: 'terminal', language: 'shellscript' } : undefined;
+				const meta = style === 'Klawly' ? { toolKind: 'terminal', language: 'shellscript' } : undefined;
 				const input = '{"command":"echo output"}';
 				fire({ type: ActionType.ChatToolCallStart, turnId, toolCallId: 'tool-1', toolName: 'shell', displayName: 'Shell', _meta: meta });
 				fire({ type: ActionType.ChatToolCallReady, turnId, toolCallId: 'tool-1', invocationMessage: 'Running shell', toolInput: input, confirmed: ToolCallConfirmationReason.NotNeeded, _meta: meta });
@@ -1753,7 +1753,7 @@ suite('AgentHostChatContribution', () => {
 				await finish();
 				assert.deepStrictEqual(observed, {
 					kind: style === 'Copilot D' ? 'simpleToolInvocation' : 'terminal',
-					output: style === 'VS Code' ? undefined : 'first second',
+					output: style === 'Klawly' ? undefined : 'first second',
 					input: style === 'Copilot D' ? input : undefined,
 					terminalUri: undefined,
 				});
@@ -1868,7 +1868,7 @@ suite('AgentHostChatContribution', () => {
 				});
 			});
 		}
-		test('explicit VS Code search metadata keeps its messages even when the tool has a Copilot app alias', async () => {
+		test('explicit Klawly search metadata keeps its messages even when the tool has a Copilot app alias', async () => {
 			const { startRequest, fire } = await openWireSession();
 			const { turnId, progress, finish } = await startRequest();
 			const meta = { toolKind: 'search' };
@@ -1921,9 +1921,9 @@ suite('AgentHostChatContribution', () => {
 		});
 
 		const usageCases = [
-			{ name: 'VS Code zero turn cost', meta: { cost: 0 }, credits: 0, sessionCredits: undefined, latest: undefined, attribution: undefined },
+			{ name: 'Klawly zero turn cost', meta: { cost: 0 }, credits: 0, sessionCredits: undefined, latest: undefined, attribution: undefined },
 			{
-				name: 'VS Code credits, quota and context attribution', meta: {
+				name: 'Klawly credits, quota and context attribution', meta: {
 					copilotUsage: { totalNanoAiu: 2_000_000_000, sessionTotalNanoAiu: 4_000_000_000 },
 					contextAttribution: { totalTokens: 100, entries: [{ kind: 'system', id: 'system', label: 'System prompt', tokens: 20 }] },
 					quotaSnapshots: { premium_models: { entitlementRequests: 100, usedRequests: 25, remainingPercentage: 75 } },
@@ -1933,7 +1933,7 @@ suite('AgentHostChatContribution', () => {
 				]
 			},
 			{ name: 'Copilot D latest-call diagnostics', meta: { 'copilot.usageDetail': { cost: 0.5, duration: 12 } }, credits: undefined, sessionCredits: undefined, latest: { cost: 0.5, duration: 12 }, attribution: undefined },
-			{ name: 'mixed usage preserves VS Code turn cost', meta: { cost: 0, 'copilot.usageDetail': { cost: 0.5, duration: 12 } }, credits: 0, sessionCredits: undefined, latest: undefined, attribution: undefined },
+			{ name: 'mixed usage preserves Klawly turn cost', meta: { cost: 0, 'copilot.usageDetail': { cost: 0.5, duration: 12 } }, credits: 0, sessionCredits: undefined, latest: undefined, attribution: undefined },
 		];
 		for (const entry of usageCases) {
 			test(`${entry.name} reaches Chat usage through the live handler`, async () => {
@@ -1990,7 +1990,7 @@ suite('AgentHostChatContribution', () => {
 				[undefined, undefined],
 			]);
 		});
-		test('VS Code context attribution wins over Copilot context during a live turn', async () => {
+		test('Klawly context attribution wins over Copilot context during a live turn', async () => {
 			const { startRequest, fire } = await openWireSession({ session: { _meta: { 'copilot.usageInfo': { currentTokens: 200, tokenLimit: 1_000, messagesLength: 3 } } } });
 			const { turnId, progress, finish } = await startRequest();
 			fire({ type: ActionType.ChatUsage, turnId, usage: { inputTokens: 90, outputTokens: 10, _meta: { contextAttribution: { totalTokens: 90, entries: [{ kind: 'system', id: 'system', label: 'System prompt', tokens: 9 }] } } } });
@@ -2003,7 +2003,7 @@ suite('AgentHostChatContribution', () => {
 				],
 			});
 		});
-		test('VS Code account quotas still reach the entitlement service rather than becoming context usage', async () => {
+		test('Klawly account quotas still reach the entitlement service rather than becoming context usage', async () => {
 			const { startRequest, fire, quotaUpdates } = await openWireSession();
 			const { turnId, finish } = await startRequest();
 			fire({
@@ -2034,7 +2034,7 @@ suite('AgentHostChatContribution', () => {
 				attachments: [{ type: MessageAttachmentKind.Simple, label: '/compact', displayKind: 'command', _meta: commandMeta }],
 			});
 		});
-		test('selection attachments retain native VS Code ranges and add captured Copilot detail on the wire', async () => {
+		test('selection attachments retain native Klawly ranges and add captured Copilot detail on the wire', async () => {
 			const { startRequest, modelService } = await openWireSession();
 			const uri = URI.file('/workspace/file.ts');
 			modelService.setModelContent(uri, 'first\ncaptured\nlast');
@@ -2054,11 +2054,11 @@ suite('AgentHostChatContribution', () => {
 				},
 			}]);
 		});
-		for (const style of ['VS Code', 'Copilot D'] as const) {
+		for (const style of ['Klawly', 'Copilot D'] as const) {
 			test(`${style} restored message and attachments survive edit and resend through the handler`, async () => {
 				const detail = { type: 'github_reference', url: 'https://github.com/o/r/issues/7', number: 7, future: { value: false } };
-				const metadata = style === 'VS Code' ? { 'vscode.chat.requestHiddenFromTranscript': false } : { 'copilot.visibility': 'internal', opaque: 0 };
-				const attachment: MessageAttachment = style === 'VS Code'
+				const metadata = style === 'Klawly' ? { 'vscode.chat.requestHiddenFromTranscript': false } : { 'copilot.visibility': 'internal', opaque: 0 };
+				const attachment: MessageAttachment = style === 'Klawly'
 					? { type: MessageAttachmentKind.Resource, uri: 'file:///workspace/file.ts', label: 'file.ts', displayKind: 'document', _meta: { opaque: false } }
 					: { type: MessageAttachmentKind.Simple, label: 'Issue', _meta: { 'copilot.attachmentDetail': detail, browserView: null } };
 				const { chatSession, startRequest } = await openWireSession({
@@ -2081,10 +2081,10 @@ suite('AgentHostChatContribution', () => {
 					attachmentMetadata: sent.action.message.attachments?.[0]._meta,
 					attachmentUri: sent.action.message.attachments?.[0].type === MessageAttachmentKind.Resource ? sent.action.message.attachments[0].uri : undefined,
 				}, {
-					restored: { text: 'display prompt', hidden: style === 'Copilot D' ? true : undefined, attachmentKind: style === 'VS Code' ? 'file' : 'generic' },
+					restored: { text: 'display prompt', hidden: style === 'Copilot D' ? true : undefined, attachmentKind: style === 'Klawly' ? 'file' : 'generic' },
 					text: 'display prompt edited', metadata: style === 'Copilot D' ? metadata : undefined,
 					attachmentMetadata: attachment._meta,
-					attachmentUri: style === 'VS Code' ? toAgentHostUri(URI.file('/workspace/file.ts'), agentHostAuthority('sandbox.example:443')).toString() : undefined,
+					attachmentUri: style === 'Klawly' ? toAgentHostUri(URI.file('/workspace/file.ts'), agentHostAuthority('sandbox.example:443')).toString() : undefined,
 				});
 			});
 		}
@@ -8945,7 +8945,7 @@ suite('AgentHostChatContribution', () => {
 				markdown: collected.flat().filter(part => part.kind === 'markdownContent'),
 			}, {
 				errorDetails: {
-					message: 'This conversation is in use by another Codex app. Let any running task finish, then quit the app holding it open, such as ChatGPT, or exit the Codex CLI session. Then send your message again in VS Code. Your message has not been sent.',
+					message: 'This conversation is in use by another Codex app. Let any running task finish, then quit the app holding it open, such as ChatGPT, or exit the Codex CLI session. Then send your message again in Klawly. Your message has not been sent.',
 					isExpectedError: true,
 				},
 				markdown: [],

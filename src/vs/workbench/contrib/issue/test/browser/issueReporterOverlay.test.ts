@@ -231,7 +231,7 @@ suite('IssueReporterOverlay', () => {
 		});
 	});
 
-	test('includes standalone extension data in a VS Code issue', () => {
+	test('includes standalone extension data in a Klawly issue', () => {
 		const container = document.createElement('div');
 		const overlay = store.add(new IssueReporterOverlay(
 			{

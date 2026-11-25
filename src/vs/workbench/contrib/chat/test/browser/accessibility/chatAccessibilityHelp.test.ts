@@ -390,7 +390,7 @@ suite('Chat Accessibility Help', () => {
 		});
 	});
 
-	test('describes the VS Code pet context menu', () => {
+	test('describes the Klawly pet context menu', () => {
 		const keybindingService = new MockKeybindingService();
 		const helpText = getAccessibilityHelpText('agentView', keybindingService, true);
 

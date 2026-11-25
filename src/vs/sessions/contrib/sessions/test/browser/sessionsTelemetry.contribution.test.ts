@@ -147,7 +147,7 @@ const session = {
 	sessionType: 'test',
 	harness: 'copilot',
 	environment: 'local',
-	application: constObservable({ id: 'vscode', label: 'VS Code' }),
+	application: constObservable({ id: 'vscode', label: 'Klawly' }),
 	icon: Codicon.vm,
 	createdAt: new Date(),
 	workspace: constObservable(undefined),

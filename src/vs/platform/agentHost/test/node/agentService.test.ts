@@ -6590,7 +6590,7 @@ suite('AgentService (node dispatcher)', () => {
 			const database = new TestSessionDatabase();
 			const localService = disposables.add(createTestAgentService(new NullLogService(), fileService, createSessionDataService(database), { _serviceBrand: undefined } as IProductService, createNoopGitService()));
 			registerTestAgentProvider(localService, copilotAgent);
-			const initiator = { name: 'vscode-agents-window', title: 'VS Code Agents Window' };
+			const initiator = { name: 'vscode-agents-window', title: 'Klawly Agents Window' };
 			const session = await localService.createSession({ _meta: withSessionInitiator(undefined, initiator) });
 			const listed = await localService.listSessions();
 			assert.deepStrictEqual({

@@ -60,7 +60,7 @@ function makeSession(opts: { id?: string; providerId?: string; runsWorktreeCreat
 		sessionType: 'background',
 		harness: 'copilot',
 		environment: 'local',
-		application: constObservable({ id: 'vscode', label: 'VS Code' }),
+		application: constObservable({ id: 'vscode', label: 'Klawly' }),
 		icon: Codicon.copilot,
 		createdAt: new Date(),
 		workspace,

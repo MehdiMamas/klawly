@@ -2447,7 +2447,7 @@ suite('RemoteAgentHostSessionsProvider', () => {
 		assert.deepStrictEqual({ stopsBeforeDeadline, stops }, { stopsBeforeDeadline: 0, stops: 1 });
 	}));
 
-	test('does not remove a mounted worktree when another VS Code session uses the Dev Container', async () => {
+	test('does not remove a mounted worktree when another Klawly session uses the Dev Container', async () => {
 		const handle = '00000000-0000-4000-8000-000000000001';
 		const metadata = { 'vscode.devContainerWorktree': { version: 1, handle } };
 		connection.echoDispatchedActions = true;

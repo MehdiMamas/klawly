@@ -58,7 +58,7 @@ suite('Image generation tool metadata', () => {
 		})), Array.from({ length: 4 }, () => ({ requestedModel: { id: 'image-preview' } })));
 	});
 
-	test('image metadata selects the VS Code convention before tool-name fallbacks', () => {
+	test('image metadata selects the Klawly convention before tool-name fallbacks', () => {
 		const values = [{ requestedModel: { id: 'remote-provider/image:preview' } }, { requestedModel: { id: '' } }];
 		const presentations = values.map(value => readToolCallPresentation({
 			status: ToolCallStatus.Completed,

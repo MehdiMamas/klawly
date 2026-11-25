@@ -122,7 +122,7 @@ function createSession(id: string, opts: {
 		sessionType: 'test',
 		harness: 'copilot',
 		environment: 'local',
-		application: constObservable({ id: 'vscode', label: 'VS Code' }),
+		application: constObservable({ id: 'vscode', label: 'Klawly' }),
 		icon: Codicon.account,
 		createdAt,
 		workspace: observableValue(`workspace-${id}`, opts.workspaceLabel !== undefined ? {

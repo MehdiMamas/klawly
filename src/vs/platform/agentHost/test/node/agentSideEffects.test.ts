@@ -5856,7 +5856,7 @@ suite('AgentSideEffects', () => {
 				kind: 'action', resource: URI.parse(defaultChatUri),
 				action: {
 					type: ActionType.ChatToolCallStart, turnId: 'turn-1',
-					toolCallId: 'tc-stale-ready', toolName: 'vscodeAPI', displayName: 'Get VS Code API References',
+					toolCallId: 'tc-stale-ready', toolName: 'vscodeAPI', displayName: 'Get Klawly API References',
 					contributor: { kind: ToolCallContributorKind.Client, clientId: 'disconnected-client' },
 					_meta: { toolKind: undefined, language: undefined },
 				},
@@ -5865,8 +5865,8 @@ suite('AgentSideEffects', () => {
 				kind: 'pending_confirmation', chat: URI.parse(defaultChatUri),
 				state: {
 					status: ToolCallStatus.PendingConfirmation,
-					toolCallId: 'tc-stale-ready', toolName: 'vscodeAPI', displayName: 'Get VS Code API References',
-					invocationMessage: 'Get VS Code API References', toolInput: '{"query":"test"}',
+					toolCallId: 'tc-stale-ready', toolName: 'vscodeAPI', displayName: 'Get Klawly API References',
+					invocationMessage: 'Get Klawly API References', toolInput: '{"query":"test"}',
 					confirmationTitle: 'Allow tool call?', edits: undefined,
 				},
 				permissionKind: 'custom-tool', permissionPath: undefined,
@@ -5876,7 +5876,7 @@ suite('AgentSideEffects', () => {
 				type: ActionType.ChatToolCallReady,
 				turnId: 'turn-1',
 				toolCallId: 'tc-stale-ready',
-				invocationMessage: 'Get VS Code API References',
+				invocationMessage: 'Get Klawly API References',
 				confirmed: ToolCallConfirmationReason.NotNeeded,
 			});
 			stateManager.dispatchServerAction(defaultChatUri, {
@@ -5885,7 +5885,7 @@ suite('AgentSideEffects', () => {
 				toolCallId: 'tc-stale-ready',
 				result: {
 					success: false,
-					pastTenseMessage: 'Get VS Code API References failed',
+					pastTenseMessage: 'Get Klawly API References failed',
 					error: { message: 'Client disconnected' },
 				},
 			});

@@ -11,7 +11,7 @@ import { getVSCodeSandboxReadRoots } from '../../common/vscodeSandboxPaths.js';
 import { AgentSandboxEnabledValue, type IAgentSandboxUserConfiguredPaths } from '../../../sandbox/common/settings.js';
 import { buildSandboxConfigForSdk, type SandboxConfig } from '../../node/copilot/sandboxConfigForSdk.js';
 
-suite('VS Code sandbox read roots', () => {
+suite('Klawly sandbox read roots', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('grants the local harness its terminal output root', () => {

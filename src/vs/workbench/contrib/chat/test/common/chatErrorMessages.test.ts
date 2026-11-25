@@ -29,7 +29,7 @@ suite('ChatErrorMessages', () => {
 
 	suite('getChatErrorDetailsFromMeta', () => {
 
-		test('renders Copilot error detail when VS Code metadata is invalid without allowing command links', () => {
+		test('renders Copilot error detail when Klawly metadata is invalid without allowing command links', () => {
 			const copilot = { errorCode: 'limited', statusCode: 429, url: 'command:unsafe', providerCallId: 'request' };
 			const error: ErrorInfo = { errorType: 'rate_limit', message: 'Slow down', _meta: { 'copilot.errorDetail': copilot } };
 			const expected = {
@@ -42,7 +42,7 @@ suite('ChatErrorMessages', () => {
 			], [expected, expected, expected]);
 		});
 
-		test('valid VS Code error metadata keeps its existing formatting when both styles are present', () => {
+		test('valid Klawly error metadata keeps its existing formatting when both styles are present', () => {
 			const forwarded = {
 				fetchError: { type: ChatFetchResponseType.RateLimited, retryAfter: 60 },
 				copilotPlan: 'free',

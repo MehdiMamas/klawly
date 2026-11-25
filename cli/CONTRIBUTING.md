@@ -37,7 +37,7 @@ agent host supervisor.
 Management requests and relay WebSocket handshakes carry the
 `X-Tunnels-VSCode-Session-Id`, `X-Tunnels-VSCode-Client-Operation-Id`, and
 `X-Tunnels-VSCode-Client-Request-Id` headers. Each request has a fresh request ID.
-VS Code passes its telemetry session and operation IDs through
+Klawly passes its telemetry session and operation IDs through
 `VSCODE_TUNNEL_SESSION_ID` and `VSCODE_TUNNEL_OPERATION_ID` when launching the CLI.
 These IDs are preserved verbatim; telemetry session IDs are not necessarily UUIDs.
 Standalone commands use a process-local session ID and a new operation ID for each

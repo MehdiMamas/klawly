@@ -20,19 +20,19 @@ suite('SessionsListFilters', () => {
 		return store.add(new SessionsListFilters(storage, store.add(new NullLogService())));
 	}
 
-	test('always offers the three harnesses, Local and Cloud, and their VS Code application choices', () => {
+	test('always offers the three harnesses, Local and Cloud, and their Klawly application choices', () => {
 		assert.deepStrictEqual(getSessionFilterOptions([], []), [
 			{ filter: { kind: 'harness', id: 'copilot' }, label: 'Copilot', group: '1_harnesses' },
 			{ filter: { kind: 'harness', id: 'claude' }, label: 'Claude', group: '1_harnesses' },
 			{ filter: { kind: 'harness', id: 'codex' }, label: 'Codex', group: '1_harnesses' },
 			{ filter: { kind: 'environment', id: 'local' }, label: 'Local', group: '2_environments' },
 			{ filter: { kind: 'environment', id: 'cloud' }, label: 'Cloud', group: '2_environments' },
-			{ filter: { kind: 'application', environment: 'local', id: 'vscode' }, label: 'VS Code (Local)', group: '3_applications_000000' },
-			{ filter: { kind: 'application', environment: 'cloud', id: 'vscode' }, label: 'VS Code (Cloud)', group: '3_applications_000001' },
+			{ filter: { kind: 'application', environment: 'local', id: 'vscode' }, label: 'Klawly (Local)', group: '3_applications_000000' },
+			{ filter: { kind: 'application', environment: 'cloud', id: 'vscode' }, label: 'Klawly (Cloud)', group: '3_applications_000001' },
 		]);
 	});
 
-	test('offers VS Code for connected hosts without sessions and for disconnected hosts with cached applications', () => {
+	test('offers Klawly for connected hosts without sessions and for disconnected hosts with cached applications', () => {
 		const disconnected = observableValue('disconnected', false);
 		const sessions = [
 			buildTestSession({ id: 'cloud-custom', title: 'Cloud Custom', environment: 'cloud', application: 'custom_cloud_APP' }).session,
@@ -48,7 +48,7 @@ suite('SessionsListFilters', () => {
 			applications: options.filter(option => option.filter.kind === 'application').map(option => option.label),
 		}, {
 			environments: ['Local', 'Cloud', 'Connected Host'],
-			applications: ['VS Code (Local)', 'Custom Cloud App (Cloud)', 'VS Code (Cloud)', 'Copilot CLI (Cached Host)', 'VS Code (Cached Host)', 'VS Code (Connected Host)'],
+			applications: ['Klawly (Local)', 'Custom Cloud App (Cloud)', 'Klawly (Cloud)', 'Copilot CLI (Cached Host)', 'Klawly (Cached Host)', 'Klawly (Connected Host)'],
 		});
 	});
 
@@ -82,7 +82,7 @@ suite('SessionsListFilters', () => {
 	});
 
 	for (const environment of ['local', 'remote-id', 'agenthost-build-server:8080']) {
-		test(`defaults ${environment} applications to VS Code and preserves explicit choices through reload and reset`, () => {
+		test(`defaults ${environment} applications to Klawly and preserves explicit choices through reload and reset`, () => {
 			const storage = store.add(new InMemoryStorageService());
 			const filters = createFilters(storage);
 			const sessions = ['vscode', 'vscode-editor-window', 'vscode-agents-window', 'github/cli', 'github/autopilot', 'claude', 'codex', 'slack', 'teams', 'third-party'].map(application =>
@@ -140,10 +140,10 @@ suite('SessionsListFilters', () => {
 		remote.application.set(getSessionApplication('github/cli'), undefined);
 		catalog.set([local.session], undefined);
 		assert.deepStrictEqual(snapshots, [
-			['2_environments: Local', '2_environments: Cloud', '2_environments: Workstation', '3_applications_000000: VS Code (Local)', '3_applications_000001: VS Code (Cloud)', '3_applications_000002: VS Code (Workstation)'],
-			['2_environments: Local', '2_environments: Cloud', '3_applications_000000: VS Code (Local)', '3_applications_000001: VS Code (Cloud)', '3_applications_000002: VS Code (Workstation)'],
-			['2_environments: Local', '2_environments: Cloud', '3_applications_000000: VS Code (Local)', '3_applications_000001: VS Code (Cloud)', '3_applications_000002: Copilot CLI (Workstation)', '3_applications_000002: VS Code (Workstation)'],
-			['2_environments: Local', '2_environments: Cloud', '3_applications_000000: VS Code (Local)', '3_applications_000001: VS Code (Cloud)'],
+			['2_environments: Local', '2_environments: Cloud', '2_environments: Workstation', '3_applications_000000: Klawly (Local)', '3_applications_000001: Klawly (Cloud)', '3_applications_000002: Klawly (Workstation)'],
+			['2_environments: Local', '2_environments: Cloud', '3_applications_000000: Klawly (Local)', '3_applications_000001: Klawly (Cloud)', '3_applications_000002: Klawly (Workstation)'],
+			['2_environments: Local', '2_environments: Cloud', '3_applications_000000: Klawly (Local)', '3_applications_000001: Klawly (Cloud)', '3_applications_000002: Copilot CLI (Workstation)', '3_applications_000002: Klawly (Workstation)'],
+			['2_environments: Local', '2_environments: Cloud', '3_applications_000000: Klawly (Local)', '3_applications_000001: Klawly (Cloud)'],
 		]);
 	});
 
@@ -167,7 +167,7 @@ suite('SessionsListFilters', () => {
 			visible: restored.matches(session),
 			localChoice: restored.isExcluded({ kind: 'application', environment: 'local', id: 'github/cli' }),
 		}, {
-			absentApplications: ['VS Code (Local)', 'VS Code (Cloud)', 'VS Code (Old Name)'],
+			absentApplications: ['Klawly (Local)', 'Klawly (Cloud)', 'Klawly (Old Name)'],
 			label: 'Copilot CLI (New Name)',
 			excluded: true,
 			visible: false,
@@ -189,9 +189,9 @@ suite('SessionsListFilters', () => {
 			getSessionApplication('third-party-client', 'Third Party'),
 			getSessionApplication('custom_client', 'Custom Client Brand'),
 		], [
-			{ id: 'vscode', label: 'VS Code' },
-			{ id: 'vscode', label: 'VS Code' },
-			{ id: 'vscode', label: 'VS Code' },
+			{ id: 'vscode', label: 'Klawly' },
+			{ id: 'vscode', label: 'Klawly' },
+			{ id: 'vscode', label: 'Klawly' },
 			{ id: 'github/cli', label: 'Copilot CLI' },
 			{ id: 'github/autopilot', label: 'Copilot App' },
 			{ id: 'issues_agent_assignment', label: 'Issues Assignment' },

@@ -1,6 +1,6 @@
 # build/agent-sdk
 
-Per-platform agent SDK production. Each VS Code build (`darwin-arm64`, `linux-x64`, Alpine REH, etc.) uploads its own platform's SDK tarballs to `main.vscode-cdn.net` and stamps `agentSdks` into the shipped `product.json` with a `{version, urlTemplate}` per SDK. Every platform job emits the same `urlTemplate` per SDK — the runtime substitutes `{sdkTarget}` per launch via `resolveSdkTarget()`, which is what lets macOS Universal bundles share one `product.json` across arm64 + x64.
+Per-platform agent SDK production. Each Klawly build (`darwin-arm64`, `linux-x64`, Alpine REH, etc.) uploads its own platform's SDK tarballs to `main.vscode-cdn.net` and stamps `agentSdks` into the shipped `product.json` with a `{version, urlTemplate}` per SDK. Every platform job emits the same `urlTemplate` per SDK — the runtime substitutes `{sdkTarget}` per launch via `resolveSdkTarget()`, which is what lets macOS Universal bundles share one `product.json` across arm64 + x64.
 
 The runtime side (`src/vs/platform/agentHost/`) downloads and caches the SDK tarball at first use. See `IAgentSdkProductConfig` in `src/vs/base/common/product.ts` for the contract.
 
@@ -36,7 +36,7 @@ Local `gulp vscode-darwin-arm64` invocations don't set `AGENT_SDK_RESULTS_FILE` 
 
 ## Why two steps, not inline-in-gulp
 
-The agent SDK work is a distinct concern from the VS Code packaging gulp graph. As its own pipeline step:
+The agent SDK work is a distinct concern from the Klawly packaging gulp graph. As its own pipeline step:
 
 - Visible in the build log — operators see a discrete "Agent SDK: build
   + upload" step they can click into instead of grepping inside "Build client" output.
@@ -58,7 +58,7 @@ The agent SDK work is a distinct concern from the VS Code packaging gulp graph. 
 
 npm 7+ installs `peerDependencies` automatically, so claude's lockfile carries 100 packages the agent host never loads: `@modelcontextprotocol/sdk`, `zod`, `ajv` and their transitive graph. The SDK inlines all of that into `sdk.mjs` at publish time. `sdk.mjs` statically imports node builtins and nothing else, and the one external module it resolves at runtime is its own native binary package.
 
-On the VS Code side, `@modelcontextprotocol/sdk` is only ever `import type`, so TypeScript erases it. `zod` is not: `claudeJsonSchemaToZod.ts` imports `z` at runtime to build the raw shapes it hands to `sdk.tool()`. That zod is VS Code's own dependency (root `package.json`, shipped in the product), and the objects flow *into* the SDK. Nothing resolves zod out of the downloaded tree. That is the invariant `--omit=peer` needs, and it is weaker than "unused".
+On the Klawly side, `@modelcontextprotocol/sdk` is only ever `import type`, so TypeScript erases it. `zod` is not: `claudeJsonSchemaToZod.ts` imports `z` at runtime to build the raw shapes it hands to `sdk.tool()`. That zod is Klawly's own dependency (root `package.json`, shipped in the product), and the objects flow *into* the SDK. Nothing resolves zod out of the downloaded tree. That is the invariant `--omit=peer` needs, and it is weaker than "unused".
 
 With the peers omitted, a claude tarball is exactly two packages, `@anthropic-ai/claude-agent-sdk` and the one `claude-agent-sdk-<target>` binary package, both pinned to the SDK version.
 

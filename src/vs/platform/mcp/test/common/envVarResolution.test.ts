@@ -177,7 +177,7 @@ suite('MCP - envVarResolution', () => {
 		].map(input => [input, input] as const), { VALUE: 'resolved' });
 	});
 
-	test('VS Code variables are not environment-variable references', () => {
+	test('Klawly variables are not environment-variable references', () => {
 		expectAll([
 			['${env:X}', '${env:X}'],
 			['${input:x}', '${input:x}'],

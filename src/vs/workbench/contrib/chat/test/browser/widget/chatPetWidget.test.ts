@@ -1357,7 +1357,7 @@ suite('ChatPetWidget', () => {
 		assert.strictEqual(CHAT_PET_CONFIRMATION_ATTENTION_DURATION, 2_000);
 	});
 
-	test('shows the window pet only in the active VS Code window and pads every visible chat list', () => {
+	test('shows the window pet only in the active Klawly window and pads every visible chat list', () => {
 		assert.deepStrictEqual({
 			visible: [
 				isChatPetVisible(false, false),
@@ -1377,7 +1377,7 @@ suite('ChatPetWidget', () => {
 		});
 	});
 
-	test('tracks only the active VS Code renderer window', () => {
+	test('tracks only the active Klawly renderer window', () => {
 		assert.deepStrictEqual({
 			windowActive: [
 				isChatPetWindowActive(1, 1),

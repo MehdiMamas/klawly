@@ -67,7 +67,7 @@ suite('MCP - expandEnvironmentVariablesInLaunch', () => {
 		});
 	});
 
-	test('stdio: leaves bare references and VS Code variables with an argument literal', () => {
+	test('stdio: leaves bare references and Klawly variables with an argument literal', () => {
 		assert.deepStrictEqual(expandStdio(stdio({
 			args: ['$API_KEY', 'echo \'$HOME\'', '$5.00', '${/}', '${env:API_KEY}', '${input:key}'],
 		}), context({ API_KEY: 'secret', HOME: '/home/user' })).args, [

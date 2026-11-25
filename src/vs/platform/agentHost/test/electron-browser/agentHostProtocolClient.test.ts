@@ -2647,7 +2647,7 @@ suite('AgentHostProtocolClient', () => {
 		}
 	});
 
-	test('importSession sends the VS Code extension request without a turn', async () => {
+	test('importSession sends the Klawly extension request without a turn', async () => {
 		const { client, transport } = createClient();
 		const result = client.importSession(URI.parse('copilotcli:/session-1'));
 		assert.deepStrictEqual(transport.sentMessages, [{
@@ -2666,7 +2666,7 @@ suite('AgentHostProtocolClient', () => {
 		await assertRemoteProtocolError(result, error);
 	});
 
-	test('removeSessionArtifact sends the VS Code extension request', async () => {
+	test('removeSessionArtifact sends the Klawly extension request', async () => {
 		const { client, transport } = createClient();
 		const session = URI.parse('copilotcli:/session-1');
 		const resultPromise = client.removeSessionArtifact(session, 'artifact-1');

@@ -132,7 +132,7 @@ suite('SessionBrowsersControl', () => {
 
 	test('publishes browser entries with a fallback label', () => {
 		const cases: IControlSpec[] = [
-			{ browsers: [{ title: 'Visual Studio Code' }] },
+			{ browsers: [{ title: 'Klawly' }] },
 			{ browsers: [{}] },
 			{ browsers: [{ title: 'Docs' }, { title: 'Preview' }] },
 		];
@@ -142,7 +142,7 @@ suite('SessionBrowsersControl', () => {
 			disabled: sections(createControl({ browsers: [{ title: 'Hidden browser' }], enabled: false }, store).control),
 		}, {
 			enabled: [
-				[{ title: 'Browsers', entries: [{ label: 'Visual Studio Code', icon: 'globe' }] }],
+				[{ title: 'Browsers', entries: [{ label: 'Klawly', icon: 'globe' }] }],
 				[{ title: 'Browsers', entries: [{ label: 'Browser', icon: 'globe' }] }],
 				[{ title: 'Browsers', entries: [{ label: 'Preview', icon: 'globe' }, { label: 'Docs', icon: 'globe' }] }],
 			],

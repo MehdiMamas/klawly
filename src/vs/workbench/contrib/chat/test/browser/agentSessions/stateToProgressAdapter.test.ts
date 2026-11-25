@@ -204,7 +204,7 @@ suite('stateToProgressAdapter', () => {
 		});
 	});
 
-	test('Copilot attachment details survive history alongside VS Code metadata', () => {
+	test('Copilot attachment details survive history alongside Klawly metadata', () => {
 		const detail = { type: 'selection', text: 'captured text', filePath: '/remote/file.ts', future: { value: true } };
 		const metadata = { 'copilot.attachmentDetail': detail, browserView: null };
 		const turn = createTurn({
@@ -3645,13 +3645,13 @@ suite('stateToProgressAdapter', () => {
 				confirmed: ToolCallConfirmationReason.NotNeeded,
 				success: true,
 				pastTenseMessage: 'Read README',
-				content: [{ type: ToolResultContentType.Text, text: '# VS Code' }],
+				content: [{ type: ToolResultContentType.Text, text: '# Klawly' }],
 			});
 
 			const details = IChatToolInvocation.resultDetails(invocation);
 			assertInputOutputDetails(details);
 			assert.strictEqual(details.input, '{"path":"README.md"}');
-			assert.deepStrictEqual(details.output, [{ type: 'embed', value: '# VS Code', isText: true, mimeType: 'text/plain' }]);
+			assert.deepStrictEqual(details.output, [{ type: 'embed', value: '# Klawly', isText: true, mimeType: 'text/plain' }]);
 			assert.strictEqual(details.isError, false);
 		});
 

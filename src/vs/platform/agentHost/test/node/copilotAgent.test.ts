@@ -2500,7 +2500,7 @@ suite('CopilotAgent', () => {
 		}
 	});
 
-	test('promotes the VS Code assignment context from root config to telemetry, sticky across a wipe', async () => {
+	test('promotes the Klawly assignment context from root config to telemetry, sticky across a wipe', async () => {
 		const client = new TestCopilotClient([]);
 		const telemetryService = new class extends RecordingTelemetryService {
 			readonly experimentPropertyUpdates: Array<{ name: string; value: string }> = [];
@@ -15121,7 +15121,7 @@ suite('CopilotAgent', () => {
 			}
 		});
 
-		test('materialization passes VS Code-specific system message to the SDK', async () => {
+		test('materialization passes Klawly-specific system message to the SDK', async () => {
 			const sessionDataService = disposables.add(new TestSessionDataService());
 			const client = new TestCopilotClient([]);
 			let capturedConfig: Parameters<ITestCopilotClient['createSession']>[0] | undefined;
@@ -15161,7 +15161,7 @@ suite('CopilotAgent', () => {
 				assert.strictEqual(systemMessage.sections?.identity?.action, 'replace');
 				assert.strictEqual(
 					systemMessage.sections?.identity?.content,
-					'You are an AI assistant using Copilot SDK in VS Code. You help users with software engineering tasks. When asked about your identity, you must state that you are an AI assistant using Copilot SDK in VS Code.'
+					'You are an AI assistant using Copilot SDK in Klawly. You help users with software engineering tasks. When asked about your identity, you must state that you are an AI assistant using Copilot SDK in Klawly.'
 				);
 			} finally {
 				await disposeAgent(agent);
@@ -20715,7 +20715,7 @@ suite('CopilotAgent', () => {
 			const standaloneDir = URI.file('/synced/standalone');
 			await fileService.writeFile(URI.joinPath(pluginDir, '.plugin', 'plugin.json'), VSBuffer.fromString(JSON.stringify({ name: 'Plugin A' })));
 			await fileService.writeFile(URI.joinPath(pluginDir, 'skills', 'plugin-skill', 'SKILL.md'), VSBuffer.fromString('---\nname: plugin-skill\ndescription: A plugin skill\n---\nDo plugin things.'));
-			await fileService.writeFile(URI.joinPath(standaloneDir, '.plugin', 'plugin.json'), VSBuffer.fromString(JSON.stringify({ name: 'VS Code Standalone Customizations' })));
+			await fileService.writeFile(URI.joinPath(standaloneDir, '.plugin', 'plugin.json'), VSBuffer.fromString(JSON.stringify({ name: 'Klawly Standalone Customizations' })));
 			await fileService.writeFile(URI.joinPath(standaloneDir, 'skills', 'my-skill', 'SKILL.md'), VSBuffer.fromString('---\nname: my-skill\ndescription: A user skill\n---\nDo things.'));
 			await fileService.writeFile(URI.joinPath(standaloneDir, 'agents', 'my-agent.agent.md'), VSBuffer.fromString('---\nname: my-agent\ndescription: A user agent\n---\nBe helpful.'));
 			for (const builtin of COPILOT_BUILTIN_AGENTS) {
@@ -20757,7 +20757,7 @@ suite('CopilotAgent', () => {
 						type: CustomizationType.Plugin,
 						id: standaloneDir.toString(),
 						uri: standaloneDir.toString(),
-						name: 'VS Code Standalone Customizations',
+						name: 'Klawly Standalone Customizations',
 						_meta: { ...toClientPluginStandaloneMeta(), ...toClientPluginMcpDefaultCwdsMeta({ 'my-server': null }) },
 					},
 				];
@@ -21602,7 +21602,7 @@ suite('CopilotAgent', () => {
 			const agent = createTestAgent(disposables, { sessionDataService, copilotClient: client, userHome });
 			try {
 				await agent.authenticate('https://api.github.com', 'token');
-				await writeExtensionHostMarker(userHome, sessionId, { origin: 'vscode', customTitle: 'Staged VS Code Title' });
+				await writeExtensionHostMarker(userHome, sessionId, { origin: 'vscode', customTitle: 'Staged Klawly Title' });
 
 				const adopted = await ensureDefaultChatAdopted(agent, session);
 
@@ -22059,7 +22059,7 @@ suite('CopilotAgent', () => {
 			}
 		});
 
-		test('adopts an origin-less legacy marker carrying VS Code repository properties', async () => {
+		test('adopts an origin-less legacy marker carrying Klawly repository properties', async () => {
 			const userHome = URI.file(await fs.mkdtemp(`${os.tmpdir()}/adopt-home-`));
 			const workingDirectory = await fs.mkdtemp(`${os.tmpdir()}/adopt-cwd-`);
 			const sessionId = 'legacy-originless';
@@ -22084,7 +22084,7 @@ suite('CopilotAgent', () => {
 			}
 		});
 
-		test('does not adopt an origin-less legacy marker without VS Code properties', async () => {
+		test('does not adopt an origin-less legacy marker without Klawly properties', async () => {
 			const userHome = URI.file(await fs.mkdtemp(`${os.tmpdir()}/adopt-home-`));
 			const sessionId = 'legacy-originless-bare';
 			const session = AgentSession.uri('copilotcli', sessionId);

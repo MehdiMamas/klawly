@@ -974,7 +974,7 @@ suite('TabbedModelPicker', () => {
 		});
 	});
 
-	test('HydraFusion that needs a newer VS Code is offered as an update rather than a tier', () => {
+	test('HydraFusion that needs a newer Klawly is offered as an update rather than a tier', () => {
 		const auto = createAutoModel();
 		const local = model('Local');
 		const gated = model('Gated');

@@ -29,7 +29,7 @@ suite('MCP configuration generation', () => {
 		});
 	}
 
-	test('VS Code schemas are reused, while root output can retain fields requiring explicit fallback', () => {
+	test('Klawly schemas are reused, while root output can retain fields requiring explicit fallback', () => {
 		for (const format of [McpResourceFormat.Vscode, McpResourceFormat.WorkspaceRoot]) {
 			const [stdio, http] = getMcpGenerationSchema(format).oneOf!;
 			assert.deepStrictEqual({
@@ -44,7 +44,7 @@ suite('MCP configuration generation', () => {
 		}
 	});
 
-	test('Copilot schema uses its own dialect without VS Code-only fields', () => {
+	test('Copilot schema uses its own dialect without Klawly-only fields', () => {
 		const [stdio, http] = getMcpGenerationSchema(McpResourceFormat.CopilotGlobal).oneOf!;
 		assert.deepStrictEqual({
 			local: Object.keys(stdio.properties!),
@@ -63,7 +63,7 @@ suite('MCP configuration generation', () => {
 		assert.deepStrictEqual(toCopilotMcpServerConfiguration(config), server);
 	});
 
-	test('VS Code output keeps development, sandbox and enterprise OAuth fields', () => {
+	test('Klawly output keeps development, sandbox and enterprise OAuth fields', () => {
 		const servers = [
 			{ type: 'stdio', command: 'node', sandboxEnabled: true, sandbox: { network: { allowedDomains: ['google.com'] } }, dev: { watch: '*.js' }, envFile: '.env' },
 			{ type: 'sse', url: 'https://example.com', oauth: { clientId: 'client', enterpriseManaged: true } },

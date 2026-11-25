@@ -61,7 +61,7 @@ function makeSession(opts: { repository?: URI; worktree?: URI } = {}): ISession 
 		sessionType: 'background',
 		harness: 'copilot',
 		environment: 'local',
-		application: constObservable({ id: 'vscode', label: 'VS Code' }),
+		application: constObservable({ id: 'vscode', label: 'Klawly' }),
 		icon: Codicon.copilot,
 		createdAt: chat.createdAt,
 		workspace: observableValue('workspace', workspace as ISessionWorkspace | undefined),
