@@ -70,7 +70,7 @@ jobs:
           npm run gulp "vscode-${target}-min"
           mkdir -p .build/package
           # The gulp task writes ../VSCode-<platform>-<arch>, next to the checkout.
-          built="../VSCode-${target}"
+          built="../Klawly-${target}"
           if [ "$RUNNER_OS" = "macOS" ]; then
             ditto -c -k --sequesterRsrc --keepParent "${built}/Klawly.app" ".build/package/Klawly-${target}.zip"
           elif [ "$RUNNER_OS" = "Windows" ]; then
@@ -78,6 +78,19 @@ jobs:
           else
             tar -czf ".build/package/Klawly-${target}.tar.gz" -C "$(dirname "$built")" "$(basename "$built")"
           fi
+
+      # Installers: the Windows setup (KlawlySetup.exe) and the Linux .deb carry the product name too.
+      - name: Windows installer
+        if: runner.os == 'Windows'
+        run: |
+          npm run gulp vscode-win32-x64-user-setup
+          cp .build/win32-x64/user-setup/KlawlySetup.exe .build/package/KlawlySetup.exe
+
+      - name: Linux .deb
+        if: runner.os == 'Linux'
+        run: |
+          npm run gulp vscode-linux-x64-prepare-deb vscode-linux-x64-build-deb
+          cp .build/linux/deb/amd64/deb/*.deb .build/package/
 
       - name: Upload app
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

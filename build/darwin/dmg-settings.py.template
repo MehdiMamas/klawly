@@ -25,15 +25,15 @@ show_sidebar = False
 sidebar_width = 180
 
 # Window position and size
-window_rect = ((100, 400), (480, 352))
+window_rect = ((100, 400), (600, 412))
 
 # Icon view settings
 default_view = 'icon-view'
 icon_locations = {
-	{{APP_NAME}}: (120, 160),
-	'Applications': (360, 160)
+	{{APP_NAME}}: (160, 180),
+	'Applications': (440, 180)
 }
 
 # Text size for icon labels
 text_size = 12
-icon_size = 80
+icon_size = 100
