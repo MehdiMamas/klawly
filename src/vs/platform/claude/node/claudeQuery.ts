@@ -152,7 +152,7 @@ export interface ClaudeQueryOptions {
 	 * Agent turns load user settings, and project settings in a trusted workspace.
 	 * A completion turn omits this.
 	 */
-	readonly settingSources?: readonly ('user' | 'project')[];
+	readonly settingSources?: readonly ('user' | 'project' | 'local')[];
 	/** True ignores every MCP configuration on disk, including a project `.mcp.json`. Set in an untrusted workspace. */
 	readonly strictMcpConfig?: boolean;
 	readonly resume?: string;

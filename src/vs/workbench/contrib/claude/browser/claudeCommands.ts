@@ -16,7 +16,7 @@ import { IClaudeRuntimeService } from '../../../../platform/claude/common/claude
 import { CLAUDE_AUTOCOMPLETE_ENABLED_SETTING, CLAUDE_MODELS_CUSTOM_SETTING, CLAUDE_MODELS_ENABLED_SETTING, readClaudeAutocompleteEnabled } from '../../../../platform/claude/common/claudeConfiguration.js';
 import { withChatAttachment } from '../../../../platform/claude/common/claudeChatReference.js';
 import { cycleClaudeModel, pickableClaudeModels, readClaudeModelIdList } from '../../../../platform/claude/common/claudeModels.js';
-import { ICommandService } from '../../../../platform/commands/common/commands.js';
+import { CommandsRegistry, ICommandService } from '../../../../platform/commands/common/commands.js';
 import { ConfigurationTarget, IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
 import { IDialogService, IFileDialogService } from '../../../../platform/dialogs/common/dialogs.js';
@@ -50,7 +50,7 @@ import { claudeChatFind, ClaudeChatFindMatch } from '../common/claudeChatFind.js
 import { claudeChatOutline, ClaudeChatOutlineNode, flattenClaudeChatOutline } from '../common/claudeChatOutline.js';
 import { claudeCommandState } from '../common/claudeCommandState.js';
 import { CLAUDE_AGENT_ENABLED, CLAUDE_AGENT_RUNNING, CLAUDE_AUTOCOMPLETE_ON, CLAUDE_KLAWLY_KEYMAP, CLAUDE_KLAWLY_KEY_WEIGHT, CLAUDE_DEFAULT_KEY_LABEL_WEIGHT, CLAUDE_DEFAULT_KEY_LABEL_WHEN, CLAUDE_HAS_OTHER_SESSIONS, CLAUDE_HAS_PENDING_CHANGES, CLAUDE_HAS_TURNS } from '../common/claudeContextKeys.js';
-import { CLAUDE_ACCEPT_ALL_CHANGES_COMMAND_ID, CLAUDE_ADD_FILE_COMMAND_ID, CLAUDE_ADD_FILE_TO_NEW_AGENT_COMMAND_ID, CLAUDE_ADD_SELECTION_COMMAND_ID, CLAUDE_AGENT_VIEW_ID, CLAUDE_ASK_SIDE_QUESTION_COMMAND_ID, CLAUDE_CREATE_SKILL_COMMAND_ID, CLAUDE_CYCLE_MODEL_COMMAND_ID, CLAUDE_EDIT_MESSAGE_COMMAND_ID, CLAUDE_FIND_IN_CHAT_COMMAND_ID, CLAUDE_FIND_IN_CHAT_LIST_COMMAND_ID, CLAUDE_FOCUS_AGENT_COMMAND_ID, CLAUDE_GO_TO_TURN_COMMAND_ID, CLAUDE_OPEN_BACKGROUND_AGENTS_COMMAND_ID, CLAUDE_OPEN_INSPECTOR_COMMAND_ID, CLAUDE_OPEN_SESSION_HISTORY_COMMAND_ID, CLAUDE_OPEN_SETTINGS_COMMAND_ID, CLAUDE_OPEN_SUBAGENT_COMMAND_ID, CLAUDE_PICK_MODEL_COMMAND_ID, CLAUDE_QUEUE_MESSAGE_COMMAND_ID, CLAUDE_REFERENCE_CHAT_COMMAND_ID, CLAUDE_REJECT_ALL_CHANGES_COMMAND_ID, CLAUDE_REMOVE_INSTRUMENTATION_COMMAND_ID, CLAUDE_RESTORE_CHECKPOINT_COMMAND_ID, CLAUDE_SHOW_SENT_PROMPT_COMMAND_ID, CLAUDE_START_GOAL_COMMAND_ID, CLAUDE_START_LOOP_COMMAND_ID, CLAUDE_STOP_AGENT_COMMAND_ID, CLAUDE_STOP_SUBAGENT_COMMAND_ID, CLAUDE_TOGGLE_AUTOCOMPLETE_COMMAND_ID, KLAWLY_CATEGORY } from '../common/claudeViews.js';
+import { CLAUDE_ACCEPT_ALL_CHANGES_COMMAND_ID, CLAUDE_ADD_FILE_COMMAND_ID, CLAUDE_ADD_FILE_TO_NEW_AGENT_COMMAND_ID, CLAUDE_ADD_SELECTION_COMMAND_ID, CLAUDE_AGENT_VIEW_ID, CLAUDE_ASK_SIDE_QUESTION_COMMAND_ID, CLAUDE_CREATE_SKILL_COMMAND_ID, CLAUDE_CYCLE_MODEL_COMMAND_ID, CLAUDE_EDIT_MESSAGE_COMMAND_ID, CLAUDE_FIND_IN_CHAT_COMMAND_ID, CLAUDE_FIND_IN_CHAT_LIST_COMMAND_ID, CLAUDE_FOCUS_AGENT_COMMAND_ID, CLAUDE_GO_TO_TURN_COMMAND_ID, CLAUDE_OPEN_BACKGROUND_AGENTS_COMMAND_ID, CLAUDE_OPEN_INSPECTOR_COMMAND_ID, CLAUDE_OPEN_SESSION_HISTORY_COMMAND_ID, CLAUDE_OPEN_SETTINGS_COMMAND_ID, CLAUDE_OPEN_SUBAGENT_COMMAND_ID, CLAUDE_PICK_MODEL_COMMAND_ID, CLAUDE_QUEUE_MESSAGE_COMMAND_ID, CLAUDE_REFERENCE_CHAT_COMMAND_ID, CLAUDE_REJECT_ALL_CHANGES_COMMAND_ID, CLAUDE_REMOVE_INSTRUMENTATION_COMMAND_ID, CLAUDE_RESTORE_CHECKPOINT_COMMAND_ID, CLAUDE_SHOW_SENT_PROMPT_COMMAND_ID, CLAUDE_START_GOAL_COMMAND_ID, CLAUDE_START_LOOP_COMMAND_ID, CLAUDE_STOP_AGENT_COMMAND_ID, CLAUDE_STOP_SUBAGENT_COMMAND_ID, CLAUDE_TOGGLE_AUTOCOMPLETE_COMMAND_ID, CLAUDE_V5_COMMAND_ALIASES, KLAWLY_CATEGORY } from '../common/claudeViews.js';
 import { revealClaudeChat } from './chat/claudeAgentEditorActions.js';
 import { ClaudeAgentEditorInput, isClaudeChatInEditor } from './chat/claudeAgentEditorInput.js';
 import { claudeChatOutlineIcon } from './chat/claudeChatOutline.js';
@@ -200,6 +200,9 @@ function findKindLabel(from: ClaudeChatFindMatch['from']): string {
 }
 
 export function registerClaudeCommands(): void {
+	for (const [v5Id, id] of Object.entries(CLAUDE_V5_COMMAND_ALIASES)) {
+		CommandsRegistry.registerCommandAlias(v5Id, id);
+	}
 	registerAction2(class extends Action2 {
 		constructor() {
 			super({

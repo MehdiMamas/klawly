@@ -51,6 +51,7 @@ import { ClaudePermissionHost, ClaudeUserPermissionBridge, nodeRealpath } from '
 import { isAbsolute, join } from '../../../base/common/path.js';
 import { ClaudeElicitationBridge } from './claudeElicitationBridge.js';
 import { classifyAgentFailure, failureMessage } from './claudeFailure.js';
+import { ClaudeLiveSession, claudeSessionBlockedBy } from '../common/claudeSessionOwner.js';
 import { ClaudeProcessRegistry } from './claudeProcessRegistry.js';
 import { runClaudeInlineCompletion } from './claudeAutocompleteQuery.js';
 import { ClaudeComparisonJudgeRequest, ClaudeComparisonJudgeResult } from '../common/claudeComparison.js';
@@ -336,6 +337,11 @@ export class ClaudeNodeRuntimeService extends Disposable implements IClaudeRunti
 		}
 		if (this._probe?.versionAssessment?.disposition === 'block') {
 			throw Object.assign(new Error(this._probe.versionAssessment.message ?? failureMessage('runtime-version')), { kind: 'runtime-version' as const });
+		}
+		// A fork writes a new transcript, so only a plain resume can collide (v5 N5).
+		const owner = request.resumeSessionAt ? undefined : claudeSessionBlockedBy(this.liveSessions(), request.resumeSessionId, request.checkpointSessionId ?? '');
+		if (owner) {
+			throw Object.assign(new Error(failureMessage('session-owned')), { kind: 'session-owned' as const });
 		}
 		const sessionId = generateUuid();
 		this._requests.set(sessionId, request);
@@ -1346,6 +1352,17 @@ export class ClaudeNodeRuntimeService extends Disposable implements IClaudeRunti
 	/** The environment signed in as one account: its folder, or undefined for the default one. */
 	private accountEnvironment(configDirectory: string | undefined): Record<string, string> {
 		return claudeProcessEnvironment(process.env, { telemetryEnabled: this._options.telemetryEnabled?.() === true, configDirectory });
+	}
+
+	/** Running processes with the Claude Code session each one holds. */
+	private liveSessions(): ClaudeLiveSession[] {
+		const live: ClaudeLiveSession[] = [];
+		for (const [sessionId, request] of this._requests) {
+			if (this._registry.get(sessionId)) {
+				live.push({ owner: request.checkpointSessionId ?? sessionId, claudeSessionId: this._runner.claudeSessionIdOf(sessionId) ?? request.resumeSessionId });
+			}
+		}
+		return live;
 	}
 
 	private liveSessionId(): string | undefined {

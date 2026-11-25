@@ -81,7 +81,7 @@ suite('Claude workspace trust', () => {
 		assert.deepStrictEqual([sources(untrusted.latest()), sources(unknown.latest()), sources(trusted.latest())], [
 			{ settingSources: ['user'], strictMcpConfig: true },
 			{ settingSources: ['user'], strictMcpConfig: true },
-			{ settingSources: ['user', 'project'], strictMcpConfig: undefined },
+			{ settingSources: ['user', 'project', 'local'], strictMcpConfig: undefined },
 		]);
 	});
 
@@ -92,11 +92,11 @@ suite('Claude workspace trust', () => {
 		};
 		assert.deepStrictEqual([
 			flags({ settingSources: ['user'], strictMcpConfig: true }),
-			flags({ settingSources: ['user', 'project'] }),
+			flags({ settingSources: ['user', 'project', 'local'] }),
 			flags({}),
 		], [
 			['user', true],
-			['user,project', false],
+			['user,project,local', false],
 			['', false],
 		]);
 	});
@@ -109,7 +109,7 @@ suite('Claude workspace trust', () => {
 
 		await h.runner.send('session-1', 'next turn', undefined, true);
 		await waitFor(() => h.opened.length === 2);
-		assert.deepStrictEqual(sources(h.latest()), { settingSources: ['user', 'project'], strictMcpConfig: undefined });
+		assert.deepStrictEqual(sources(h.latest()), { settingSources: ['user', 'project', 'local'], strictMcpConfig: undefined });
 		// The restarted query continues the same conversation.
 		assert.strictEqual(h.latest().resume, 'sdk-session');
 	});

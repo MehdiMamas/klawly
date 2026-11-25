@@ -40,6 +40,18 @@ export const CLAUDE_ADD_FILE_TO_NEW_AGENT_COMMAND_ID = 'claude.addFileToNewAgent
 export const CLAUDE_ACCEPT_ALL_CHANGES_COMMAND_ID = 'claude.acceptAllChanges';
 export const CLAUDE_REJECT_ALL_CHANGES_COMMAND_ID = 'claude.rejectAllChanges';
 export const CLAUDE_RESTORE_CHECKPOINT_COMMAND_ID = 'claude.restoreCheckpoint';
+/**
+ * v5 command ids (canvas v5, one id per action) and the id that runs each today.
+ * The v5 id is an alias of the existing command, so keybindings and menus bound
+ * to either keep working. The v5 ids for send, MCP sign-in, Needs You and
+ * Send Now have no command yet: they are buttons, not commands.
+ */
+export const CLAUDE_V5_COMMAND_ALIASES: Readonly<Record<string, string>> = {
+	'claude.review.keepAll': CLAUDE_ACCEPT_ALL_CHANGES_COMMAND_ID,
+	'claude.review.findIssues': CLAUDE_REVIEW_CHANGES_COMMAND_ID,
+	'claude.checkpoint.restore': CLAUDE_RESTORE_CHECKPOINT_COMMAND_ID,
+};
+
 export const CLAUDE_STOP_AGENT_COMMAND_ID = 'claude.stopAgent';
 export const CLAUDE_QUEUE_MESSAGE_COMMAND_ID = 'claude.queueMessage';
 export const CLAUDE_START_GOAL_COMMAND_ID = 'claude.startGoal';

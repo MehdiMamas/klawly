@@ -48,7 +48,7 @@ export function claudeWorkerProfileShape(profile: ClaudeWorkerProfile): ClaudeWo
 }
 
 /** The setting sources a worker loads, given the ones its parent chat would. */
-export function claudeWorkerSettingSources(profile: ClaudeWorkerProfile, sources: readonly ('user' | 'project')[]): readonly ('user' | 'project')[] {
+export function claudeWorkerSettingSources(profile: ClaudeWorkerProfile, sources: readonly ('user' | 'project' | 'local')[]): readonly ('user' | 'project' | 'local')[] {
 	return claudeWorkerProfileShape(profile).userSettings ? sources : sources.filter(source => source !== 'user');
 }
 

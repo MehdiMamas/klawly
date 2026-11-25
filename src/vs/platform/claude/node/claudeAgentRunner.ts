@@ -175,9 +175,12 @@ export interface ClaudeAgentTurnOptions {
  * repository instructions are untrusted input until the user trusts the folder.
  * `user` is Claude Code's `~/.claude`, which the user can leave out (issue 455);
  * Klawly's own user layer reaches the query through its options either way.
+ * `local` is `.claude/settings.local.json`; Claude Code ranks it above `project`
+ * and `project` above `user`, so listing it is all the precedence needs
+ * (https://code.claude.com/docs/en/settings#settings-precedence).
  */
-export function claudeSettingSourcesFor(trusted: boolean, useClaudeCodeSetup = true): readonly ('user' | 'project')[] {
-	return [...useClaudeCodeSetup ? ['user' as const] : [], ...trusted ? ['project' as const] : []];
+export function claudeSettingSourcesFor(trusted: boolean, useClaudeCodeSetup = true): readonly ('user' | 'project' | 'local')[] {
+	return [...useClaudeCodeSetup ? ['user' as const] : [], ...trusted ? ['project' as const, 'local' as const] : []];
 }
 
 /** A shell command is about to run and the workbench may save unsaved editors first. */
@@ -1007,6 +1010,11 @@ export class ClaudeAgentRunner extends Disposable {
 			models: this._models.map(model => ({ ...model })),
 			version: this._runtimeVersion,
 		});
+	}
+
+	/** Claude Code's own session id for a runtime session, once the CLI has reported it. */
+	claudeSessionIdOf(sessionId: string): string | undefined {
+		return this._sessions.get(sessionId)?.sdkSessionId;
 	}
 
 	hasSession(sessionId: string): boolean {

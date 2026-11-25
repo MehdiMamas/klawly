@@ -76,7 +76,7 @@ suite('Claude sample repo', () => {
 
 		assert.ok(captured);
 		assert.strictEqual(captured.options.cwd, cwd);
-		assert.deepStrictEqual(captured.options.settingSources, ['user', 'project']);
+		assert.deepStrictEqual(captured.options.settingSources, ['user', 'project', 'local']);
 		assert.strictEqual(captured.options.resume, 'resume-1');
 		assert.deepStrictEqual(captured.options.allowedTools, ['Read']);
 		assert.deepStrictEqual(captured.options.additionalDirectories, [cwd]);

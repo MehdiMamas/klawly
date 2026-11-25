@@ -130,7 +130,7 @@ suite('resolveClaudeUserLayer', () => {
 			folder: await snapshot(join(home, '.claude')),
 			json: await fs.readFile(join(home, '.claude.json'), 'utf8'),
 		}, {
-			sources: [['user', 'project'], ['project'], []],
+			sources: [['user', 'project', 'local'], ['project', 'local'], []],
 			...before,
 		});
 	});

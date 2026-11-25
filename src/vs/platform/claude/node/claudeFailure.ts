@@ -59,6 +59,8 @@ export function failureMessage(kind: AgentFailureKind, detail?: string): string 
 			return 'The Claude process stopped.';
 		case 'workspace-conflict':
 			return 'Claude could not use this workspace.';
+		case 'session-owned':
+			return 'This chat is already running in another window. Follow it there, or wait for it to finish.';
 		case 'turn-limit':
 			return detail || 'Claude stopped at its turn limit.';
 		case 'unknown':

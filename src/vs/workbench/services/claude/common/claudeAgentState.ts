@@ -918,6 +918,8 @@ export function describeFailure(failure: TurnFailure | undefined): { readonly ti
 			return withDetail(localize('claudeFailCrash', "Claude stopped unexpectedly."), message);
 		case 'workspace-conflict':
 			return withDetail(localize('claudeFailWorkspace', "The workspace changed while Claude was working."), message);
+		case 'session-owned':
+			return withDetail(localize('claudeFailSessionOwned', "This chat is already running in another window."), message);
 		case 'turn-limit':
 			// A cap, not an error (issues 696, 707): the timeline shows it as a note with Continue.
 			return failure?.turns === undefined

@@ -198,6 +198,8 @@ export type AgentFailureKind =
 	| 'tool-failure'
 	| 'process-crash'
 	| 'workspace-conflict'
+	/** Another view already runs this Claude Code session (v5 N5). */
+	| 'session-owned'
 	/** The query reached its `maxTurns` cap (issues 696, 707). Not an error: Continue resumes the session. */
 	| 'turn-limit'
 	| 'unknown';

@@ -1,6 +1,7 @@
 # 0001 Agent Host harness
 
-- Status: accepted 2026-10-13 (issue 423).
+- Status: superseded 2026-11-25 (v5 P1, issue 1). Klawly drives the user's installed `claude` CLI headless through one runtime (`IClaudeRuntimeService`) for the pane, inline edit, Tab and the Agents window; no bundled Agent SDK ships (#1654). No Claude provider is registered in the Agent Host. The `claude.agentsWindow.enabled` setting remains and is to be removed in a follow-up.
+- Was: accepted 2026-10-13 (issue 423).
 - Date: 2026-10-10. Code read at `origin/main` b12d8cd1 (Code - OSS 1.141.0 merged, PR 422).
 - Spike branch: `spike/423-agent-host` (pushed, no PR, never merged).
 
