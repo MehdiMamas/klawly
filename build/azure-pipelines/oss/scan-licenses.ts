@@ -1083,8 +1083,8 @@ async function main(): Promise<void> {
 	console.log('=========================================================================');
 	console.log('SECTION 1: Scanning built-in extension dependencies');
 	console.log('  Why: CG skips all packages with engines.vscode in their package.json.');
-	console.log('  This is a CG workaround for consumers of VS Code extensions, but we');
-	console.log('  ARE VS Code -- our built-in extensions ship in the product.');
+	console.log('  This is a CG workaround for consumers of Klawly extensions, but we');
+	console.log('  ARE Klawly -- our built-in extensions ship in the product.');
 	console.log('=========================================================================');
 	console.log('');
 
@@ -1255,7 +1255,7 @@ async function main(): Promise<void> {
 	console.log('SECTION 3: Extracting licenses from cgmanifest.json licenseDetail');
 	console.log('  Why: Language grammars, vendored code, and other manually declared');
 	console.log('  components have license text inline in cgmanifest.json. CG ignores');
-	console.log('  this field -- it is a VS Code custom extension.');
+	console.log('  this field -- it is a Klawly custom extension.');
 	console.log('=========================================================================');
 	console.log('');
 

@@ -1315,7 +1315,7 @@ suite('ChatSubagentContentPart', () => {
 				parentSessionResource: 'agent-host-copilotcli:/session',
 				isActive: true,
 				activeToolCallId: 'tool-1',
-				activeToolLabel: 'Run npm i in VS Code repository',
+				activeToolLabel: 'Run npm i in Klawly repository',
 				activeToolIcon: Codicon.terminal,
 			};
 			const viewItem = store.add(instantiationService.createInstance(

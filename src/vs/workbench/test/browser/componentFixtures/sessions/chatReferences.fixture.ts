@@ -116,7 +116,7 @@ function resources(isArtifact: boolean): ISessionArtifact[] {
 		{ id: 'image', kind: SessionArtifactKind.File, label: 'Layout mockup', isArtifact, uri: URI.file('/repo/design/reference-layout.svg') },
 		{ id: 'file', kind: SessionArtifactKind.File, label: 'Implementation plan', isArtifact, uri: URI.file('/repo/docs/plan.md') },
 		{ id: 'commit', kind: SessionArtifactKind.Commit, label: 'Reference preview implementation', isArtifact, commitHash: 'abc1234', link: URI.parse('https://github.com/microsoft/vscode/commit/abc1234') },
-		{ id: 'website', kind: SessionArtifactKind.Website, label: 'VS Code documentation', isArtifact, link: URI.parse('https://code.visualstudio.com/docs') },
+		{ id: 'website', kind: SessionArtifactKind.Website, label: 'Klawly documentation', isArtifact, link: URI.parse('https://code.visualstudio.com/docs') },
 		{ id: 'settings', kind: SessionArtifactKind.Resource, label: 'Chat settings', isArtifact, uri: URI.parse('vscode://settings/chat') },
 		{ id: 'ado', kind: SessionArtifactKind.Issue, label: 'ADO tracking item', isArtifact, isGitHub: false, link: URI.parse('https://dev.azure.com/example/project/_workitems/edit/42') },
 	];
@@ -288,7 +288,7 @@ async function renderReferences(ctx: ComponentFixtureContext, scenario: Scenario
 					: scenario === 'file'
 						? { row: '.monaco-list-row[aria-label^="Open plan.md"]', content: '.chat-pill-location-hover' }
 						: scenario === 'website'
-							? { row: '.monaco-list-row[aria-label^="Open VS Code documentation"]', content: '.chat-pill-location-hover' }
+							? { row: '.monaco-list-row[aria-label^="Open Klawly documentation"]', content: '.chat-pill-location-hover' }
 							: scenario === 'customizations'
 								? { row: '.monaco-list-row[aria-label^="Coding guidelines"]', content: '.chat-pill-location-hover' }
 								: { row: '.monaco-list-row[aria-label^="Open Commit abc1234"]', content: '.sessions-commit-hover' };

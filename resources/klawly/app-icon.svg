@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Klawly">
+	<defs>
+		<linearGradient id="kly-bg" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#2A2A2A"/>
+			<stop offset="1" stop-color="#131313"/>
+		</linearGradient>
+	</defs>
+	<rect width="64" height="64" rx="14.25" fill="url(#kly-bg)"/>
+	<rect x="0.5" y="0.5" width="63" height="63" rx="13.75" fill="none" stroke="#FFFFFF" stroke-opacity="0.08"/>
+	<!-- DL-09: the K in one flat brand orange (issue 573). A K whose two arms are hooked claws sweeping out of the stem -->
+	<g fill="#DD8F52">
+		<rect x="14.125" y="12.25" width="9.25" height="39.5" rx="4.625"/>
+		<path d="M21.625 37.5C36 36.875 46.625 26.875 49.25 11.25C42.25 21.875 33.5 26.25 21.625 26.875Z"/>
+		<path d="M22.25 34.25C41 33.75 49.25 42.25 50.375 52.875C45.75 46.5 37.875 43.75 22.25 43.75Z"/>
+	</g>
+</svg>

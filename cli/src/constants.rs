@@ -62,14 +62,14 @@ pub const APPLICATION_NAME: &str = match option_env!("VSCODE_CLI_APPLICATION_NAM
 /// Full name of the product with its version.
 pub const PRODUCT_NAME_LONG: &str = match option_env!("VSCODE_CLI_NAME_LONG") {
 	Some(n) => n,
-	None => "Code - OSS",
+	None => "Klawly",
 };
 
 /// Name of the application without quality information.
 pub const QUALITYLESS_PRODUCT_NAME: &str = match option_env!("VSCODE_CLI_QUALITYLESS_PRODUCT_NAME")
 {
 	Some(n) => n,
-	None => "Code",
+	None => "Klawly",
 };
 
 /// Short product name, mirroring `product.json`'s `nameShort` (e.g. `Code -
@@ -79,7 +79,7 @@ pub const QUALITYLESS_PRODUCT_NAME: &str = match option_env!("VSCODE_CLI_QUALITY
 /// passed `product.nameShort`).
 pub const PRODUCT_NAME_SHORT: &str = match option_env!("VSCODE_CLI_NAME_SHORT") {
 	Some(n) => n,
-	None => "Code - OSS",
+	None => "Klawly",
 };
 
 /// Name of the application without quality information.
@@ -104,7 +104,7 @@ const NONINTERACTIVE_VAR: &str = "VSCODE_CLI_NONINTERACTIVE";
 /// Default data CLI data directory.
 pub const DEFAULT_DATA_PARENT_DIR: &str = match option_env!("VSCODE_CLI_DATA_FOLDER_NAME") {
 	Some(n) => n,
-	None => ".vscode-oss",
+	None => ".klawly",
 };
 
 /// Canonical, machine-wide parent directory used to coordinate the agent

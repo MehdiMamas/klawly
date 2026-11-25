@@ -104,7 +104,7 @@ const COMPACT_RENAME_SESSIONS: readonly ISessionsListFixtureSession[] = [
 ];
 const UNREAD_STATUS_ICON_SESSIONS: readonly ISessionsListFixtureSession[] = [
 	{ id: 'workspace-less', title: 'Fix worktree workspace mapping', isQuickChat: true, minutesAgo: 1, isRead: false },
-	{ id: 'workspace', title: 'Fix VS Code #331780', workspace: 'vscode', minutesAgo: 2, isRead: false },
+	{ id: 'workspace', title: 'Fix Klawly #331780', workspace: 'vscode', minutesAgo: 2, isRead: false },
 ];
 const COMPACT_NEEDS_INPUT_SESSIONS: readonly ISessionsListFixtureSession[] = [
 	{

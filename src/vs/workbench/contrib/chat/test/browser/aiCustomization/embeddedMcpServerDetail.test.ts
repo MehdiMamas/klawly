@@ -310,7 +310,7 @@ suite('EmbeddedMcpServerDetail', () => {
 		});
 	});
 
-	test('keeps servers from VS Code mcp.json files read-only', async () => {
+	test('keeps servers from Klawly mcp.json files read-only', async () => {
 		const { detail, input, snapshot } = createDetail();
 		detail.setInput({ ...input, source: { uri: URI.file('/home/test/.vscode/mcp.json') }, config: { type: McpServerType.LOCAL, command: 'memory-server' } });
 		await timeout(0);

@@ -1932,7 +1932,7 @@ suite('ProtocolServerHandler', () => {
 		let relayHandler: ProtocolServerHandler | undefined;
 		const registration = disposables.add(new MissionControlEnvironment({
 			userDataPath: userData,
-			name: 'VS Code OSS',
+			name: 'Klawly OSS',
 			fetch: fakeFetch,
 			attach: (relay, roots) => {
 				relayHandler = new ProtocolServerHandler(
@@ -4636,7 +4636,7 @@ suite('ProtocolServerHandler', () => {
 		assert.strictEqual(findNotifications(transportB.sent, 'root/sessionAdded').length, 1);
 	});
 
-	test('mixed identities are visible to standard clients but not identified legacy VS Code clients', async () => {
+	test('mixed identities are visible to standard clients but not identified legacy Klawly clients', async () => {
 		for (const provider of ['copilotcli', 'codex', 'claude']) {
 			for (const scheme of [provider, 'ahp-session']) {
 				agentService.listedSessions.push({ session: URI.parse(`${scheme}:/${provider}-${scheme}`), provider, startTime: 1000, modifiedTime: 2000 });
@@ -4720,7 +4720,7 @@ suite('ProtocolServerHandler', () => {
 		]);
 	});
 
-	test('standard session addition, summary changes and removal are hidden only from legacy VS Code', () => {
+	test('standard session addition, summary changes and removal are hidden only from legacy Klawly', () => {
 		const legacy = connectClient('old', ['ahp-root://'], editorWindowAgentHostClientInfo);
 		const standard = connectClient('external-standard', ['ahp-root://']);
 		legacy.sent.length = 0;
@@ -5807,7 +5807,7 @@ suite('ProtocolServerHandler', () => {
 		transport.simulateMessage(request(1, 'initialize', {
 			protocolVersions: [PROTOCOL_VERSION],
 			clientId: 'tunnel-client',
-			clientInfo: { name: 'vscode-agents-window', version: '1.2.3', title: 'VS Code Agents Window' },
+			clientInfo: { name: 'vscode-agents-window', version: '1.2.3', title: 'Klawly Agents Window' },
 			_meta: {
 				'vscode.clientConnectionKind': AgentHostClientConnectionKind.DevTunnel,
 				'vscode.telemetryLevel': 'all',

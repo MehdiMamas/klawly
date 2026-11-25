@@ -90,7 +90,7 @@ steps:
         --skip-release-notes --disable-updates --disable-experiments \
         --disable-workspace-trust
       if [ ! -f "$TIMERS_FILE" ]; then
-        echo "ERROR: VS Code failed to start — startup timers were not written."
+        echo "ERROR: Klawly failed to start — startup timers were not written."
         echo "This may indicate a binary was killed by AMFI due to restricted entitlements."
         exit 1
       fi

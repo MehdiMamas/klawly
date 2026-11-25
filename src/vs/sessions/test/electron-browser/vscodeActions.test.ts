@@ -20,7 +20,7 @@ import { agentHostAuthority, toAgentHostUri } from '../../../platform/agentHost/
 import { IAgentHostSessionsProvider } from '../../common/agentHostSessionsProvider.js';
 import { ISessionsProvider } from '../../services/sessions/common/sessionsProvider.js';
 
-suite('VS Code Actions', () => {
+suite('Klawly Actions', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('shows return action only when there is no other main window', () => {

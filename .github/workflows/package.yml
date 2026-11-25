@@ -1,0 +1,88 @@
+name: Package
+
+# Builds Klawly for one platform on a GitHub-hosted runner and uploads the result as a workflow
+# artifact. Started by hand only. The macOS app is not signed or notarized here (no Developer ID
+# on hosted runners), so it is a build for trying out, not a release.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit to package
+        required: true
+        default: v5-remake
+      os:
+        description: Which runner builds it
+        type: choice
+        options: [macOS, Windows, Linux]
+        default: macOS
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package ${{ inputs.ref }} (${{ inputs.os }})
+    runs-on: ${{ inputs.os == 'Windows' && 'windows-latest' || inputs.os == 'Linux' && 'ubuntu-latest' || 'macos-latest' }}
+    timeout-minutes: 240
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: System libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbfile-dev libx11-dev libx11-xcb-dev libsecret-1-dev libkrb5-dev
+
+      # Linux native modules build against upstream's sysroot, set up by setup-env.sh.
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -e
+          (cd build && npm ci)
+          source ./build/azure-pipelines/linux/setup-env.sh
+          npm ci
+        env:
+          npm_config_arch: x64
+          VSCODE_ARCH: x64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
+      - name: Install dependencies
+        if: runner.os != 'Linux'
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
+      - name: Package
+        run: |
+          target="$(node -p "process.platform + '-' + process.arch")"
+          npm run gulp "vscode-${target}-min"
+          mkdir -p .build/package
+          # The gulp task writes ../VSCode-<platform>-<arch>, next to the checkout.
+          built="../VSCode-${target}"
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            ditto -c -k --sequesterRsrc --keepParent "${built}/Klawly.app" ".build/package/Klawly-${target}.zip"
+          elif [ "$RUNNER_OS" = "Windows" ]; then
+            tar -a -cf ".build/package/Klawly-${target}.zip" -C "$(dirname "$built")" "$(basename "$built")"
+          else
+            tar -czf ".build/package/Klawly-${target}.tar.gz" -C "$(dirname "$built")" "$(basename "$built")"
+          fi
+
+      - name: Upload app
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: klawly-${{ inputs.os }}-${{ github.run_id }}
+          path: .build/package/*
+          retention-days: 14
+          if-no-files-found: error

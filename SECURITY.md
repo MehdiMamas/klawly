@@ -1,14 +1,5 @@
-<!-- BEGIN MICROSOFT SECURITY.MD V1.0.0 BLOCK -->
+# Security
 
-## Security
+Report a vulnerability privately through [GitHub security advisories](https://github.com/MehdiMamas/klawly-ide/security/advisories/new). Do not open a public issue for it. Include the version, the steps to reproduce and the impact.
 
-Microsoft takes the security of our software products and services seriously, which
-includes all source code repositories in our GitHub organizations.
-
-**Please do not report security vulnerabilities through public GitHub issues.**
-
-For security reporting information, locations, contact information, and policies,
-please review the latest guidance for Microsoft repositories at
-[https://aka.ms/SECURITY.md](https://aka.ms/SECURITY.md).
-
-<!-- END MICROSOFT SECURITY.MD BLOCK -->
+Vulnerabilities in the upstream Code - OSS base are best reported to its maintainers as well.

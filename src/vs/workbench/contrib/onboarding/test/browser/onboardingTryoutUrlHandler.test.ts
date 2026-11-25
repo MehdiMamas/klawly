@@ -85,7 +85,7 @@ suite('Onboarding tryout URL handler', () => {
 		});
 		const productService = upcastPartial<IProductService>({
 			urlProtocol: 'vscode',
-			nameLong: 'Visual Studio Code',
+			nameLong: 'Klawly',
 		});
 		const commandService = upcastPartial<ICommandService>({
 			executeCommand: async (id: string, ...args: unknown[]) => {
@@ -162,7 +162,7 @@ suite('Onboarding tryout URL handler', () => {
 			confirmation: {
 				type: 'question',
 				message: 'Open \'Try Example\'?',
-				detail: 'An external link requested this feature example in Visual Studio Code.\n\nOpens a safe example without changing user resources.\n\nOnly continue if you initiated this request.',
+				detail: 'An external link requested this feature example in Klawly.\n\nOpens a safe example without changing user resources.\n\nOnly continue if you initiated this request.',
 				primaryButton: '&&Open Example',
 			},
 			commands: [],
@@ -218,13 +218,13 @@ suite('Onboarding tryout URL handler', () => {
 			runs: [],
 			information: [{
 				message: 'Feature example unavailable',
-				detail: 'This external link does not identify a feature example available in this version of Visual Studio Code.',
+				detail: 'This external link does not identify a feature example available in this version of Klawly.',
 			}, {
 				message: 'Feature example unavailable',
-				detail: 'This external link does not identify a feature example available in this version of Visual Studio Code.',
+				detail: 'This external link does not identify a feature example available in this version of Klawly.',
 			}, {
 				message: 'Feature example unavailable',
-				detail: 'This external link does not identify a feature example available in this version of Visual Studio Code.',
+				detail: 'This external link does not identify a feature example available in this version of Klawly.',
 			}],
 		});
 	});

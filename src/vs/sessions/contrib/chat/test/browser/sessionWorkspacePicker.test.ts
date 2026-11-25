@@ -1744,7 +1744,7 @@ suite('WorkspacePicker - Connection Status', () => {
 		});
 	});
 
-	test('restore prioritizes the sessions\' own history over VS Code\'s global recents', async () => {
+	test('restore prioritizes the sessions\' own history over Klawly\'s global recents', async () => {
 		const localProvider = createMockProvider('local-1');
 		providersService.setProviders([localProvider]);
 
@@ -1919,7 +1919,7 @@ suite('WorkspacePicker - Connection Status', () => {
 		});
 	});
 
-	test('restore selects the most recent VS Code workspace when own history is empty', async () => {
+	test('restore selects the most recent Klawly workspace when own history is empty', async () => {
 		const localProvider = createMockProvider('local-1');
 		providersService.setProviders([localProvider]);
 
@@ -1947,7 +1947,7 @@ suite('WorkspacePicker - Connection Status', () => {
 		});
 	});
 
-	test('restore selects a VS Code recent that finishes loading after picker creation', async () => {
+	test('restore selects a Klawly recent that finishes loading after picker creation', async () => {
 		const localProvider = createMockProvider('local-1');
 		providersService.setProviders([localProvider]);
 
@@ -1972,7 +1972,7 @@ suite('WorkspacePicker - Connection Status', () => {
 		});
 	});
 
-	test('late VS Code recents do not override an explicit workspace selection', async () => {
+	test('late Klawly recents do not override an explicit workspace selection', async () => {
 		const localProvider = createMockProvider('local-1');
 		providersService.setProviders([localProvider]);
 
@@ -2287,7 +2287,7 @@ suite('WorkspacePicker - Connection Status', () => {
 		});
 	});
 
-	test('shows manually picked worktree folders but filters them from VS Code recents', async () => {
+	test('shows manually picked worktree folders but filters them from Klawly recents', async () => {
 		const provider = createMockProvider('provider');
 		providersService.setProviders([provider]);
 

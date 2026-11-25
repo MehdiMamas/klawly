@@ -1184,8 +1184,8 @@ suite('CopilotSlashCommandCompletionProvider', () => {
 			// generic provider lists it bare — so the prefixed runtime item is a
 			// duplicate and must be dropped.
 			const provider = createProvider(
-				[{ name: 'VS Code Synced Data:update-pr', description: 'Runtime skill', kind: 'skill', allowDuringAgentExecution: true }],
-				[syncedPlugin('VS Code Synced Data', [skill('update-pr')])],
+				[{ name: 'Klawly Synced Data:update-pr', description: 'Runtime skill', kind: 'skill', allowDuringAgentExecution: true }],
+				[syncedPlugin('Klawly Synced Data', [skill('update-pr')])],
 			);
 			const items = await run(provider, '/');
 			assert.deepStrictEqual(runtimeOnly(items), []);
@@ -1195,8 +1195,8 @@ suite('CopilotSlashCommandCompletionProvider', () => {
 			// Bare `/plan` is a config action, so it would not reach the bundled
 			// `plan` skill; the prefixed item is kept so the skill stays reachable.
 			const provider = createProvider(
-				[{ name: 'VS Code Synced Data:plan', description: 'Runtime skill', kind: 'skill', allowDuringAgentExecution: true }],
-				[syncedPlugin('VS Code Synced Data', [skill('plan')])],
+				[{ name: 'Klawly Synced Data:plan', description: 'Runtime skill', kind: 'skill', allowDuringAgentExecution: true }],
+				[syncedPlugin('Klawly Synced Data', [skill('plan')])],
 			);
 			const items = await run(provider, '/');
 			assert.deepStrictEqual(runtimeOnly(items).map(i => i.insertText), ['/VS Code Synced Data:plan ']);
@@ -1208,9 +1208,9 @@ suite('CopilotSlashCommandCompletionProvider', () => {
 			const provider = createProvider(
 				[
 					{ name: 'triage', description: 'Built-in', kind: 'builtin', allowDuringAgentExecution: true },
-					{ name: 'VS Code Synced Data:triage', description: 'Runtime skill', kind: 'skill', allowDuringAgentExecution: true },
+					{ name: 'Klawly Synced Data:triage', description: 'Runtime skill', kind: 'skill', allowDuringAgentExecution: true },
 				],
-				[syncedPlugin('VS Code Synced Data', [skill('triage')])],
+				[syncedPlugin('Klawly Synced Data', [skill('triage')])],
 			);
 			const items = await run(provider, '/');
 			assert.ok(runtimeOnly(items).some(i => i.insertText === '/VS Code Synced Data:triage '), 'bundled triage skill should remain reachable');
@@ -1221,7 +1221,7 @@ suite('CopilotSlashCommandCompletionProvider', () => {
 			// strip must not apply to it. It is dropped only via the exact match.
 			const provider = createProvider(
 				[{ name: 'my-plugin:my-skill', description: 'Runtime skill', kind: 'skill', allowDuringAgentExecution: true }],
-				[syncedPlugin('VS Code Synced Data', [skill('update-pr')]), plugin('my-plugin', [skill('my-skill')])],
+				[syncedPlugin('Klawly Synced Data', [skill('update-pr')]), plugin('my-plugin', [skill('my-skill')])],
 			);
 			const items = await run(provider, '/');
 			assert.deepStrictEqual(runtimeOnly(items), []);

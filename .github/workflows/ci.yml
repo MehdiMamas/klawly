@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, v5-remake]
+  workflow_dispatch:
+  push:
+    branches: [v5-remake]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, transpile, names and node tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: System libraries
+        run: sudo apt-get update && sudo apt-get install -y libxkbfile-dev libx11-dev libx11-xcb-dev libsecret-1-dev libkrb5-dev
+
+      # Linux native modules build against upstream's sysroot, set up by setup-env.sh.
+      - name: Install dependencies
+        run: |
+          set -e
+          (cd build && npm ci)
+          source ./build/azure-pipelines/linux/setup-env.sh
+          npm ci
+        env:
+          npm_config_arch: x64
+          VSCODE_ARCH: x64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+          ELECTRON_SKIP_BINARY_DOWNLOAD: 1
+
+      - name: Check names
+        run: npm run check-names
+
+      - name: Typecheck
+        run: npm run typecheck-client
+
+      - name: Transpile
+        run: npm run transpile-client
+
+      - name: Node unit tests
+        run: npm run test-node

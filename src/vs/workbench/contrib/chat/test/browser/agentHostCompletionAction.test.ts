@@ -218,7 +218,7 @@ suite('applyAgentHostCompletionAction', () => {
 		assert.deepStrictEqual(normalizeAgentHostApprovalConfig(new PolicyTestConfigurationService(false), resolved, { autoApprove: 'autoApprove' }), { approvalMode: 'manual' });
 	});
 
-	test('an explicit standard approval selection takes precedence over its VS Code alias', () => {
+	test('an explicit standard approval selection takes precedence over its Klawly alias', () => {
 		const resolved = {
 			schema: {
 				type: 'object' as const, properties: {

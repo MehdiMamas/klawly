@@ -52,7 +52,7 @@ function makeActiveSession(providerId: string): IActiveSession {
 		sessionType: 'copilotcli',
 		harness: 'copilot',
 		environment: 'local',
-		application: constObservable({ id: 'vscode', label: 'VS Code' }),
+		application: constObservable({ id: 'vscode', label: 'Klawly' }),
 		icon: Codicon.copilot,
 		createdAt: chat.createdAt,
 		workspace: observableValue('w', undefined),

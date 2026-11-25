@@ -126,7 +126,7 @@ suite('Copilot app tool presentation compatibility', () => {
 		});
 	});
 
-	test('explicit VS Code metadata, permissions, contributors and MCP Apps never acquire a name fallback', () => {
+	test('explicit Klawly metadata, permissions, contributors and MCP Apps never acquire a name fallback', () => {
 		const external = [
 			call('grep', { _meta: { toolKind: 'read' } }),
 			call('grep', { _meta: { toolKind: null } }),

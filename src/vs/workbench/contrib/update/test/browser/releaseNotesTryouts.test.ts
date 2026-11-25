@@ -232,7 +232,7 @@ suite('Release notes Try This', () => {
 			controls: container.querySelectorAll('[data-release-notes-tryout-id]').length,
 			runs,
 		}, {
-			text: 'Readable fallback (This example is not available in this version of VS Code.)',
+			text: 'Readable fallback (This example is not available in this version of Klawly.)',
 			links: 0, controls: 0, runs: [],
 		});
 	});

@@ -31,7 +31,7 @@ function readerMatrix<T>(name: string, read: (meta: Record<string, unknown> | un
 suite('Metadata compatibility', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	test('permission diffs are additive and do not change native VS Code presentation', () => {
+	test('permission diffs are additive and do not change native Klawly presentation', () => {
 		const original = { toolKind: 'read', mcpServerName: 'server' };
 		const meta = withPermissionDiff(original, '--- a/file\n+++ b/file\n');
 		assert.deepStrictEqual({
@@ -52,37 +52,37 @@ suite('Metadata compatibility', () => {
 	const presentation = { hiddenFromTranscript: false, requestHiddenFromTranscript: false, systemInitiatedLabel: undefined };
 	const message = (meta?: Record<string, unknown>): Message => ({ text: 'display', origin: { kind: MessageKind.User }, _meta: meta });
 	readerMatrix('message presentation', meta => readAgentMessagePresentation(message(meta)), presentation, [
-		{ name: 'VS Code', meta: { 'vscode.chat.requestHiddenFromTranscript': true }, expected: { ...presentation, requestHiddenFromTranscript: true } },
+		{ name: 'Klawly', meta: { 'vscode.chat.requestHiddenFromTranscript': true }, expected: { ...presentation, requestHiddenFromTranscript: true } },
 		{ name: 'Copilot D', meta: { 'copilot.visibility': 'internal' }, expected: { ...presentation, requestHiddenFromTranscript: true } },
-		{ name: 'both styles preserve explicit VS Code false', meta: { 'vscode.chat.requestHiddenFromTranscript': false, 'copilot.visibility': 'internal' }, expected: presentation },
-		{ name: 'malformed VS Code does not fall through', meta: { 'vscode.chat.requestHiddenFromTranscript': null, 'copilot.visibility': 'internal' }, expected: presentation },
+		{ name: 'both styles preserve explicit Klawly false', meta: { 'vscode.chat.requestHiddenFromTranscript': false, 'copilot.visibility': 'internal' }, expected: presentation },
+		{ name: 'malformed Klawly does not fall through', meta: { 'vscode.chat.requestHiddenFromTranscript': null, 'copilot.visibility': 'internal' }, expected: presentation },
 		{ name: 'malformed Copilot D', meta: { 'copilot.visibility': true }, expected: presentation },
 	]);
 
 	const attachment = { type: 'selection', text: 'captured', future: { value: 1 } };
 	const attachmentDetail = { type: 'selection', raw: attachment, text: 'captured', url: undefined };
 	readerMatrix('attachment detail', meta => readAttachmentDetail({ _meta: meta }), undefined, [
-		{ name: 'VS Code-only attachments remain independent', meta: { browserView: { url: 'https://example.com' } }, expected: undefined },
+		{ name: 'Klawly-only attachments remain independent', meta: { browserView: { url: 'https://example.com' } }, expected: undefined },
 		{ name: 'Copilot D preserves open payloads', meta: { 'copilot.attachmentDetail': attachment }, expected: attachmentDetail },
 		{ name: 'other attachment metadata does not hide Copilot detail', meta: { 'copilot.attachmentDetail': attachment, browserView: null }, expected: attachmentDetail },
 		{ name: 'malformed detail', meta: { 'copilot.attachmentDetail': { type: 1 } }, expected: undefined },
 	]);
 	const forwarded = { fetchError: { type: 'failed', requestId: 'vscode' } };
 	readerMatrix('error detail', meta => readErrorDetail({ _meta: meta }), undefined, [
-		{ name: 'VS Code', meta: { chatError: forwarded }, expected: { kind: 'fetch', value: forwarded } },
+		{ name: 'Klawly', meta: { chatError: forwarded }, expected: { kind: 'fetch', value: forwarded } },
 		{ name: 'Copilot D preserves false and zero', meta: { 'copilot.errorDetail': { statusCode: 0, eligibleForAutoSwitch: false } }, expected: { kind: 'diagnostic', statusCode: 0, eligibleForAutoSwitch: false } },
-		{ name: 'both styles choose a complete VS Code result', meta: { chatError: forwarded, 'copilot.errorDetail': { url: 'https://example.com' } }, expected: { kind: 'fetch', value: forwarded } },
-		{ name: 'malformed VS Code falls back', meta: { chatError: {}, 'copilot.errorDetail': { errorCode: 'remote' } }, expected: { kind: 'diagnostic', errorCode: 'remote' } },
+		{ name: 'both styles choose a complete Klawly result', meta: { chatError: forwarded, 'copilot.errorDetail': { url: 'https://example.com' } }, expected: { kind: 'fetch', value: forwarded } },
+		{ name: 'malformed Klawly falls back', meta: { chatError: {}, 'copilot.errorDetail': { errorCode: 'remote' } }, expected: { kind: 'diagnostic', errorCode: 'remote' } },
 		{ name: 'malformed Copilot D', meta: { 'copilot.errorDetail': [] }, expected: undefined },
 	]);
 
 	const latest = { cost: 0, duration: 12, contentFilterTriggered: false };
 	readerMatrix('usage', meta => readUsageInfoMeta({ inputTokens: 10, outputTokens: 3, _meta: meta }), {}, [
-		{ name: 'VS Code preserves zero turn cost', meta: { cost: 0 }, expected: { cost: 0 } },
+		{ name: 'Klawly preserves zero turn cost', meta: { cost: 0 }, expected: { cost: 0 } },
 		{ name: 'Copilot D latest call is not a whole-turn cost', meta: { 'copilot.usageDetail': latest }, expected: { latestModelCall: latest } },
 		{ name: 'both styles do not mix cost scopes', meta: { cost: 2, 'copilot.usageDetail': latest }, expected: { cost: 2 } },
-		{ name: 'malformed VS Code does not fall through', meta: { cost: null, 'copilot.usageDetail': latest }, expected: {} },
-		{ name: 'meaningful empty VS Code usage wins', meta: { copilotUsage: {}, 'copilot.usageDetail': latest }, expected: { copilotUsage: {} } },
+		{ name: 'malformed Klawly does not fall through', meta: { cost: null, 'copilot.usageDetail': latest }, expected: {} },
+		{ name: 'meaningful empty Klawly usage wins', meta: { copilotUsage: {}, 'copilot.usageDetail': latest }, expected: { copilotUsage: {} } },
 		{ name: 'malformed Copilot D', meta: { 'copilot.usageDetail': [] }, expected: {} },
 	]);
 	const context = { currentTokens: 0, tokenLimit: 100, messagesLength: 0 };
@@ -92,25 +92,25 @@ suite('Metadata compatibility', () => {
 		{ name: 'invalid capacity', meta: { 'copilot.usageInfo': { ...context, tokenLimit: 0 } }, expected: undefined },
 	]);
 	readerMatrix('model pricing', meta => readAgentModelPricingMeta({ id: 'model', provider: 'copilot', name: 'Model', _meta: meta }), {}, [
-		{ name: 'VS Code preserves zero prices', meta: { inputCost: 0, category: 'lightweight' }, expected: { inputCost: 0, category: 'lightweight' } },
+		{ name: 'Klawly preserves zero prices', meta: { inputCost: 0, category: 'lightweight' }, expected: { inputCost: 0, category: 'lightweight' } },
 		{ name: 'Copilot D', meta: { 'copilot.modelPickerCategory': 'powerful' }, expected: { category: 'powerful' } },
 		{ name: 'both styles do not fill in the category', meta: { inputCost: 1, 'copilot.modelPickerCategory': 'powerful' }, expected: { inputCost: 1 } },
-		{ name: 'malformed VS Code does not fall through', meta: { category: null, 'copilot.modelPickerCategory': 'powerful' }, expected: {} },
+		{ name: 'malformed Klawly does not fall through', meta: { category: null, 'copilot.modelPickerCategory': 'powerful' }, expected: {} },
 		{ name: 'unknown Copilot category', meta: { 'copilot.modelPickerCategory': 'future' }, expected: {} },
 	]);
 	readerMatrix('model-call detail', meta => {
 		const detail = readAgentModelCallDetail({ inputTokens: 10, outputTokens: 3, _meta: meta });
 		return detail && { providerCallId: detail.providerCallId, durationMs: detail.durationMs, timeToFirstTokenMs: detail.timeToFirstTokenMs };
 	}, undefined, [
-		{ name: 'VS Code correlation remains available', meta: { 'vscode.modelCall': { schemaVersion: 1, sdkSessionId: 'sdk', eventId: 'event', providerCallId: 'vs', durationMs: 0 } }, expected: { providerCallId: 'vs', durationMs: 0, timeToFirstTokenMs: undefined } },
+		{ name: 'Klawly correlation remains available', meta: { 'vscode.modelCall': { schemaVersion: 1, sdkSessionId: 'sdk', eventId: 'event', providerCallId: 'vs', durationMs: 0 } }, expected: { providerCallId: 'vs', durationMs: 0, timeToFirstTokenMs: undefined } },
 		{ name: 'Copilot D normalized duration', meta: { 'copilot.usageDetail': { providerCallId: 'remote', duration: 12, timeToFirstTokenMs: 0 } }, expected: { providerCallId: 'remote', durationMs: 12, timeToFirstTokenMs: 0 } },
-		{ name: 'invalid VS Code IDs do not borrow Copilot correlation', meta: { 'vscode.modelCall': { schemaVersion: 1 }, 'copilot.usageDetail': { providerCallId: 'remote', duration: 12 } }, expected: undefined },
+		{ name: 'invalid Klawly IDs do not borrow Copilot correlation', meta: { 'vscode.modelCall': { schemaVersion: 1 }, 'copilot.usageDetail': { providerCallId: 'remote', duration: 12 } }, expected: undefined },
 		{ name: 'malformed Copilot D', meta: { 'copilot.usageDetail': [] }, expected: undefined },
 	]);
 	readerMatrix('tool presentation', meta => readToolCallMeta({ _meta: meta }), {}, [
-		{ name: 'VS Code terminal', meta: { toolKind: 'terminal', language: 'shellscript', autoApproveBySetting: false }, expected: { toolKind: 'terminal', language: 'shellscript', autoApproveBySetting: false } },
+		{ name: 'Klawly terminal', meta: { toolKind: 'terminal', language: 'shellscript', autoApproveBySetting: false }, expected: { toolKind: 'terminal', language: 'shellscript', autoApproveBySetting: false } },
 		{ name: 'Copilot origin does not fabricate a tool kind', meta: { 'copilot.toolOrigin': { kind: 'builtin', namespacedName: 'bash' } }, expected: {} },
-		{ name: 'unknown VS Code kind', meta: { toolKind: 'future' }, expected: {} },
+		{ name: 'unknown Klawly kind', meta: { toolKind: 'future' }, expected: {} },
 		{ name: 'portable MCP app metadata', meta: { ui: { resourceUri: 'ui://app', channel: 'mcp://server' } }, expected: { ui: { resourceUri: 'ui://app', channel: 'mcp://server' } } },
 	]);
 	readerMatrix('tool output', meta => readAgentToolOutputDelta({ _meta: meta }, {}, {}), undefined, [
@@ -120,7 +120,7 @@ suite('Metadata compatibility', () => {
 		{ name: 'malformed output', meta: { 'copilot.toolOutputDelta': 7 }, expected: undefined },
 	]);
 	readerMatrix('legacy permission bridge', meta => readAgentPermissionRequestMeta({ _meta: meta }), {}, [
-		{ name: 'VS Code tool kind remains authoritative', meta: { toolKind: 'read', permissionRequest: { kind: 'shell' } }, expected: {} },
+		{ name: 'Klawly tool kind remains authoritative', meta: { toolKind: 'read', permissionRequest: { kind: 'shell' } }, expected: {} },
 		{ name: 'Copilot shell', meta: { permissionRequest: { kind: 'shell' } }, expected: { kind: AgentPermissionRequestKind.Commands } },
 		{ name: 'projected read permission', meta: { promptRequest: { kind: 'read' } }, expected: { kind: AgentPermissionRequestKind.Read } },
 		{ name: 'projected write permission', meta: { promptRequest: { kind: 'write', fileName: '/workspace/file.ts' } }, expected: { kind: AgentPermissionRequestKind.Write, fileName: '/workspace/file.ts' } },
@@ -129,11 +129,11 @@ suite('Metadata compatibility', () => {
 		{ name: 'malformed filename', meta: { promptRequest: { kind: 'write', fileName: 42 } }, expected: { kind: AgentPermissionRequestKind.Write } },
 		{ name: 'empty filename', meta: { promptRequest: { kind: 'write', fileName: ' ' } }, expected: { kind: AgentPermissionRequestKind.Write } },
 		{ name: 'malformed projected request falls back to raw', meta: { promptRequest: [], permissionRequest: { kind: 'write', fileName: '/workspace/file.ts' } }, expected: { kind: AgentPermissionRequestKind.Write, fileName: '/workspace/file.ts' } },
-		{ name: 'malformed VS Code does not fall through', meta: { toolKind: null, permissionRequest: { kind: 'shell' } }, expected: {} },
+		{ name: 'malformed Klawly does not fall through', meta: { toolKind: null, permissionRequest: { kind: 'shell' } }, expected: {} },
 		{ name: 'unrecognized permission is generic', meta: { permissionRequest: { kind: 'path', accessKind: 'shell' } }, expected: {} },
 	]);
 
-	test('VS Code context attribution and tool rendering take precedence at either lifecycle stage', () => {
+	test('Klawly context attribution and tool rendering take precedence at either lifecycle stage', () => {
 		assert.deepStrictEqual({
 			context: readAgentContextUsage({ _meta: { 'copilot.usageInfo': context } }, { inputTokens: 10, outputTokens: 3, _meta: { contextAttribution: null } }),
 			toolOutput: [null, 'terminal'].flatMap(toolKind => [

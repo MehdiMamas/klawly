@@ -527,7 +527,7 @@ class TestSession implements ISession {
 	readonly sessionType = 'test';
 	readonly harness = 'copilot';
 	readonly environment = 'local';
-	readonly application = constObservable({ id: 'vscode', label: 'VS Code' });
+	readonly application = constObservable({ id: 'vscode', label: 'Klawly' });
 	readonly icon = Codicon.comment;
 	readonly createdAt = new Date(0);
 	readonly title: ReturnType<typeof observableValue<string>>;

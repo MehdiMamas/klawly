@@ -280,7 +280,7 @@ suite('AgentHostManagedSettings', () => {
 		});
 	});
 
-	test('keeps an absolute command path that VS Code treats as a literal', () => {
+	test('keeps an absolute command path that Klawly treats as a literal', () => {
 		const configurationService = createConfigurationService({
 			// Starts and ends with `/` but the trailing segment is not a flag list,
 			// so the auto-approver reads it as a path rather than a regular expression.

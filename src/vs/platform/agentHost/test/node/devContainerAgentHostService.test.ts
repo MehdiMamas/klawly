@@ -1004,7 +1004,7 @@ suite('Dev Container Agent Host Main Service', () => {
 		});
 	}
 
-	test('failed sample preparation does not stop containers used by other VS Code sessions', async () => {
+	test('failed sample preparation does not stop containers used by other Klawly sessions', async () => {
 		const service = store.add(new class extends TestDevContainerAgentHostMainService {
 			protected override async _prepareSample(_connectionId: string, _sample: DevContainerSample, _token: CancellationToken, onContainerStarted: (containerId: string) => void): Promise<IPreparedDevContainerSample> {
 				onContainerStarted('sample-container');
@@ -1050,7 +1050,7 @@ suite('Dev Container Agent Host Main Service', () => {
 		await assert.rejects(connecting, /Dev Container relay process exited before connecting \(exit code 1\)/);
 	});
 
-	test('marks a newly spawned Agent Host with the VS Code session ID', async () => {
+	test('marks a newly spawned Agent Host with the Klawly session ID', async () => {
 		const service = store.add(new TestDevContainerAgentHostMainService());
 		service.endpointSessionId = undefined;
 
@@ -1101,7 +1101,7 @@ suite('Dev Container Agent Host Main Service', () => {
 		});
 	});
 
-	test('does not stop or remove a container used by another VS Code session', async () => {
+	test('does not stop or remove a container used by another Klawly session', async () => {
 		const service = store.add(new TestDevContainerAgentHostMainService());
 		service.containerSessionIds.push('other-session');
 		await service.connect({

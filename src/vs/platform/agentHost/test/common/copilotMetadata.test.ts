@@ -18,7 +18,7 @@ import { isMessageHiddenFromTranscript, isMessageRequestHiddenFromTranscript, Me
 suite('Copilot metadata', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	test('selects VS Code metadata by presence, not valid or truthy fields', () => {
+	test('selects Klawly metadata by presence, not valid or truthy fields', () => {
 		assert.deepStrictEqual([false, 0, '', null, undefined].map(value => hasAgentMetadata({ _meta: { present: value } }, ['present'])), [true, true, true, true, true]);
 	});
 
@@ -81,7 +81,7 @@ suite('Copilot metadata', () => {
 		], [{ category: 'powerful' }, {}, { inputCost: 0 }, {}]);
 	});
 
-	test('internal visibility hides only the request and never overrides a VS Code flag', () => {
+	test('internal visibility hides only the request and never overrides a Klawly flag', () => {
 		const message: Message = { text: 'injected', origin: { kind: MessageKind.Tool }, _meta: { 'copilot.visibility': 'internal' } };
 		assert.deepStrictEqual([
 			[isMessageHiddenFromTranscript(message), isMessageRequestHiddenFromTranscript(message)],

@@ -115,7 +115,7 @@ export function makeSession(resource: URI, opts?: {
 		sessionType: 'local',
 		harness: 'copilot',
 		environment: 'local',
-		application: constObservable({ id: 'vscode', label: 'VS Code' }),
+		application: constObservable({ id: 'vscode', label: 'Klawly' }),
 		icon: Codicon.copilot,
 		createdAt: chat.createdAt,
 		workspace: observableValue('workspace', workspace),

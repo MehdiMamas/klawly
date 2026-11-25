@@ -34,7 +34,7 @@ suite('Session config properties', () => {
 		},
 	};
 
-	test('VS Code properties preserve existing choices, defaults, and the meaning of branch', () => {
+	test('Klawly properties preserve existing choices, defaults, and the meaning of branch', () => {
 		const approval = getSessionApprovalProperty(vscode);
 		const workspace = getSessionWorkspaceProperties(vscode);
 		assert.deepStrictEqual({
@@ -50,7 +50,7 @@ suite('Session config properties', () => {
 	});
 
 	for (const [name, schema, values, runtime] of [
-		['VS Code', vscode, { autoApprove: 'assisted', isolation: 'worktree', branch: 'release', mode: 'plan' }, { autoApprove: 'assisted', mode: 'plan' }],
+		['Klawly', vscode, { autoApprove: 'assisted', isolation: 'worktree', branch: 'release', mode: 'plan' }, { autoApprove: 'assisted', mode: 'plan' }],
 		['Copilot D', copilot, { approvalMode: 'assisted', target: 'worktree', baseBranch: 'release', mode: 'plan' }, { approvalMode: 'assisted', mode: 'plan' }],
 	] as const) {
 		test(`${name} schema filters stale aliases without renaming advertised keys`, () => {
@@ -62,7 +62,7 @@ suite('Session config properties', () => {
 				keys: Object.keys(filterSessionConfigValues(schema, remembered)).sort(),
 			}, {
 				creation: values, runtime, empty: {},
-				keys: name === 'VS Code' ? ['autoApprove', 'branch', 'isolation', 'mode'] : ['approvalMode', 'baseBranch', 'branch', 'mode', 'target'],
+				keys: name === 'Klawly' ? ['autoApprove', 'branch', 'isolation', 'mode'] : ['approvalMode', 'baseBranch', 'branch', 'mode', 'target'],
 			});
 		});
 	}

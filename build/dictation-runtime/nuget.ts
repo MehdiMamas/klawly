@@ -59,7 +59,7 @@ function getRequestOptions(url: string): https.RequestOptions {
 	}
 	const token = process.env[VSS_NUGET_ACCESSTOKEN];
 	if (!token) {
-		throw new Error(`${VSS_NUGET_ACCESSTOKEN} is required to access the VS Code NuGet feed.`);
+		throw new Error(`${VSS_NUGET_ACCESSTOKEN} is required to access the Klawly NuGet feed.`);
 	}
 	return {
 		headers: {
