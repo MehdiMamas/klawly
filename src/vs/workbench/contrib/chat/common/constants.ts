@@ -11,12 +11,12 @@ import { IWorkspace, IWorkspaceContextService } from '../../../../platform/works
 import { isVirtualWorkspace } from '../../../../platform/workspace/common/virtualWorkspace.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { ContextKeyExpr, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
-import { ChatEntitlementContextKeys } from '../../../services/chat/common/chatEntitlementService.js';
 import { IsAuxiliaryWindowContext, IsSessionsWindowContext } from '../../../common/contextkeys.js';
 import { URI } from '../../../../base/common/uri.js';
 import { getChatSessionType, getNewChatSessionResource } from './model/chatUri.js';
 import { clearUserSelectedSessionType, getRememberedSessionType, storeUserSelectedSessionType } from './chatSessionTypePreference.js';
 import { IAgentHostEnablementService } from '../../../../platform/agentHost/common/agentHostEnablementService.js';
+import { CLAUDE_AGENTS_WINDOW_ENABLED_SETTING } from '../../../../platform/claude/common/claudeAgentHost.js';
 import { requiresCopilotAgentHost, IManagedSettingsService, isTemporaryDefaultToLocalHarnessEnabled } from '../../../../platform/policy/common/copilotManagedSettings.js';
 import { localize } from '../../../../nls.js';
 
@@ -668,9 +668,9 @@ export const CHAT_SUBAGENT_RESOURCE_QUERY_PARAM = 'subagentChatResource';
 export const OPEN_WORKSPACE_IN_AGENTS_WINDOW_COMMAND_ID = 'workbench.action.openWorkspaceInAgentsWindow';
 export const OPEN_AGENTS_WINDOW_COMMAND_ID = 'workbench.action.openAgentsWindow';
 export { AGENTS_WINDOW_TOTAL_SESSIONS_STORAGE_KEY } from '../../../../platform/chat/common/agentsWindowInvitation.js';
+// Klawly: the Agents window runs Claude through the Agent Host, so Klawly's setting opens it, not Copilot's setup state (issue 617).
 export const OPEN_AGENTS_WINDOW_PRECONDITION = ContextKeyExpr.and(
-	ChatEntitlementContextKeys.Setup.hidden.negate(),
-	ChatEntitlementContextKeys.Setup.disabledInWorkspace.negate(),
+	ContextKeyExpr.has(`config.${CLAUDE_AGENTS_WINDOW_ENABLED_SETTING}`),
 	IsSessionsWindowContext.negate(),
 	ContextKeyExpr.has(`config.${ChatConfiguration.AgentEnabled}`),
 	IsAuxiliaryWindowContext.negate()

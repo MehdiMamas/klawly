@@ -226,7 +226,7 @@ export class ChatMcpAppModel extends Disposable {
 			}
 
 			// Inject CSP into the HTML
-			const htmlWithCsp = this._injectPreamble(resourceContent);
+			const htmlWithCsp = ChatMcpAppModel.injectPreamble(resourceContent);
 
 			// Reset the state
 			this._announcedCapabilities = false;
@@ -245,7 +245,7 @@ export class ChatMcpAppModel extends Disposable {
 	/**
 	 * Injects a Content-Security-Policy meta tag into the HTML.
 	 */
-	private _injectPreamble({ html, csp }: IMcpAppResourceContent): string {
+	static injectPreamble({ html, csp }: IMcpAppResourceContent): string {
 		// Note: this is not bulletproof against malformed domains. However it does not
 		// need to be. The server is the one giving us both the CSP as well as the HTML
 		// to render in the iframe. MCP Apps give the CSP separately so that systems that
@@ -410,10 +410,10 @@ export class ChatMcpAppModel extends Disposable {
 			})();</script>
 		`;
 
-		return this._prependToHead(html, cspTag + postMessageRehoist);
+		return ChatMcpAppModel._prependToHead(html, cspTag + postMessageRehoist);
 	}
 
-	private _prependToHead(html: string, content: string): string {
+	private static _prependToHead(html: string, content: string): string {
 		// Try to inject into <head>
 		const headMatch = html.match(/<head[^>]*>/i);
 		if (headMatch) {

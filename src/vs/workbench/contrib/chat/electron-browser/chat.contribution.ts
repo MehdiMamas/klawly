@@ -13,6 +13,7 @@ import { URI } from '../../../../base/common/uri.js';
 import { ipcRenderer } from '../../../../base/parts/sandbox/electron-browser/globals.js';
 import { localize } from '../../../../nls.js';
 import { registerAction2 } from '../../../../platform/actions/common/actions.js';
+import { claudeSessionIdFromAgentsWindow } from '../../../../platform/claude/common/claudeAgentsWindowSessions.js';
 import { CommandsRegistry, ICommandService } from '../../../../platform/commands/common/commands.js';
 import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
 import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
@@ -95,6 +96,10 @@ class ChatCommandLineHandler extends Disposable {
 			this.logService.trace('vscode:openChatSession', sessionUriString);
 
 			const sessionResource = URI.parse(sessionUriString);
+			// Klawly: while its agent is on, the Agent pane opens Claude Code sessions (issue 618).
+			if (claudeSessionIdFromAgentsWindow(sessionResource) && this.contextKeyService.getContextKeyValue<boolean>('claude.agentDisabled') !== true) {
+				return;
+			}
 			Promise.resolve(this.chatWidgetService.openSession(sessionResource, ChatViewPaneTarget))
 				.catch(err => this.logService.error('vscode:openChatSession failed', err));
 		};
@@ -104,6 +109,10 @@ class ChatCommandLineHandler extends Disposable {
 
 	private async prompt(args: typeof this.environmentService.args.chat): Promise<void> {
 		if (!Array.isArray(args?._)) {
+			return;
+		}
+		// Klawly: while its agent is on, Klawly answers `klawly chat` itself (issue 519).
+		if (this.contextKeyService.getContextKeyValue<boolean>('claude.agentDisabled') === false) {
 			return;
 		}
 

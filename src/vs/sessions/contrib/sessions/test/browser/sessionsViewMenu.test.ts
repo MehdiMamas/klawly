@@ -300,16 +300,16 @@ suite('Sessions - View Menu', () => {
 				{ title: 'Claude (Local)', group: '3_applications_000000', checked: false },
 				{ title: 'Codex (Local)', group: '3_applications_000000', checked: false },
 				{ title: 'Copilot CLI (Local)', group: '3_applications_000000', checked: false },
+				{ title: 'Klawly (Local)', group: '3_applications_000000', checked: true },
 				{ title: 'Third-party (Local)', group: '3_applications_000000', checked: false },
-				{ title: 'VS Code (Local)', group: '3_applications_000000', checked: true },
 				{ title: 'Copilot App (Cloud)', group: '3_applications_000001', checked: true },
 				{ title: 'Copilot CLI (Cloud)', group: '3_applications_000001', checked: true },
+				{ title: 'Klawly (Cloud)', group: '3_applications_000001', checked: true },
 				{ title: 'Slack (Cloud)', group: '3_applications_000001', checked: false },
-				{ title: 'VS Code (Cloud)', group: '3_applications_000001', checked: true },
 				{ title: 'Copilot CLI (A Host)', group: '3_applications_000002', checked: false },
-				{ title: 'VS Code (A Host)', group: '3_applications_000002', checked: true },
+				{ title: 'Klawly (A Host)', group: '3_applications_000002', checked: true },
 				{ title: 'Claude (Z Host)', group: '3_applications_000003', checked: false },
-				{ title: 'VS Code (Z Host)', group: '3_applications_000003', checked: true },
+				{ title: 'Klawly (Z Host)', group: '3_applications_000003', checked: true },
 			],
 			harnesses: [
 				{ title: 'Copilot', group: '1_harnesses', checked: true },
@@ -319,13 +319,13 @@ suite('Sessions - View Menu', () => {
 		});
 	});
 
-	test('remote application opt-ins stay scoped to their host and Reset restores VS Code-only defaults', async () => {
+	test('remote application opt-ins stay scoped to their host and Reset restores Klawly-only defaults', async () => {
 		const sessions = [
 			buildTestSession({ id: 'local-codex', title: 'Local Codex', application: 'codex' }).session,
 			buildTestSession({ id: 'cloud-codex', title: 'Cloud Codex', environment: 'cloud', application: 'codex' }).session,
-			buildTestSession({ id: 'first-vscode', title: 'First VS Code', environment: 'first-host' }).session,
+			buildTestSession({ id: 'first-vscode', title: 'First Klawly', environment: 'first-host' }).session,
 			buildTestSession({ id: 'first-codex', title: 'First Codex', environment: 'first-host', application: 'codex' }).session,
-			buildTestSession({ id: 'second-vscode', title: 'Second VS Code', environment: 'second-host' }).session,
+			buildTestSession({ id: 'second-vscode', title: 'Second Klawly', environment: 'second-host' }).session,
 			buildTestSession({ id: 'second-codex', title: 'Second Codex', environment: 'second-host', application: 'codex' }).session,
 		];
 		const { snapshot, filters, run } = createMenu(sessions, [{ id: 'first-host', label: 'First Host' }, { id: 'second-host', label: 'Second Host' }]);
@@ -342,17 +342,17 @@ suite('Sessions - View Menu', () => {
 		assert.deepStrictEqual({ defaults, optedIn, reset: state() }, {
 			defaults: {
 				visible: ['cloud-codex', 'first-vscode', 'second-vscode'],
-				sources: [['Codex (Local)', false], ['VS Code (Local)', true], ['Codex (Cloud)', true], ['VS Code (Cloud)', true], ['Codex (First Host)', false], ['VS Code (First Host)', true], ['Codex (Second Host)', false], ['VS Code (Second Host)', true]],
+				sources: [['Codex (Local)', false], ['Klawly (Local)', true], ['Codex (Cloud)', true], ['Klawly (Cloud)', true], ['Codex (First Host)', false], ['Klawly (First Host)', true], ['Codex (Second Host)', false], ['Klawly (Second Host)', true]],
 			},
 			optedIn: {
 				visible: ['cloud-codex', 'first-vscode', 'first-codex', 'second-vscode'],
-				sources: [['Codex (Local)', false], ['VS Code (Local)', true], ['Codex (Cloud)', true], ['VS Code (Cloud)', true], ['Codex (First Host)', true], ['VS Code (First Host)', true], ['Codex (Second Host)', false], ['VS Code (Second Host)', true]],
+				sources: [['Codex (Local)', false], ['Klawly (Local)', true], ['Codex (Cloud)', true], ['Klawly (Cloud)', true], ['Codex (First Host)', true], ['Klawly (First Host)', true], ['Codex (Second Host)', false], ['Klawly (Second Host)', true]],
 			},
 			reset: defaults,
 		});
 	});
 
-	test('VS Code toggles work before any sessions and Reset restores defaults and Show Recent', async () => {
+	test('Klawly toggles work before any sessions and Reset restores defaults and Show Recent', async () => {
 		const local = buildTestSession({ id: 'local', title: 'Local' }).session;
 		const cloud = buildTestSession({ id: 'cloud', title: 'Cloud', environment: 'cloud' }).session;
 		const { snapshot, filters, capped, run, sessionsControl, setSessions } = createMenu();
@@ -383,8 +383,8 @@ suite('Sessions - View Menu', () => {
 				cloud: true,
 				archived: true,
 				sources: [
-					{ title: 'VS Code (Local)', group: '3_applications_000000', checked: false },
-					{ title: 'VS Code (Cloud)', group: '3_applications_000001', checked: true },
+					{ title: 'Klawly (Local)', group: '3_applications_000000', checked: false },
+					{ title: 'Klawly (Cloud)', group: '3_applications_000001', checked: true },
 				],
 				environments: [
 					{ title: 'Local', group: '2_environments', checked: true },
@@ -424,8 +424,8 @@ suite('Sessions - View Menu', () => {
 			excluded: {
 				title: 'Environment',
 				sources: [
-					{ title: 'VS Code (Local)', group: '3_applications_000000', checked: true },
-					{ title: 'VS Code (Build Server)', group: '3_applications_000002', checked: true },
+					{ title: 'Klawly (Local)', group: '3_applications_000000', checked: true },
+					{ title: 'Klawly (Build Server)', group: '3_applications_000002', checked: true },
 				],
 				visible: ['local', 'remote'],
 			},
@@ -447,8 +447,8 @@ suite('Sessions - View Menu', () => {
 			visible: false,
 			excludeArchived: true,
 			sources: [
-				{ title: 'VS Code (Local)', group: '3_applications_000000', checked: false },
-				{ title: 'VS Code (Cloud)', group: '3_applications_000001', checked: true },
+				{ title: 'Klawly (Local)', group: '3_applications_000000', checked: false },
+				{ title: 'Klawly (Cloud)', group: '3_applications_000001', checked: true },
 			],
 			environments: [
 				{ title: 'Local', group: '2_environments', checked: true },
@@ -457,7 +457,7 @@ suite('Sessions - View Menu', () => {
 		});
 	});
 
-	test('offers VS Code in an empty catalog and scopes its choices to included environments', () => {
+	test('offers Klawly in an empty catalog and scopes its choices to included environments', () => {
 		const { snapshot, filters } = createMenu();
 		const state = () => ({
 			title: snapshot(Menus.SessionsViewFilter).find(item => item.submenu === Menus.SessionsViewEnvironment.id)?.title,
@@ -470,8 +470,8 @@ suite('Sessions - View Menu', () => {
 		const none = state();
 		filters.setExcluded({ kind: 'environment', id: 'cloud' }, false);
 		const cloud = state();
-		const localApplication = { title: 'VS Code (Local)', group: '3_applications_000000', checked: true };
-		const cloudApplication = { title: 'VS Code (Cloud)', group: '3_applications_000001', checked: true };
+		const localApplication = { title: 'Klawly (Local)', group: '3_applications_000000', checked: true };
+		const cloudApplication = { title: 'Klawly (Cloud)', group: '3_applications_000001', checked: true };
 		assert.deepStrictEqual({ empty, local, none, cloud }, {
 			empty: { title: 'Environment', sources: [localApplication, cloudApplication] },
 			local: { title: 'Environment', sources: [localApplication] },
@@ -483,24 +483,24 @@ suite('Sessions - View Menu', () => {
 		});
 	});
 
-	test('offers a VS Code toggle for a connected remote host before it has any sessions', async () => {
+	test('offers a Klawly toggle for a connected remote host before it has any sessions', async () => {
 		const { snapshot, filters, run, setSessions } = createMenu([], [{ id: 'remote', label: 'Build Server' }]);
 		const before = snapshot(Menus.SessionsViewSource);
-		const vscodeAction = MenuRegistry.getMenuItems(Menus.SessionsViewSource).filter(isIMenuItem).find(item => item.command.title === 'VS Code (Build Server)');
+		const vscodeAction = MenuRegistry.getMenuItems(Menus.SessionsViewSource).filter(isIMenuItem).find(item => item.command.title === 'Klawly (Build Server)');
 		assert.ok(vscodeAction);
 		await run(vscodeAction.command.id);
-		const remote = buildTestSession({ id: 'remote-vscode', title: 'Remote VS Code', environment: 'remote' }).session;
+		const remote = buildTestSession({ id: 'remote-vscode', title: 'Remote Klawly', environment: 'remote' }).session;
 		setSessions([remote]);
 		assert.deepStrictEqual({ before, after: snapshot(Menus.SessionsViewSource), visible: filters.matches(remote) }, {
 			before: [
-				{ title: 'VS Code (Local)', group: '3_applications_000000', checked: true },
-				{ title: 'VS Code (Cloud)', group: '3_applications_000001', checked: true },
-				{ title: 'VS Code (Build Server)', group: '3_applications_000002', checked: true },
+				{ title: 'Klawly (Local)', group: '3_applications_000000', checked: true },
+				{ title: 'Klawly (Cloud)', group: '3_applications_000001', checked: true },
+				{ title: 'Klawly (Build Server)', group: '3_applications_000002', checked: true },
 			],
 			after: [
-				{ title: 'VS Code (Local)', group: '3_applications_000000', checked: true },
-				{ title: 'VS Code (Cloud)', group: '3_applications_000001', checked: true },
-				{ title: 'VS Code (Build Server)', group: '3_applications_000002', checked: false },
+				{ title: 'Klawly (Local)', group: '3_applications_000000', checked: true },
+				{ title: 'Klawly (Cloud)', group: '3_applications_000001', checked: true },
+				{ title: 'Klawly (Build Server)', group: '3_applications_000002', checked: false },
 			],
 			visible: false,
 		});
@@ -535,7 +535,7 @@ suite('Sessions - View Menu', () => {
 				{ title: 'Local', group: '2_environments', checked: false },
 				{ title: 'Cloud', group: '2_environments', checked: false },
 			],
-			sources: [{ title: 'VS Code (Renamed Server)', group: '3_applications_000002', checked: false }],
+			sources: [{ title: 'Klawly (Renamed Server)', group: '3_applications_000002', checked: false }],
 		};
 		const expectedNone = {
 			title: 'Environment',

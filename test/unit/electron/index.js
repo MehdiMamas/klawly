@@ -10,7 +10,7 @@
 // come before any mocha imports.
 process.env.MOCHA_COLORS = '1';
 
-const { app, BrowserWindow, ipcMain, crashReporter, net: electronNet, protocol, session } = require('electron');
+const { app, BrowserWindow, ipcMain, crashReporter, nativeTheme, net: electronNet, protocol, session } = require('electron');
 // A renderer's execPath points at the helper executable on macOS.
 process.env.VSCODE_TEST_ELECTRON_PATH = process.execPath;
 const product = require('../../../product.json');
@@ -78,6 +78,11 @@ const args = minimist(process.argv.slice(2), {
 });
 
 const isCI = !!process.env.BUILD_ARTIFACTSTAGINGDIRECTORY || !!process.env.GITHUB_WORKSPACE;
+
+if (process.platform === 'win32') {
+	// Klawly: geometry tests assume 1 CSS px = 1 device px. A Windows display scaled to 125% turns 1px borders into 0.8px.
+	app.commandLine.appendSwitch('force-device-scale-factor', '1');
+}
 
 if (args.help) {
 	console.log(`Usage: node ${process.argv[1]} [options] [file...]
@@ -249,6 +254,8 @@ class IPCRunner extends events.EventEmitter {
 }
 
 app.on('ready', async () => {
+	// Klawly: mocha.css turns the page text white when the OS is in dark mode, so tests that read currentColor depended on the runner's appearance.
+	nativeTheme.themeSource = 'light';
 	session.defaultSession.setSpellCheckerLanguages([]);
 	session.defaultSession.setSpellCheckerEnabled(false);
 	const outDir = args.build ? 'out-build' : 'out';

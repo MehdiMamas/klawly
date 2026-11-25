@@ -10,10 +10,11 @@ import { IDefaultAccount } from '../../../../base/common/defaultAccount.js';
 import { AccountsActivityActionViewItem, GlobalCompositeBar } from '../../../browser/parts/globalCompositeBar.js';
 import { AuthenticationSession, AuthenticationSessionAccount } from '../../../services/authentication/common/authentication.js';
 import { ActionBar } from '../../../../base/browser/ui/actionbar/actionbar.js';
-import { Action, IAction, Separator } from '../../../../base/common/actions.js';
+import { Action, IAction, Separator, SubmenuAction } from '../../../../base/common/actions.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { DisposableStore } from '../../../../base/common/lifecycle.js';
 import { ACCOUNTS_ACTIVITY_ID, ACCOUNTS_SHARED_SIGN_IN_GROUP, GLOBAL_ACTIVITY_ID } from '../../../common/activity.js';
+import { IKlawlyAccountService } from '../../../services/claude/common/klawlyAccount.js';
 
 interface IGlobalCompositeBarTestHarness {
 	globalActivityActionBar: ActionBar;
@@ -90,6 +91,7 @@ interface IUpdateAvatarTestHarness {
 	configurationService: { getValue(): boolean };
 	groupedAccounts: Map<string, (AuthenticationSessionAccount & { canSignOut: boolean })[]>;
 	defaultAccountService: { currentDefaultAccount: IDefaultAccount | null };
+	klawlyAccountService: Pick<IKlawlyAccountService, 'account'>;
 	getDefaultAccountAvatarIcon(): URI | undefined;
 }
 
@@ -120,6 +122,7 @@ function createHarness(groupedAccounts: Map<string, (AuthenticationSessionAccoun
 		configurationService: { getValue: () => true },
 		groupedAccounts,
 		defaultAccountService: { currentDefaultAccount },
+		klawlyAccountService: { account: undefined },
 		getDefaultAccountAvatarIcon,
 	};
 }
@@ -172,6 +175,18 @@ suite('AccountsActivityActionViewItem - updateAvatar', () => {
 			{ src: firstIcon.toString(true), hasAvatarClass: true }
 		);
 	});
+
+	test('prefers the Klawly profile avatar over every other account', () => {
+		const harness = createHarness(createGroupedAccounts(), createDefaultAccount('microsoft', 'default-account'));
+		harness.klawlyAccountService = { account: { login: 'octocat', id: '1', avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4' } };
+
+		updateAvatar.call(harness);
+
+		assert.deepStrictEqual(
+			{ src: harness.avatarImg.src, hasAvatarClass: harness.label.classList.contains('has-avatar') },
+			{ src: 'https://avatars.githubusercontent.com/u/1?v=4', hasAvatarClass: true }
+		);
+	});
 });
 
 suite('AccountsActivityActionViewItem - addOrUpdateAccount', () => {
@@ -206,14 +221,15 @@ suite('AccountsActivityActionViewItem - account tiers', () => {
 
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 
-	function createHarness(initialized: boolean) {
+	function createHarness(initialized: boolean, klawlyAccountService: Pick<IKlawlyAccountService, 'account' | 'serviceAccounts'> = { account: undefined, serviceAccounts: [] }) {
 		return {
 			initialized,
 			authenticationService: {
-				getProviderIds: () => [],
+				getProviderIds: () => ['github'],
 				isDynamicAuthenticationProvider: () => false,
+				getProvider: () => ({ id: 'github', label: 'GitHub' }),
 			},
-			groupedAccounts: new Map(),
+			groupedAccounts: new Map([['github', [{ id: '1', label: 'octocat', canSignOut: true }, { id: '2', label: 'hubot', canSignOut: true }]]]),
 			problematicProviders: new Set(),
 			codexAccountService: {
 				_serviceBrand: undefined,
@@ -226,6 +242,7 @@ suite('AccountsActivityActionViewItem - account tiers', () => {
 			configurationService: {
 				getValue: (key: string) => key === 'chat.disableAIFeatures' ? false : true,
 			},
+			klawlyAccountService,
 			addAccountsFromProvider: async () => { },
 		};
 	}
@@ -238,6 +255,8 @@ suite('AccountsActivityActionViewItem - account tiers', () => {
 		const actions = await resolveMainMenuActions.call(createHarness(false), menu, actionDisposables);
 
 		assert.deepStrictEqual(actions.map(action => action instanceof Separator ? 'separator' : action.label), [
+			'Sign In with GitHub',
+			'separator',
 			'Loading...',
 			'separator',
 			'Sign in with GitHub',
@@ -254,11 +273,40 @@ suite('AccountsActivityActionViewItem - account tiers', () => {
 		const actions = await resolveMainMenuActions.call(createHarness(true), menu, actionDisposables);
 
 		assert.deepStrictEqual(actions.map(action => action instanceof Separator ? 'separator' : action.label), [
+			'Sign In with GitHub',
+			'separator',
+			'octocat (GitHub)',
+			'hubot (GitHub)',
+			'separator',
 			'Sign in with GitHub',
 			'separator',
 			'Sign in to ChatGPT',
 			'separator',
 			'Manage Language Model Access',
+		]);
+	});
+
+	test('heads the menu with the Klawly profile and its service accounts, without listing the profile twice', async () => {
+		const actionDisposables = disposables.add(new DisposableStore());
+		const profile = {
+			account: { login: 'octocat', id: '1', avatarUrl: undefined },
+			serviceAccounts: [
+				{ id: 'claude', label: 'Claude: Pro', signedIn: true, actions: [{ commandId: 'claude.logOut', label: 'Log Out' }] },
+				{ id: 'other', label: 'Claude: Not Installed', signedIn: false, actions: [] },
+			],
+		};
+		const menu = { getActions: () => [] };
+		const actions = await resolveMainMenuActions.call(createHarness(true, profile), menu, actionDisposables);
+
+		assert.deepStrictEqual(actions.map(action => action instanceof Separator ? 'separator' : `${action.label}${action instanceof SubmenuAction ? ` > ${action.actions.map(child => child.label).join(', ')}` : ''}${action.enabled ? '' : ' (disabled)'}`), [
+			'@octocat (GitHub)',
+			'Sign Out of GitHub',
+			'Claude: Pro > Log Out',
+			'Claude: Not Installed (disabled)',
+			'separator',
+			'hubot (GitHub) > Manage Trusted Extensions, Sign Out',
+			'separator',
+			'Sign in to ChatGPT',
 		]);
 	});
 });

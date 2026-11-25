@@ -952,7 +952,7 @@ suite('MCP configuration entry points', () => {
 			fixture.quickInput.inputs.push('test-package', 'test');
 			await new AddConfigurationAction().run(fixture.instantiation);
 			assert.deepStrictEqual({ adds: fixture.agentHostAdds, installs: fixture.installs, errors: fixture.errors.map(String) },
-				{ adds: [], installs: [], errors: ['Error: This server requires VS Code input variables. Add it to a VS Code configuration file instead of the current agent session.'] });
+				{ adds: [], installs: [], errors: ['Error: This server requires Klawly input variables. Add it to a Klawly configuration file instead of the current agent session.'] });
 		});
 
 		test('server-name cancellation has no writes or saved inputs', async () => {

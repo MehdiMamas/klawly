@@ -1164,7 +1164,7 @@ async function renderEditor(ctx: ComponentFixtureContext, options: IRenderEditor
 				? { kind: 'mcp', id: 'mcp.config.ws0.remote-browser' }
 				: { kind: 'plugin', uri: URI.file(`/user/plugins/${resource.identifier.split('/').pop()}`) };
 	const customizationMarketplaceInstallStates = new Map<string, CustomizationMarketplaceInstallState>([
-		[getCustomizationMarketplaceResourceKey(customizationMarketplaceResources.find(resource => resource.identifier === 'example/design-review')!), { kind: 'unavailable', message: 'Cursor plugins cannot be installed in VS Code.' }],
+		[getCustomizationMarketplaceResourceKey(customizationMarketplaceResources.find(resource => resource.identifier === 'example/design-review')!), { kind: 'unavailable', message: 'Cursor plugins cannot be installed in Klawly.' }],
 		[getCustomizationMarketplaceResourceKey(customizationMarketplaceResources.find(resource => resource.identifier === 'example/project-notes')!), { kind: 'unavailable', message: 'This resource does not provide trusted installation information.' }],
 	]);
 	if (options.customizationMarketplaceInstallationState === 'mixed') {
@@ -3635,7 +3635,7 @@ export default defineThemedFixtureGroup({ path: 'chat/aiCustomizations/' }, {
 
 	DiscoverAvailableSearchResult: defineComponentFixture({
 		labels: { kind: 'screenshot', blocksCi: false },
-		expectedVisualDescriptions: ['Opening an available skill keeps discovery inside VS Code and shows Back, the skill icon beside its title, and Install in a compact header, followed by a subtle Try this section and an ordered Details table with linked source and repository metadata.'],
+		expectedVisualDescriptions: ['Opening an available skill keeps discovery inside Klawly and shows Back, the skill icon beside its title, and Install in a compact header, followed by a subtle Try this section and an ordered Details table with linked source and repository metadata.'],
 		render: ctx => renderEditor(ctx, {
 			sessionResource: localSessionResource,
 			marketplaceVisibilityEnabled: true,

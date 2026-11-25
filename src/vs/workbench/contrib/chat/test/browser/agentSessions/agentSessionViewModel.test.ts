@@ -2596,7 +2596,7 @@ suite('AgentSessions', () => {
 
 		test('should return detailed Local provider description', () => {
 			const description = getAgentSessionProviderDescription(AgentSessionProviders.Local);
-			assert.strictEqual(description, 'Run tasks within VS Code\'s long-standing proprietary agent harness. The agent works in VS Code\'s extension host, iterates via chat, and works interactively to implement changes on your main workspace.');
+			assert.strictEqual(description, 'Run tasks within Klawly\'s long-standing proprietary agent harness. The agent works in Klawly\'s extension host, iterates via chat, and works interactively to implement changes on your main workspace.');
 		});
 
 		test('should return correct name for Background provider', () => {

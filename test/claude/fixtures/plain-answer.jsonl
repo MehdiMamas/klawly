@@ -1,0 +1,8 @@
+{"type":"session.started","sessionId":"$session","model":"fixture-sonnet"}
+{"type":"thinking.delta","sessionId":"$session","text":"","at":1000}
+{"type":"thinking.delta","sessionId":"$session","text":"The early return sits above the guard, so the guard never runs for empty input.","at":1400}
+{"type":"thinking.delta","sessionId":"$session","text":"","at":4200,"done":true}
+{"type":"assistant.delta","sessionId":"$session","text":"The handler returns early. "}
+{"type":"assistant.delta","sessionId":"$session","text":"That skips the check."}
+{"type":"assistant.completed","sessionId":"$session","text":"The handler returns early. That skips the check."}
+{"type":"session.completed","sessionId":"$session"}

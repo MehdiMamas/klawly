@@ -125,6 +125,16 @@ import { MockChatSessionsService } from '../../common/mockChatSessionsService.js
 suite('ChatListRenderer', () => {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
+	// Layout during the image reveal can trip the browser's benign "ResizeObserver loop" notice; the runner reports window errors as uncaught test failures, so drop only that notice.
+	let runnerOnError: OnErrorEventHandler;
+	suiteSetup(() => {
+		runnerOnError = mainWindow.onerror;
+		mainWindow.onerror = (event, ...rest) => typeof event === 'string' && event.startsWith('ResizeObserver loop') ? true : runnerOnError?.call(mainWindow, event, ...rest);
+	});
+	suiteTeardown(() => {
+		mainWindow.onerror = runnerOnError;
+	});
+
 	test('recognizes anchors and their nested content as link targets', () => {
 		const anchor = mainWindow.document.createElement('a');
 		const icon = mainWindow.document.createElement('span');

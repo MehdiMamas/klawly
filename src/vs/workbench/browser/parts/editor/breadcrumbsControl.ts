@@ -40,7 +40,7 @@ import { IListService, WorkbenchAsyncDataTree, WorkbenchDataTree, WorkbenchListF
 import { IQuickInputService } from '../../../../platform/quickinput/common/quickInput.js';
 import { defaultBreadcrumbsWidgetStyles } from '../../../../platform/theme/browser/defaultStyles.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
-import { EditorResourceAccessor, IEditorPartOptions, SideBySideEditor } from '../../../common/editor.js';
+import { EditorInputCapabilities, EditorResourceAccessor, IEditorPartOptions, SideBySideEditor } from '../../../common/editor.js';
 import { IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
 import { hiddenEditorTypesSettingId, IEditorResolverService } from '../../../services/editor/common/editorResolverService.js';
 import { ACTIVE_GROUP, ACTIVE_GROUP_TYPE, IEditorService, SIDE_GROUP, SIDE_GROUP_TYPE } from '../../../services/editor/common/editorService.js';
@@ -430,9 +430,9 @@ export class BreadcrumbsControl {
 		const uri = originalUri ?? canonicalUri;
 		const wasHidden = this.isHidden();
 
-		if (!uri || !this._fileService.hasProvider(uri)) {
+		if (!uri || !this._fileService.hasProvider(uri) || this._editorGroup.activeEditor?.hasCapability(EditorInputCapabilities.HideBreadcrumbs)) {
 			// cleanup and return when there is no input or when
-			// we cannot handle this input
+			// we cannot handle this input (Klawly: or it hides breadcrumbs)
 			this._ckBreadcrumbsPossible.set(false);
 			this._ckBreadcrumbsHasSymbols.set(false);
 			if (!wasHidden) {

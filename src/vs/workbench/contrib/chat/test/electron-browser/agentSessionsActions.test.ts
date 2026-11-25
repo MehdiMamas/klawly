@@ -11,6 +11,7 @@ import { URI } from '../../../../../base/common/uri.js';
 import { mock, upcastPartial } from '../../../../../base/test/common/mock.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from '../../../../../platform/accessibility/common/accessibility.js';
+import { CLAUDE_AGENTS_WINDOW_ENABLED_SETTING } from '../../../../../platform/claude/common/claudeAgentHost.js';
 import { IActionViewItemService } from '../../../../../platform/actions/browser/actionViewItemService.js';
 import { Action2 } from '../../../../../platform/actions/common/actions.js';
 import { CommandsRegistry, ICommandService } from '../../../../../platform/commands/common/commands.js';
@@ -106,6 +107,7 @@ suite('Agents window launch enablement', () => {
 		const screenReaderMode = CONTEXT_ACCESSIBILITY_MODE_ENABLED.bindTo(contextKeyService);
 		const isSessionsWindow = IsSessionsWindowContext.bindTo(contextKeyService);
 		contextKeyService.createKey(`config.${ChatConfiguration.AgentEnabled}`, true);
+		contextKeyService.createKey(`config.${CLAUDE_AGENTS_WINDOW_ENABLED_SETTING}`, true);
 		const context: IContext = { getValue: key => contextKeyService.getContextKeyValue(key) };
 		const action = new OpenAgentsWindowAction();
 		const keybindings = action.desc.keybinding;

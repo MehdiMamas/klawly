@@ -1,0 +1,325 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/*
+ * Phase 27: the permission card redesign, the session switch badges next to the
+ * mode pill, and the mode menu. Tokens come from claude.css (`--claude-*`).
+ */
+
+.claude-permission:focus {
+	outline: none;
+}
+
+.claude-permission-title {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.claude-permission-tool {
+	margin-left: auto;
+	flex: none;
+	padding: 0 var(--claude-space-3);
+	border-radius: var(--claude-radius-xs);
+	background: var(--claude-bg-subtle);
+	color: var(--claude-fg-muted);
+	font-family: var(--claude-font-mono);
+	font-size: var(--claude-text-xs);
+	font-weight: normal;
+	line-height: var(--claude-leading-tight);
+}
+
+.claude-permission-why {
+	padding: var(--claude-space-3) var(--claude-space-5) 0;
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-xs);
+	line-height: var(--claude-leading-tight);
+}
+
+.claude-permission-meta {
+	padding-top: var(--claude-space-2);
+}
+
+/* The card keeps its amber (or red) edge when focused; the focused button shows its own ring. Buttons are 24px. */
+.claude-permission-actions .claude-btn {
+	height: 24px;
+}
+
+/* Deny sits at the end of the row, and at the right edge when the row wraps in a narrow pane. */
+.claude-permission-actions .claude-btn[data-choice="deny"] {
+	margin-left: auto;
+}
+
+.claude-permission-actions .claude-btn .claude-kbd {
+	margin-left: var(--claude-space-1);
+}
+
+.claude-permission-footer {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: var(--claude-space-3);
+	margin-top: calc(-1 * var(--claude-space-3));
+	padding: 0 var(--claude-space-5) var(--claude-space-4);
+	font-size: var(--claude-text-xs);
+}
+
+.claude-permission-level {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--claude-space-2);
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--claude-link);
+	font: inherit;
+	cursor: pointer;
+}
+
+.claude-permission-level .codicon {
+	font-size: var(--claude-icon-compact);
+}
+
+.claude-permission-level:hover .label {
+	text-decoration: underline;
+}
+
+.claude-permission-level:focus-visible {
+	outline: 1px solid var(--claude-focus);
+	outline-offset: 1px;
+}
+
+.claude-permission-hint {
+	color: var(--claude-fg-muted);
+}
+
+/* Session switch badges, next to the mode pill. */
+.claude-session-switches {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--claude-space-2);
+	flex: 0 1 auto;
+	min-width: 24px;
+	overflow: hidden;
+}
+
+.claude-session-switch {
+	flex: 0 1 auto;
+	min-width: 22px;
+}
+
+.claude-session-switch {
+	height: 22px;
+	max-width: 100%;
+	padding: 0 var(--claude-space-2) 0 var(--claude-space-3);
+	display: inline-flex;
+	align-items: center;
+	gap: var(--claude-space-2);
+	border: 1px solid var(--claude-border-strong);
+	border-radius: var(--claude-radius-pill);
+	background: transparent;
+	color: var(--claude-fg-muted);
+	font: inherit;
+	font-size: var(--claude-text-xs);
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.claude-session-switch .label {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.claude-session-switch .codicon {
+	font-size: var(--claude-icon-compact);
+}
+
+.claude-session-switch .codicon-close {
+	font-size: var(--claude-icon-compact);
+	opacity: .8;
+}
+
+.claude-session-switch:hover {
+	background: var(--claude-bg-hover);
+	color: var(--claude-fg);
+}
+
+.claude-session-switch:focus-visible {
+	outline: 1px solid var(--claude-focus);
+	outline-offset: 1px;
+}
+
+.claude-session-switch.is-everything {
+	border-color: color-mix(in srgb, var(--claude-warning) 60%, transparent);
+	background: color-mix(in srgb, var(--claude-warning) 16%, transparent);
+	color: var(--claude-warning);
+	font-weight: 600;
+}
+
+.claude-session-switch.is-everything:hover {
+	background: color-mix(in srgb, var(--claude-warning) 26%, transparent);
+	color: var(--claude-warning);
+}
+
+/* DL-120: the maker's badge wears the accent tone, and the paused preview goes quiet. */
+.claude-session-switch.is-maker {
+	border-color: color-mix(in srgb, var(--claude-accent) 60%, transparent);
+	background: color-mix(in srgb, var(--claude-accent) 14%, transparent);
+	color: var(--claude-fg);
+}
+
+.claude-session-switch.is-maker.is-preview {
+	border-style: dashed;
+	background: transparent;
+	color: var(--claude-fg-muted);
+}
+
+/* DL-85: the level that is Claude Code's bypass permissions mode wears the error tone, not the warning one. */
+.claude-session-switch.is-everything.is-bypass {
+	border-color: color-mix(in srgb, var(--claude-error) 60%, transparent);
+	background: color-mix(in srgb, var(--claude-error) 16%, transparent);
+	color: var(--claude-error);
+}
+
+.claude-session-switch.is-everything.is-bypass:hover {
+	background: color-mix(in srgb, var(--claude-error) 26%, transparent);
+	color: var(--claude-error);
+}
+
+/* Mode menu: one tall row per mode with what it may do, then Allow Everything. */
+.claude-menu.claude-mode-menu {
+	width: min(340px, calc(100vw - 16px));
+	max-height: none;
+}
+
+/* Each row explains itself; the explanation wraps instead of truncating (issue 144). */
+.claude-mode-menu .claude-menu-item .label:has(> .name) {
+	flex: 1 1 auto;
+}
+
+.claude-mode-menu .claude-menu-item .label:has(> .name) > .desc {
+	overflow: visible;
+	white-space: normal;
+	font-size: var(--claude-text-sm);
+	line-height: var(--claude-leading);
+}
+
+/* The level row keeps "Change in Settings" on one line; its description wraps beside it (issue 453). */
+.claude-mode-menu .claude-menu-item .label:has(> .name) + .detail {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+/* Separators and the footer rule run edge to edge, through the menu's padding. */
+.claude-mode-menu .claude-menu-separator {
+	margin: var(--claude-space-1) calc(-1 * var(--claude-space-2)) var(--claude-space-2);
+}
+
+.claude-mode-menu .claude-menu-group {
+	color: var(--claude-fg-muted);
+	font-weight: var(--claude-weight-strong); /* DL-05: two weights; a menu group title is the label role. */
+}
+
+.claude-mode-menu .claude-menu-footer {
+	margin: var(--claude-space-2) calc(-1 * var(--claude-space-2)) calc(-1 * var(--claude-space-2));
+	padding: var(--claude-space-2) calc(var(--claude-space-2) + var(--claude-space-3));
+	border-top: 1px solid var(--claude-border);
+	color: var(--claude-fg-muted);
+}
+
+/* The current row is a quiet fill that follows the arrow keys; no selection block or focus ring. */
+.claude-mode-menu .claude-menu-item.is-active {
+	background: var(--claude-bg-hover);
+}
+
+/* Scoped under .monaco-workbench to outrank the workbench's [tabindex]:focus outline. */
+.monaco-workbench .claude-mode-menu .claude-menu-item:focus,
+.monaco-workbench .claude-mode-menu .claude-menu-item:focus-visible {
+	outline: none;
+}
+
+.monaco-workbench.hc-black .claude-mode-menu .claude-menu-item:focus-visible,
+.monaco-workbench.hc-light .claude-mode-menu .claude-menu-item:focus-visible {
+	outline: 1px solid var(--claude-focus);
+	outline-offset: -1px;
+}
+
+.claude-mode-menu .claude-menu-item.is-everything > .codicon {
+	color: var(--claude-warning);
+}
+
+.claude-mode-menu .claude-menu-item.is-bypass > .codicon,
+.claude-mode-menu .claude-menu-item.is-bypass .name {
+	color: var(--claude-error);
+}
+
+/* DL-09: the Accept Edits and auto levels are the purple mode role, on the icon only. */
+.claude-mode-menu .claude-menu-item.is-accept-edits > .codicon {
+	color: var(--claude-mode-accept-solid);
+}
+
+.monaco-workbench.hc-black .claude-session-switch,
+.monaco-workbench.hc-light .claude-session-switch {
+	border-color: var(--vscode-contrastBorder, transparent);
+}
+
+/* Calls that ran without a card: one quiet collapsed line per turn. */
+.claude-permission-auto {
+	color: var(--claude-fg-faint);
+	font-size: var(--claude-text-xs);
+}
+
+.claude-permission-auto summary {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--claude-space-2);
+	padding: 0 var(--claude-space-3);
+	border-radius: var(--claude-radius-md); /* DL-03: a row */
+	cursor: pointer;
+	list-style: none;
+}
+
+.claude-permission-auto summary::-webkit-details-marker {
+	display: none;
+}
+
+.claude-permission-auto summary:hover {
+	color: var(--claude-fg-muted);
+}
+
+.claude-permission-auto summary:focus-visible {
+	outline: 1px solid var(--claude-focus);
+	outline-offset: 1px;
+}
+
+.claude-permission-auto summary .codicon {
+	font-size: var(--claude-icon-compact);
+	color: var(--claude-success);
+}
+
+.claude-permission-auto ul {
+	margin: var(--claude-space-2) 0 0;
+	padding: 0 0 0 var(--claude-space-7);
+	list-style: none;
+}
+
+.claude-permission-auto li {
+	display: flex;
+	gap: var(--claude-space-4);
+	min-width: 0;
+}
+
+.claude-permission-auto li .subject {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: var(--claude-font-mono);
+}
+
+.claude-permission-auto li .outcome {
+	margin-left: auto;
+	flex: none;
+}

@@ -1,0 +1,126 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.claude-preview {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	background: var(--vscode-editor-background);
+	color: var(--vscode-foreground);
+}
+
+.claude-preview-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	align-items: center;
+	padding: 6px;
+	border-bottom: 1px solid var(--vscode-widget-border, transparent);
+}
+
+.claude-preview-url {
+	flex: 1 1 200px;
+	min-width: 160px;
+}
+
+.claude-preview-button {
+	height: 26px;
+	padding: 0 8px;
+	border: 1px solid var(--vscode-button-border, transparent);
+	border-radius: var(--claude-radius-md); /* DL-03: a button */
+	background: var(--vscode-button-secondaryBackground);
+	color: var(--vscode-button-secondaryForeground);
+	font: inherit;
+	font-size: var(--claude-text-sm);
+}
+
+.claude-preview-button:focus {
+	outline: 1px solid var(--vscode-focusBorder);
+	outline-offset: 1px;
+}
+
+.claude-preview-button[aria-pressed="true"] {
+	background: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+}
+
+/* DL-09: a pressed toggle is the input-option state, not the orange primary action. High contrast keeps the button colors (DL-02). */
+.monaco-workbench:not(.hc-black):not(.hc-light) .claude-preview-button[aria-pressed="true"] {
+	background: var(--vscode-inputOption-activeBackground);
+	color: var(--vscode-inputOption-activeForeground);
+}
+
+.claude-preview-status {
+	padding: 2px 8px 6px;
+	color: var(--vscode-descriptionForeground);
+	font-size: var(--claude-text-secondary);
+}
+
+.claude-preview-stage {
+	flex: 1;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	overflow: auto;
+	background: var(--vscode-editor-background);
+}
+
+.claude-preview-viewport {
+	position: relative;
+	box-sizing: border-box;
+	border: 1px solid var(--vscode-widget-border, transparent);
+	background: var(--vscode-editor-background);
+}
+
+.claude-preview-viewport > iframe {
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+/* DL-106: Freeze Frame covers the viewport with the frozen image, a drawing layer and one toolbar. */
+.claude-preview-freeze {
+	position: absolute;
+	inset: 0;
+	z-index: 10;
+	background: var(--vscode-editor-background);
+	outline: none;
+}
+
+.claude-preview-freeze-image,
+.claude-preview-freeze-canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.claude-preview-freeze-image {
+	object-fit: fill;
+}
+
+.claude-preview-freeze-canvas {
+	cursor: crosshair;
+	touch-action: none;
+}
+
+.claude-preview-freeze-bar {
+	position: absolute;
+	top: 8px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	gap: 4px;
+	padding: 4px;
+	background: var(--vscode-editorWidget-background);
+	border: 1px solid var(--vscode-editorWidget-border, var(--vscode-widget-border, transparent));
+	border-radius: 6px;
+	box-shadow: 0 2px 8px var(--vscode-widget-shadow);
+}
+
+.claude-preview-freeze-bar .claude-preview-button.primary {
+	background: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+}

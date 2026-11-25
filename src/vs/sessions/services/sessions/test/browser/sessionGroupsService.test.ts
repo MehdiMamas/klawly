@@ -24,7 +24,7 @@ function createSession(id: string, isArchived = false, creatorSession?: URI): IS
 		sessionType: 'test',
 		harness: 'copilot',
 		environment: 'local',
-		application: constObservable({ id: 'vscode', label: 'VS Code' }),
+		application: constObservable({ id: 'vscode', label: 'Klawly' }),
 		icon: Codicon.account,
 		createdAt: new Date(),
 		workspace: observableValue(`workspace-${id}`, undefined),

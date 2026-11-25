@@ -1,0 +1,42 @@
+[
+	{
+		"type": "system",
+		"subtype": "task_started",
+		"task_id": "task-1",
+		"tool_use_id": "toolu_agent",
+		"description": "Inspect the sample repo",
+		"subagent_type": "explorer",
+		"is_backgrounded": false,
+		"task_type": "local_agent",
+		"uuid": "00000000-0000-4000-8000-000000000010",
+		"session_id": "sdk-session"
+	},
+	{
+		"type": "assistant",
+		"message": {
+			"role": "assistant",
+			"content": [
+				{
+					"type": "tool_use",
+					"id": "toolu_read",
+					"name": "Read",
+					"input": { "file_path": "/sample/README.md" }
+				}
+			]
+		},
+		"parent_tool_use_id": "toolu_agent",
+		"uuid": "00000000-0000-4000-8000-000000000011",
+		"session_id": "sdk-session"
+	},
+	{
+		"type": "system",
+		"subtype": "task_notification",
+		"task_id": "task-1",
+		"tool_use_id": "toolu_agent",
+		"status": "completed",
+		"output_file": "/tmp/task-1.txt",
+		"summary": "The sample repo has a README.",
+		"uuid": "00000000-0000-4000-8000-000000000012",
+		"session_id": "sdk-session"
+	}
+]

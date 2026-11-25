@@ -72,6 +72,7 @@ const chatViewDescriptor: IViewDescriptor = {
 	ctorDescriptor: new SyncDescriptor(ChatViewPane),
 	when: ContextKeyExpr.and(
 		ChatContextKeys.accountPolicyGateActive.negate(),
+		ContextKeyExpr.notEquals('config.chat.disableAIFeatures', true), // Klawly: the Agent view replaces Chat
 		ContextKeyExpr.or(
 			ContextKeyExpr.and(
 				ChatContextKeys.Setup.hidden.negate(),

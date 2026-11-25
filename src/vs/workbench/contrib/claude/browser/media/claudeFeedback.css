@@ -1,0 +1,347 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* Send Feedback form (issue 444). A modal at the overlay tier: lg radius (DL-03), hairline and
+ * popup shadow (DL-07), theme colors only (DL-01), the 4px spacing ramp (DL-04), 26px fields (DL-06). */
+
+.claude-feedback-backdrop {
+	position: absolute;
+	inset: 0;
+	z-index: 2575;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--claude-space-7);
+	background: color-mix(in srgb, var(--vscode-widget-shadow, rgba(0, 0, 0, 0.36)) 60%, transparent);
+}
+
+.claude-feedback {
+	display: flex;
+	flex-direction: column;
+	gap: var(--claude-space-5);
+	width: 520px;
+	max-width: 100%;
+	max-height: 100%;
+	overflow-y: auto;
+	padding: var(--claude-space-6);
+	border: 1px solid var(--claude-border);
+	border-radius: var(--claude-radius-lg);
+	background: var(--claude-bg-elevated);
+	box-shadow: var(--claude-shadow-popup);
+	color: var(--claude-fg);
+	font-size: var(--claude-text-md);
+	line-height: var(--claude-leading);
+}
+
+/* A file dragged over the form: dashed means "drop here" (DL-07), in the focus tone (DL-01). */
+.claude-feedback.is-dragging {
+	outline: 1px dashed var(--claude-focus);
+	outline-offset: -4px;
+}
+
+.claude-feedback-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.claude-feedback-header h2 {
+	margin: 0;
+	font-size: var(--claude-text-lg);
+	font-weight: var(--claude-weight-strong);
+	color: var(--claude-fg-strong);
+}
+
+.claude-feedback-close,
+.claude-feedback-image-remove {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--claude-icon-btn);
+	height: var(--claude-icon-btn);
+	padding: 0;
+	border: none;
+	border-radius: var(--claude-radius-sm);
+	background: none;
+	color: var(--claude-fg-muted);
+	cursor: pointer;
+}
+
+.claude-feedback-close:hover {
+	background: var(--claude-bg-hover);
+	color: var(--claude-fg-strong);
+}
+
+.claude-feedback-kinds {
+	display: flex;
+	gap: var(--claude-space-2);
+}
+
+.claude-feedback-kind {
+	height: var(--claude-control-h);
+	padding: 0 var(--claude-space-5);
+	border: 1px solid var(--claude-border-strong);
+	border-radius: var(--claude-radius-pill);
+	background: none;
+	color: var(--claude-fg);
+	font: inherit;
+	cursor: pointer;
+}
+
+.claude-feedback-kind:hover {
+	background: var(--claude-bg-hover);
+}
+
+.claude-feedback-kind.is-checked {
+	/* DL-09: a chosen chip is the neutral mark, not the orange primary action. */
+	border-color: var(--claude-mark);
+	background: var(--claude-mark);
+	color: var(--claude-mark-fg);
+}
+
+.claude-feedback-field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--claude-space-2);
+}
+
+.claude-feedback-label {
+	font-size: var(--claude-text-sm);
+	color: var(--claude-fg-muted);
+}
+
+/* Who the report is sent as, or the sign-in button while signed out (issue 949, DL-97). */
+.claude-feedback-identity {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--claude-space-4);
+	font-size: var(--claude-text-sm);
+	color: var(--claude-fg-muted);
+}
+
+/* A banned account sees the ban in place of the form (issue 949, DL-97). */
+.claude-feedback-ban {
+	display: none;
+	flex-direction: column;
+	gap: var(--claude-space-3);
+	font-size: var(--claude-text-sm);
+}
+
+.claude-feedback.is-banned .claude-feedback-ban {
+	display: flex;
+}
+
+.claude-feedback.is-banned > :not(.claude-feedback-header):not(.claude-feedback-ban):not(.claude-feedback-footer) {
+	display: none;
+}
+
+.claude-feedback-ban p,
+.claude-feedback-ban blockquote {
+	margin: 0;
+}
+
+.claude-feedback-ban-title {
+	font-weight: 600;
+}
+
+.claude-feedback-ban-text {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.claude-feedback-ban blockquote {
+	padding-left: var(--claude-space-4);
+	border-left: 2px solid var(--claude-border);
+	color: var(--claude-fg-muted);
+}
+
+.claude-feedback-sign-in {
+	font-size: var(--claude-text-xs);
+}
+
+.claude-feedback-hint {
+	font-size: var(--claude-text-xs);
+	color: var(--claude-fg-faint);
+}
+
+.claude-feedback-control {
+	box-sizing: border-box;
+	width: 100%;
+	min-height: var(--claude-control-h);
+	padding: var(--claude-space-2) var(--claude-space-4);
+	border: 1px solid var(--claude-border-strong);
+	border-radius: var(--claude-radius-md); /* DL-03: a control */
+	background: var(--claude-bg-input);
+	color: var(--vscode-input-foreground, var(--claude-fg-strong));
+	font: inherit;
+}
+
+textarea.claude-feedback-control {
+	resize: vertical;
+	min-height: 96px;
+}
+
+.claude-feedback-control::placeholder {
+	color: var(--vscode-input-placeholderForeground, var(--claude-fg-faint));
+}
+
+.claude-feedback-control:focus,
+.claude-feedback-kind:focus-visible,
+.claude-feedback-image-add:focus-visible,
+.claude-feedback-close:focus-visible,
+.claude-feedback-status-action:focus-visible {
+	outline: 1px solid var(--claude-focus);
+	outline-offset: -1px;
+}
+
+/* A username field holding something else (issue 698): the error hairline, as in a Claude
+ * question's form, with the reason under it in error color (DL-01). */
+.claude-feedback-control.is-invalid,
+.claude-feedback-control.is-invalid:focus {
+	outline: 1px solid var(--claude-error);
+	outline-offset: -1px;
+}
+
+.claude-feedback-field-error {
+	font-size: var(--claude-text-xs);
+	line-height: var(--claude-leading-tight);
+	color: var(--claude-error);
+}
+
+.claude-feedback-field-error:empty {
+	display: none;
+}
+
+.claude-feedback-images {
+	display: flex;
+	flex-direction: column;
+	gap: var(--claude-space-2);
+}
+
+.claude-feedback-images-header {
+	display: flex;
+	align-items: baseline;
+	gap: var(--claude-space-4);
+}
+
+.claude-feedback-image-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--claude-space-4);
+}
+
+.claude-feedback-image,
+.claude-feedback-image-add {
+	position: relative;
+	box-sizing: border-box;
+	width: 104px;
+	height: 72px;
+	border: 1px solid var(--claude-border);
+	border-radius: var(--claude-radius-md);
+	overflow: hidden;
+	background: var(--claude-bg-subtle);
+}
+
+.claude-feedback-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.claude-feedback-image-remove {
+	position: absolute;
+	top: var(--claude-space-1);
+	right: var(--claude-space-1);
+	background: var(--claude-bg-elevated);
+	color: var(--claude-fg);
+	box-shadow: var(--claude-shadow-soft);
+}
+
+.claude-feedback-image-remove:hover {
+	color: var(--claude-fg-strong);
+}
+
+.claude-feedback-image-add {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: var(--claude-space-2);
+	border-style: dashed;
+	border-color: var(--claude-border-strong);
+	color: var(--claude-fg-muted);
+	font: inherit;
+	font-size: var(--claude-text-xs);
+	cursor: pointer;
+}
+
+.claude-feedback-image-add:hover {
+	background: var(--claude-bg-hover);
+	color: var(--claude-fg-strong);
+}
+
+.claude-feedback-check {
+	display: flex;
+	align-items: center;
+	gap: var(--claude-space-3);
+	cursor: pointer;
+	user-select: none;
+}
+
+.claude-feedback-note {
+	margin: 0;
+	font-size: var(--claude-text-xs);
+	line-height: var(--claude-leading-tight);
+	color: var(--claude-fg-muted);
+}
+
+.claude-feedback-status {
+	min-height: var(--claude-leading-tight);
+	font-size: var(--claude-text-sm);
+	color: var(--claude-fg-muted);
+}
+
+.claude-feedback-status:empty {
+	display: none;
+}
+
+.claude-feedback-status.is-error {
+	color: var(--claude-error);
+}
+
+/* The next step after an error, such as removing a refused image: a quiet link (DL-55). */
+.claude-feedback-status-action {
+	margin-left: var(--claude-space-3);
+	padding: 0;
+	border: none;
+	background: none;
+	color: var(--claude-link);
+	font: inherit;
+	cursor: pointer;
+}
+
+.claude-feedback-status-action:hover {
+	text-decoration: underline;
+}
+
+.claude-feedback-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--claude-space-4);
+}
+
+.claude-feedback-footer .monaco-button {
+	width: auto;
+	min-width: 80px;
+	padding: 0 var(--claude-space-5);
+}
+
+/* A kept draft starts over from the footer's far side, a quiet link away from Send (DL-78). */
+.claude-feedback-footer .claude-feedback-discard {
+	margin-right: auto;
+	align-self: center;
+	font-size: var(--claude-text-sm);
+}

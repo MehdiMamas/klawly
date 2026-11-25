@@ -974,12 +974,12 @@ suite('CustomizationMarketplaceInstallService', () => {
 			await fixture.configurationService.setUserConfiguration(CustomizationMarketplaceConfiguration.MarketplaceEnabled, true);
 			const available = fixture.service.getInstallState(candidate);
 			if (isWeb) {
-				await assert.rejects(fixture.service.install(candidate), /not available in VS Code for the Web/);
+				await assert.rejects(fixture.service.install(candidate), /not available in Klawly for the Web/);
 				assert.deepStrictEqual({
 					disabled, available, directInstalls: fixture.pluginService.directInstalls,
 				}, {
 					disabled: { kind: 'unavailable', message: 'Enable the customization marketplace to install this resource.' },
-					available: { kind: 'unavailable', message: 'Installing configured marketplace plugins is not available in VS Code for the Web.' },
+					available: { kind: 'unavailable', message: 'Installing configured marketplace plugins is not available in Klawly for the Web.' },
 					directInstalls: [],
 				});
 				return;
@@ -1014,7 +1014,7 @@ suite('CustomizationMarketplaceInstallService', () => {
 				installation: { kind: 'configuredPlugin' },
 			});
 			if (isWeb) {
-				await assert.rejects(fixture.service.install(candidate), /not available in VS Code for the Web/);
+				await assert.rejects(fixture.service.install(candidate), /not available in Klawly for the Web/);
 				return;
 			}
 			await assert.rejects(fixture.service.install(candidate), /could not be installed/);
@@ -1050,7 +1050,7 @@ suite('CustomizationMarketplaceInstallService', () => {
 				installation: { kind: 'configuredPlugin' },
 			});
 			if (isWeb) {
-				await assert.rejects(fixture.service.install(candidate), /not available in VS Code for the Web/);
+				await assert.rejects(fixture.service.install(candidate), /not available in Klawly for the Web/);
 				assert.deepStrictEqual(fixture.pluginService.directInstalls, []);
 				return;
 			}
@@ -1088,7 +1088,7 @@ suite('CustomizationMarketplaceInstallService', () => {
 					installation: { kind: 'configuredPlugin' },
 				});
 				if (isWeb) {
-					await assert.rejects(fixture.service.install(candidate), /not available in VS Code for the Web/);
+					await assert.rejects(fixture.service.install(candidate), /not available in Klawly for the Web/);
 					assert.deepStrictEqual(fixture.pluginService.directInstalls, []);
 					return;
 				}

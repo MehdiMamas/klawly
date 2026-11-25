@@ -1,0 +1,69 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* Canvas tab (issue 493, DL-64): a quiet toolbar over the sealed page. */
+.claude-canvas {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	background: var(--vscode-editor-background);
+	color: var(--vscode-foreground);
+}
+
+.claude-canvas-toolbar {
+	display: flex;
+	flex: 0 0 auto;
+	gap: 4px;
+	align-items: center;
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--vscode-widget-border, transparent);
+}
+
+.claude-canvas-status {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--vscode-descriptionForeground);
+	font-size: var(--claude-text-secondary);
+}
+
+.claude-canvas.is-missing .claude-canvas-status {
+	color: var(--vscode-errorForeground);
+}
+
+.claude-canvas-stage {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.claude-canvas-stage > iframe {
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+.claude-canvas.is-missing .claude-canvas-stage {
+	visibility: hidden;
+}
+
+/* The tool card of a canvas: its title, then Open Canvas and Edit Source. */
+.claude-tool-canvas {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	padding: 4px 0 2px 22px;
+}
+
+.claude-tool-canvas .title {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--vscode-descriptionForeground);
+}

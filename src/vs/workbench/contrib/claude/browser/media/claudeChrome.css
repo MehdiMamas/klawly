@@ -1,0 +1,434 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/*
+ * Klawly's restyle of upstream workbench chrome. High contrast themes keep the
+ * stock look, so every rule is scoped to the regular dark and light themes
+ * (DL-02). Each block names the design/LANGUAGE.md practice it applies.
+ */
+
+/*
+ * DL-24: Classic Settings table of contents (issue 170): a flat list with no
+ * chevrons. A group still expands when its row is clicked; its entries sit
+ * 12px further in. The TOC labels a top-level group aria-level 2, its
+ * entries 3; the tree indents each level by 8px, this adds the other 4px.
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-body .settings-toc-container .monaco-tl-twistie {
+	width: 0;
+	padding-right: 0;
+	transform: none;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-body .settings-toc-container .monaco-tl-twistie::before {
+	display: none;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-body .settings-toc-container .monaco-list-row[aria-level="3"] .monaco-tl-contents {
+	padding-left: 4px;
+}
+
+/*
+ * DL-21: Quick input: Quick Open, the command palette and every picker built on it
+ * (ide-05, ide-07, ide-24, ide-45). The filter reads as the widget's own first
+ * line rather than a field inside it: no box, no focus ring, and a hairline
+ * between it and the results. Rows are 24px, like menu rows, and their
+ * highlight is rounded at the control tier inside the overlay-tier widget.
+ */
+/* DL-07, DL-21: the quick input is an overlay like the menus beside it: lg corners and the popup shadow. */
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-widget {
+	border-radius: var(--claude-radius-lg);
+	box-shadow: var(--claude-shadow-popup);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-widget:not(.hidden-input) .quick-input-header {
+	padding: 6px 8px;
+	margin-bottom: 4px;
+	border-bottom: 1px solid var(--vscode-menu-separatorBackground);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-widget .quick-input-filter .monaco-inputbox {
+	border-color: transparent !important;
+	background-color: transparent !important;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-widget .quick-input-filter .monaco-inputbox,
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-widget .quick-input-filter .monaco-inputbox.synthetic-focus,
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-widget .quick-input-filter .monaco-inputbox .input:focus {
+	outline: none !important;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-widget .quick-input-filter .monaco-inputbox .input {
+	padding-left: 2px;
+	font-size: var(--claude-text-chat);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .monaco-list-row {
+	border-radius: var(--claude-radius-md); /* DL-03: a menu row, md, inside the lg quick input */
+}
+
+/*
+ * DL-21: Matched letters read as find matches: the list highlight color, semibold,
+ * on the editor's other-match amber box (upstream unsets the background).
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .monaco-list .monaco-list-row .monaco-highlighted-label .highlight {
+	font-weight: 600;
+	background-color: var(--vscode-editor-findMatchHighlightBackground);
+	border-radius: var(--claude-radius-xs); /* DL-03: a small mark, xs */
+}
+
+/* DL-21: Center one-line rows in the taller row; two-line rows already fill theirs. */
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .quick-input-list-rows {
+	justify-content: center;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .quick-input-list-icon {
+	height: 24px;
+}
+
+/*
+ * DL-21: A Quick Open, symbol or command palette row offers only its X (Remove from
+ * Recently Opened or Recently Used). Open to the Side stays on Ctrl+Enter
+ * and Configure Keybinding in the Keyboard Shortcuts editor.
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .quick-input-list-entry-action-bar .action-item:has(> .action-label.codicon-split-horizontal),
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .quick-input-list-entry-action-bar .action-item:has(> .action-label.codicon-split-vertical),
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .quick-input-list-entry-action-bar .action-item:has(> .action-label.codicon-gear) {
+	display: none;
+}
+
+/*
+ * DL-21: A labeled group (recently opened, file results, recently used, other
+ * commands) gets its own header row: a small muted lowercase label with a
+ * rule running to the row's end, and no border above the group. The header
+ * row is never focused by the keyboard, so it shows no hover either.
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .quick-input-list-entry.quick-input-list-separator-as-item {
+	padding: 0 8px;
+	font-size: var(--claude-text-meta);
+	border-top-style: none;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .quick-input-list-separator-as-item .quick-input-list-rows {
+	flex: none;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .quick-input-list-separator-as-item .label-name {
+	font-weight: normal;
+	text-transform: lowercase;
+	color: var(--vscode-descriptionForeground);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .quick-input-list-separator-as-item .quick-input-list-label::after {
+	content: "";
+	flex: 1;
+	align-self: center;
+	height: 1px;
+	margin-left: 8px;
+	background-color: var(--vscode-menu-separatorBackground);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .quick-input-list .monaco-list-row:has(.quick-input-list-separator-as-item):hover {
+	background-color: transparent !important;
+}
+
+/*
+ * DL-23: Notification center (ide-42): a compact header that reads as a title, not
+ * a caps label, on the same row height as the rest of Klawly's chrome. The center
+ * is an overlay (DL-07): lg corners and the popup shadow, with its header on the
+ * same fill (the theme sets notificationCenterHeader.background to it) and its
+ * header and last row rounded to match. A hairline, like the one between
+ * rows, keeps the header apart now that it shares the fill.
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) > .notifications-center {
+	border-radius: var(--claude-radius-lg);
+	box-shadow: var(--claude-shadow-popup);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) > .notifications-center > .notifications-center-header {
+	border-bottom: 1px solid var(--vscode-notifications-border);
+	border-radius: var(--claude-radius-lg) var(--claude-radius-lg) 0 0;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) > .notifications-center .notifications-list-container .monaco-list-row:last-child {
+	border-radius: 0 0 var(--claude-radius-lg) var(--claude-radius-lg);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) > .notifications-center > .notifications-center-header {
+	height: 28px;
+	padding-left: 10px;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) > .notifications-center > .notifications-center-header > .notifications-center-header-title {
+	text-transform: none;
+	font-size: var(--claude-text-xs);
+	font-weight: 600;
+}
+
+/*
+ * DL-24: Classic Settings editor (issue 171). Group titles are headings, not
+ * banners: 17px on a 26px line, with 15px and 13px for nested groups. User
+ * and Workspace are small underline tabs at 12px, muted until checked.
+ * Selects are 200px and text and number fields 300px, both 26px tall.
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-body .settings-tree-container .settings-group-title-label.settings-group-level-1 {
+	font-size: var(--claude-text-xl);
+	line-height: 26px;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-body .settings-tree-container .settings-group-title-label.settings-group-level-2 {
+	font-size: var(--claude-text-heading);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-body .settings-tree-container .settings-group-title-label.settings-group-level-3 {
+	font-size: var(--claude-text-body);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-header > .settings-header-controls .settings-tabs-widget > .monaco-action-bar .action-item .action-label {
+	margin-right: 12px;
+	padding: 6px 2px 5px;
+	font-size: var(--claude-text-sm);
+	line-height: 16px;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-header > .settings-header-controls .settings-tabs-widget > .monaco-action-bar .action-item .action-label:not(.checked):not(:hover) {
+	color: var(--vscode-descriptionForeground);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-body .settings-tree-container .setting-item.setting-item-enum .setting-item-value > .setting-item-control > select {
+	width: 200px;
+	height: 26px;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-body .settings-tree-container .setting-item.setting-item-text .setting-item-control,
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-body .settings-tree-container .setting-item.setting-item-number .setting-item-value > .setting-item-control {
+	width: 300px;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-body .settings-tree-container .setting-item.setting-item-text .monaco-inputbox input.input,
+.monaco-workbench:not(.hc-black):not(.hc-light) .settings-editor > .settings-body .settings-tree-container .setting-item.setting-item-number .monaco-inputbox input.input {
+	padding-top: 3px;
+	padding-bottom: 3px;
+	line-height: 18px;
+}
+
+/*
+ * DL-23: Notification toasts and center rows (issue 164): the "Source: ..." line is
+ * a faint 11px footnote, and the action buttons are the 20px small buttons
+ * used across Klawly instead of the 26px stock ones, rounded at sm like them
+ * (DL-03). A toast is an overlay (DL-07): lg corners and the popup shadow, the
+ * same as the center. Severity shows only in the icon's color.
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) > .notifications-toasts .notifications-list-container {
+	box-shadow: var(--claude-shadow-popup);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) > .notifications-toasts .notifications-list-container,
+.monaco-workbench:not(.hc-black):not(.hc-light) > .notifications-toasts .notification-toast-container > .notification-toast,
+.monaco-workbench:not(.hc-black):not(.hc-light) > .notifications-toasts .notification-toast-container > .notification-toast .monaco-scrollable-element,
+.monaco-workbench:not(.hc-black):not(.hc-light) > .notifications-toasts .notification-toast-container > .notification-toast .monaco-list:not(.element-focused):focus:before,
+.monaco-workbench:not(.hc-black):not(.hc-light) > .notifications-toasts .notification-toast-container > .notification-toast .monaco-list-row {
+	border-radius: var(--claude-radius-lg);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .notifications-list-container .notification-list-item .notification-list-item-source {
+	font-size: var(--claude-text-meta);
+	color: var(--vscode-disabledForeground);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .notifications-list-container .notification-list-item .notification-list-item-buttons-container .monaco-text-button {
+	padding: 0 6px;
+	border-radius: var(--claude-radius-sm);
+	line-height: 18px;
+	font-size: var(--claude-text-sm);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .notifications-list-container .notification-list-item .notification-list-item-buttons-container .monaco-dropdown-button {
+	padding: 0 4px;
+}
+
+/*
+ * DL-20: Menus: the title bar menus and the workbench context menus (issue 163). A
+ * 320px menu whose labels start 10px in and whose key hints end 10px from the
+ * right; the row highlight stays rounded and inset 4px. Only a menu that shows
+ * a check keeps a gutter for it. Separators are a tight hairline across the
+ * whole menu. The editor's context menu renders in a shadow root, which this
+ * file cannot reach, so it keeps the stock metrics. A menu is an overlay
+ * (DL-07): lg corners and the popup shadow, with md rows inside (DL-03). The
+ * scroll element's corner is set inline, hence the !important.
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-menu-container {
+	--vscode-context-view-menu-motion-shadow: var(--claude-shadow-popup);
+	border-radius: var(--claude-radius-lg);
+	box-shadow: var(--claude-shadow-popup);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-menu-container > .monaco-scrollable-element {
+	border-radius: var(--claude-radius-lg) !important;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-menu {
+	box-sizing: border-box;
+	min-width: 320px;
+	border-radius: var(--claude-radius-lg);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-menu .monaco-action-bar.vertical .action-menu-item {
+	border-radius: var(--claude-radius-md);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-menu .monaco-action-bar.vertical .action-label:not(.separator),
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-menu .monaco-action-bar.vertical .keybinding {
+	padding: 0 6px;
+}
+
+/* DL-20: Child combinators keep an open submenu's checks from moving its parent's labels. */
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-menu .monaco-action-bar.vertical > .actions-container:has(> .action-item > .action-menu-item.checked) > .action-item > .action-menu-item > .action-label:not(.separator) {
+	padding-left: 28px;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-menu .monaco-action-bar.vertical .menu-item-check {
+	left: 6px;
+	width: 16px;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-menu .monaco-action-bar.vertical .submenu-indicator {
+	padding: 0 6px;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-menu .monaco-action-bar.vertical .submenu-indicator.codicon::before {
+	margin-right: 0;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-menu .monaco-action-bar.vertical .action-label.separator {
+	margin: 2px 0 3px !important;
+}
+
+/*
+ * DL-22: Keybinding labels (the command palette, Quick Open and every other upstream
+ * keybinding label): one keycap per key, 2px apart, with no "+" between them,
+ * like Klawly's own key caps. The keyboard shortcuts editor keeps the stock
+ * label, "+" included, as the prototype draws it.
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-keybinding:not(.keybindings-editor .monaco-keybinding) > .monaco-keybinding-key-separator {
+	display: none;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-keybinding:not(.keybindings-editor .monaco-keybinding) > .monaco-keybinding-key {
+	margin: 0;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-keybinding:not(.keybindings-editor .monaco-keybinding) > .monaco-keybinding-key ~ .monaco-keybinding-key {
+	margin-left: 2px;
+}
+
+/*
+ * DL-28: Workbench shell (issue 582). Trees show hover and selection as fills
+ * only; the focus ring stays for keyboard focus, so a mouse click doesn't draw
+ * an outline around the row it fills. claudePointerFocus.ts marks a list its
+ * pointer focused and clears the mark on the next key. Rows keep their 22px.
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-list.claude-pointer-focus:focus .monaco-list-row.focused,
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-list.claude-pointer-focus:focus .monaco-list-row.focused.selected {
+	outline: none !important;
+}
+
+/*
+ * DL-28 (DL-05): one title role for every view and panel header, the label role
+ * instead of a caps banner. Header heights stay as they are (35px part titles,
+ * 22px section headers); the explorer's root folder header is a section header,
+ * so it takes the same role (issue 156).
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) .part > .title > .title-label h2,
+.monaco-workbench:not(.hc-black):not(.hc-light) .part.sidebar > .title > .title-label h2,
+.monaco-workbench:not(.hc-black):not(.hc-light) .part.auxiliarybar > .title > .title-label h2 {
+	text-transform: none;
+	font-size: var(--claude-text-label);
+	font-weight: var(--claude-text-label-weight);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-pane-view .pane > .pane-header {
+	font-size: var(--claude-text-label);
+	font-weight: var(--claude-text-label-weight);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-pane-view .pane > .pane-header > .title {
+	text-transform: none;
+}
+
+/* Panel tabs are tabs, not headings: the label size at the body weight; the active one gets ink and its line. */
+.monaco-workbench:not(.hc-black):not(.hc-light) .pane-composite-part > .title > .composite-bar-container > .composite-bar > .monaco-action-bar .action-item,
+.monaco-workbench:not(.hc-black):not(.hc-light) .pane-composite-part > .header-or-footer > .composite-bar-container > .composite-bar > .monaco-action-bar .action-item {
+	text-transform: none;
+	font-size: var(--claude-text-label);
+}
+
+/* DL-28 (DL-10): title bar icons rest in secondary ink and take the title ink on hover; the agent pill keeps its own ink. */
+.monaco-workbench:not(.hc-black):not(.hc-light) .part.titlebar:not(.inactive) > .titlebar-container > .titlebar-right > .action-toolbar-container .action-item:not(.claude-titlebar-pill-item) .codicon {
+	color: var(--vscode-descriptionForeground);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .part.titlebar:not(.inactive) > .titlebar-container > .titlebar-right > .action-toolbar-container .action-item:not(.claude-titlebar-pill-item):hover .codicon,
+.monaco-workbench:not(.hc-black):not(.hc-light) .part.titlebar:not(.inactive) > .titlebar-container > .titlebar-right > .action-toolbar-container .action-item:not(.claude-titlebar-pill-item) .action-label.checked .codicon {
+	color: var(--vscode-titleBar-activeForeground);
+}
+
+/* DL-28: status bar items are the status role; codicons set their own size, so glyphs stay as they are. */
+.monaco-workbench:not(.hc-black):not(.hc-light) .part.statusbar {
+	font-size: var(--claude-text-status);
+}
+
+/*
+ * DL-29: Hovers. A workbench hover (tooltips, hover cards) and an editor hover
+ * are overlays (DL-07): lg corners and the popup shadow on their hairline. A
+ * hover with a pointer keeps md, so the pointer never sits on the curve. Inside
+ * an editor's resizable hover the frame takes the shadow, not the hover too.
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-hover.workbench-hover {
+	border-radius: var(--claude-radius-lg);
+	box-shadow: var(--claude-shadow-popup);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-hover.workbench-hover.with-pointer {
+	border-radius: var(--claude-radius-md);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-editor .monaco-resizable-hover,
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-editor .monaco-hover {
+	border-radius: var(--claude-radius-lg);
+	box-shadow: var(--claude-shadow-popup);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-editor .monaco-resizable-hover > .monaco-hover {
+	box-shadow: none;
+}
+
+/*
+ * DL-29: Dialogs. The box is an overlay (DL-07): its lg corners stay, the popup
+ * shadow replaces the stock one (set inline on the shadow wrapper, hence the
+ * !important), the title is a heading (DL-16), and its buttons are the shared
+ * 26px button at md with 12px sides (DL-15). Their order stays the platform's.
+ */
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-dialog-modal-block .dialog-shadow {
+	border-radius: var(--claude-radius-lg);
+	box-shadow: var(--claude-shadow-popup) !important;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-dialog-box {
+	border-radius: var(--claude-radius-lg);
+	box-shadow: none;
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message {
+	font-size: var(--claude-text-heading);
+	line-height: var(--claude-text-heading-leading);
+	font-weight: var(--claude-text-heading-weight);
+	color: var(--claude-text-heading-ink);
+}
+
+.monaco-workbench:not(.hc-black):not(.hc-light) .monaco-dialog-box > .dialog-buttons-row > .dialog-buttons .monaco-text-button {
+	min-height: 26px;
+	padding: 4px 12px;
+	border-radius: var(--claude-radius-md);
+}

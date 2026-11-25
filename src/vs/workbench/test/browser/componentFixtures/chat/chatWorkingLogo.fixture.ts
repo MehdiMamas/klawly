@@ -20,7 +20,7 @@ const styles: readonly IProgressStyle[] = [
 	{
 		animation: ChatProgressAnimation.Draw,
 		name: 'Draw',
-		description: 'Tie the exact VS Code mark with fast parabolic ribbon motion, hold it, then unravel it before a brief rest.',
+		description: 'Tie the exact Klawly mark with fast parabolic ribbon motion, hold it, then unravel it before a brief rest.',
 	},
 	{
 		animation: ChatProgressAnimation.DrawMonochrome,

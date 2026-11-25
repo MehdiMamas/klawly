@@ -766,7 +766,7 @@ export class PaneCompositeBar extends Disposable {
 	}
 }
 
-class ViewContainerActivityAction extends CompositeBarAction {
+export class ViewContainerActivityAction extends CompositeBarAction {
 
 	private static readonly preventDoubleClickDelay = 300;
 
@@ -811,7 +811,8 @@ class ViewContainerActivityAction extends CompositeBarAction {
 
 		const focus = (event && 'preserveFocus' in event) ? !event.preserveFocus : true;
 
-		if (this.part === Parts.ACTIVITYBAR_PART) {
+		// Klawly: the icons of a top or bottom activity bar live in the side bar's own composite bar, so they toggle too (issue 747)
+		if (this.part === Parts.ACTIVITYBAR_PART || this.part === Parts.SIDEBAR_PART) {
 			const sideBarVisible = this.layoutService.isVisible(Parts.SIDEBAR_PART);
 			const activeViewlet = this.paneCompositePart.getActivePaneComposite();
 			const focusBehavior = this.configurationService.getValue<string>('workbench.activityBar.iconClickBehavior');

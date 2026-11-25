@@ -199,7 +199,7 @@ export function getBuildProductPath(root: string): string {
 			return join(root, 'Contents', 'Resources', 'app', 'product.json');
 		case 'win32':
 			// On Windows the built app may nest the payload inside a subdirectory
-			// (e.g. VSCode-win32-x64), so search for product.json rather than
+			// (e.g. Klawly-win32-x64), so search for product.json rather than
 			// assuming it lives directly under the root.
 			return findFilePath(root, join('resources', 'app', 'product.json'));
 		default:

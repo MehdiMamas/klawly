@@ -1,0 +1,293 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/*
+ * Questions from Claude (issue 477). The card reuses the permission card's
+ * border, head and action row (claude.css); this file adds the question
+ * text, the option rows, the Other field and the preview pane. Option rows are
+ * 28px at least (DL-06), hairlines and no shadow (DL-07), and a chosen option
+ * is marked with the focus ring color, never a second accent (DL-09). An option
+ * picks on click; one single-choice question answers on the pick (DL-51).
+ * A note is a quiet link until it is wanted, and Reply Instead swaps the
+ * action row for a text field, so neither costs the common case a click.
+ */
+
+.claude-question-item {
+	display: flex;
+	flex-direction: column;
+	gap: var(--claude-space-3);
+	padding: var(--claude-space-4) var(--claude-space-5) 0;
+	min-width: 0;
+}
+
+.claude-question-item + .claude-question-item {
+	margin-top: var(--claude-space-2);
+	border-top: 1px solid var(--claude-border-faint);
+}
+
+.claude-question-ask {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: var(--claude-space-2) var(--claude-space-3);
+	color: var(--claude-fg-strong);
+	font-size: var(--claude-text-sm);
+	line-height: var(--claude-leading);
+	overflow-wrap: anywhere;
+}
+
+.claude-question-header {
+	flex: none;
+	padding: 0 var(--claude-space-3);
+	border: 1px solid var(--claude-border);
+	border-radius: var(--claude-radius-pill);
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-xs);
+	line-height: var(--claude-leading-tight);
+	white-space: nowrap;
+}
+
+.claude-question-text {
+	min-width: 0;
+	flex: 1 1 200px;
+	white-space: pre-wrap;
+}
+
+.claude-question-multi {
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-xs);
+}
+
+.claude-question-body {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--claude-space-4);
+	min-width: 0;
+}
+
+.claude-question-options {
+	display: flex;
+	flex: 1 1 240px;
+	flex-direction: column;
+	gap: var(--claude-space-1);
+	min-width: 0;
+}
+
+.claude-question-option {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--claude-space-3);
+	min-height: var(--claude-row-h);
+	padding: var(--claude-space-2) var(--claude-space-3);
+	border: 1px solid transparent;
+	border-radius: var(--claude-radius-md); /* DL-03: an option row */
+	background: transparent;
+	color: var(--claude-fg);
+	font: inherit;
+	font-size: var(--claude-text-sm);
+	text-align: left;
+	cursor: pointer;
+}
+
+.claude-question-option:hover:not(:disabled) {
+	background: var(--claude-bg-hover);
+}
+
+.claude-question-option:focus-visible {
+	outline: 1px solid var(--claude-focus);
+	outline-offset: -1px;
+}
+
+.claude-question-option.is-chosen {
+	border-color: var(--claude-focus);
+	background: var(--claude-fill-5);
+	color: var(--claude-fg-strong);
+}
+
+.claude-question-option:disabled {
+	cursor: default;
+	opacity: 0.6;
+}
+
+/* The radio dot or the check mark; it shows only when the option is chosen. */
+.claude-question-option > .codicon.claude-question-mark {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 14px;
+	height: 14px;
+	margin-top: var(--claude-space-1);
+	border: 1px solid var(--claude-border-strong);
+	border-radius: var(--claude-radius-pill);
+	color: transparent;
+	font-size: var(--claude-icon-mark);
+}
+
+.claude-question-option[role="checkbox"] > .codicon.claude-question-mark {
+	border-radius: var(--claude-radius-xs);
+	font-size: var(--claude-icon-compact);
+}
+
+.claude-question-option.is-chosen > .codicon.claude-question-mark {
+	border-color: var(--claude-focus);
+	color: var(--claude-fg-strong);
+}
+
+.claude-question-option-text {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+	line-height: var(--claude-leading);
+}
+
+.claude-question-label {
+	color: var(--claude-fg-strong);
+	overflow-wrap: anywhere;
+}
+
+.claude-question-description {
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-xs);
+	line-height: var(--claude-leading-tight);
+	overflow-wrap: anywhere;
+}
+
+.claude-question-option > .claude-kbd {
+	flex: none;
+	margin-top: var(--claude-space-1);
+}
+
+.claude-question-other {
+	padding: var(--claude-space-1) 0 0 calc(14px + var(--claude-space-3) + var(--claude-space-3));
+}
+
+.claude-question-other .monaco-inputbox {
+	min-height: var(--claude-control-h);
+	border-radius: var(--claude-radius-md); /* DL-03: a text field */
+}
+
+/* Beside the options when there is room, under them when the pane is narrow. */
+.claude-question-preview {
+	display: flex;
+	flex: 1 1 260px;
+	flex-direction: column;
+	gap: var(--claude-space-2);
+	min-width: 0;
+}
+
+.claude-question-preview-label {
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-xs);
+	line-height: var(--claude-leading-tight);
+}
+
+.claude-question-preview pre {
+	margin: 0;
+	max-height: 220px;
+	overflow: auto;
+	padding: var(--claude-space-4);
+	/* DL-07: tone, not an outline; high contrast keeps the edge (DL-02). */
+	border-radius: var(--claude-radius-md); /* DL-03: a code block */
+	background: var(--claude-bg-code);
+	color: var(--claude-fg-strong);
+	font-family: var(--claude-font-mono);
+	font-size: var(--claude-text-xs);
+	line-height: var(--claude-leading-tight);
+	white-space: pre;
+}
+
+.claude-question-preview pre.is-empty {
+	color: var(--claude-fg-muted);
+	font-family: inherit;
+	white-space: normal;
+}
+
+.claude-question .claude-permission-actions {
+	align-items: center;
+}
+
+.claude-question-hint {
+	margin-left: auto;
+	color: var(--claude-fg-faint);
+	font-size: var(--claude-text-xs);
+	white-space: nowrap;
+}
+
+/* The answered card: one record line per question, the choice at the end. */
+.claude-question-record > .claude-permission-record > .subject {
+	flex: 0 1 auto;
+	font-family: inherit;
+}
+
+.claude-question-chosen {
+	min-width: 0;
+	margin-left: auto;
+	padding-left: var(--claude-space-4);
+	color: var(--claude-fg-strong);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.claude-question-noted {
+	padding-left: var(--claude-space-3);
+	color: var(--claude-fg-muted);
+}
+
+/* The reply line takes the width; the reply is prose, not a path. */
+.claude-question-record > .claude-permission-record.is-reply > .subject {
+	flex: 1 1 auto;
+	color: var(--claude-fg-strong);
+}
+
+/* "Add a Note": a quiet link under the options until it is wanted. */
+.claude-question-note-link {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--claude-space-2);
+	align-self: flex-start;
+	height: 22px;
+	margin-left: calc(-1 * var(--claude-space-2));
+	padding: 0 var(--claude-space-2);
+	border: none;
+	border-radius: var(--claude-radius-sm);
+	background: none;
+	color: var(--claude-fg-muted);
+	font: inherit;
+	font-size: var(--claude-text-xs);
+	cursor: pointer;
+}
+
+.claude-question-note-link:hover:not(:disabled) {
+	color: var(--claude-fg-strong);
+}
+
+.claude-question-note-link:focus-visible {
+	outline: 1px solid var(--claude-focus);
+	outline-offset: -1px;
+}
+
+.claude-question-note .monaco-inputbox,
+.claude-question-reply .monaco-inputbox {
+	min-height: var(--claude-control-h);
+	border-radius: var(--claude-radius-md); /* DL-03: a text field */
+}
+
+/* Reply Instead swaps the action row for a field with Send and Cancel. */
+.claude-question-reply {
+	padding: var(--claude-space-5) var(--claude-space-5) 0;
+}
+
+.claude-question-reply > .claude-permission-actions {
+	padding: var(--claude-space-4) 0 var(--claude-space-5);
+}
+
+/* DL-02, DL-07: high contrast keeps the preview's edge. */
+.monaco-workbench.hc-black .claude-question-preview pre,
+.monaco-workbench.hc-light .claude-question-preview pre {
+	border: 1px solid var(--claude-border);
+}

@@ -6,7 +6,7 @@
 import { $, append, clearNode, h } from '../../../../base/browser/dom.js';
 import { KeybindingLabel } from '../../../../base/browser/ui/keybindingLabel/keybindingLabel.js';
 import { coalesce, shuffle } from '../../../../base/common/arrays.js';
-import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
+import { Disposable, DisposableStore, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
 import { isMacintosh, isWeb, OS } from '../../../../base/common/platform.js';
 import { localize } from '../../../../nls.js';
 import { MenuId } from '../../../../platform/actions/common/actions.js';
@@ -14,7 +14,7 @@ import { HiddenItemStrategy, MenuWorkbenchToolBar } from '../../../../platform/a
 import { CommandsRegistry } from '../../../../platform/commands/common/commands.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { ContextKeyExpr, ContextKeyExpression, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import { BrandedService, IConstructorSignature, IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
 import { IStorageService, StorageScope, StorageTarget, WillSaveStateReason } from '../../../../platform/storage/common/storage.js';
 import { defaultKeybindingLabelStyles } from '../../../../platform/theme/browser/defaultStyles.js';
@@ -68,6 +68,28 @@ const otherEntries: WatermarkEntry[] = [
 	openSettings,
 ];
 
+/**
+ * Content a product renders in place of the stock letterpress and shortcuts,
+ * created once per render with the container and the workbench state.
+ */
+export type EditorGroupWatermarkContentCtor = IConstructorSignature<IDisposable, [HTMLElement, WorkbenchState]>;
+
+let watermarkContent: EditorGroupWatermarkContentCtor | undefined;
+
+/**
+ * Replaces the watermark of every empty editor group that renders after this call.
+ * Register before the workbench lays out its editor groups.
+ */
+export function registerEditorGroupWatermarkContent<Services extends BrandedService[]>(ctor: { new(container: HTMLElement, workbenchState: WorkbenchState, ...services: Services): IDisposable }): IDisposable {
+	const content = ctor as EditorGroupWatermarkContentCtor;
+	watermarkContent = content;
+	return toDisposable(() => {
+		if (watermarkContent === content) {
+			watermarkContent = undefined;
+		}
+	});
+}
+
 export class EditorGroupWatermark extends Disposable {
 
 	private static readonly CACHED_WHEN = 'editorGroupWatermark.whenConditions';
@@ -77,6 +99,8 @@ export class EditorGroupWatermark extends Disposable {
 	private readonly cachedWhen: { [when: string]: boolean };
 
 	private readonly shortcuts: HTMLElement;
+	private readonly watermark: HTMLElement;
+	private readonly contribution: HTMLElement;
 	private readonly toolbarContainer: HTMLElement;
 	private readonly transientDisposables = this._register(new DisposableStore());
 	private readonly keybindingLabels = this._register(new DisposableStore());
@@ -100,16 +124,19 @@ export class EditorGroupWatermark extends Disposable {
 
 		const elements = h('.editor-group-watermark-wrapper', [
 			h('.editor-group-watermark-toolbar-container@toolbarContainer'),
-			h('.editor-group-watermark', [
+			h('.editor-group-watermark@watermark', [
 				h('.watermark-container', [
 					h('.letterpress'),
 					h('.shortcuts@shortcuts'),
-				])
+				]),
+				h('.watermark-contribution@contribution'),
 			])
 		]);
 
 		append(container, elements.root);
 		this.shortcuts = elements.shortcuts;
+		this.watermark = elements.watermark;
+		this.contribution = elements.contribution;
 		this.toolbarContainer = elements.toolbarContainer;
 
 		this._register(this.instantiationService.createInstance(MenuWorkbenchToolBar, this.toolbarContainer, MenuId.EditorGroupWatermarkToolbar, {
@@ -160,6 +187,14 @@ export class EditorGroupWatermark extends Disposable {
 
 		clearNode(this.shortcuts);
 		this.transientDisposables.clear();
+		clearNode(this.contribution);
+
+		const content = this.enabled ? watermarkContent : undefined;
+		this.watermark.classList.toggle('contributed', !!content);
+		if (content) {
+			this.transientDisposables.add(this.instantiationService.createInstance(content, this.contribution, this.workbenchState));
+			return;
+		}
 
 		if (!this.enabled) {
 			return;

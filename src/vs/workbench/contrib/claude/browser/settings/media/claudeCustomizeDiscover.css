@@ -1,0 +1,193 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* Customize tabs (Installed, Discover) and the Discover tab (issue 427). Rows keep the customize row ramp (DL-06). */
+.claude-customize-tabs {
+	display: flex;
+	gap: var(--claude-space-1);
+	margin-bottom: var(--claude-space-5);
+	border-bottom: 1px solid var(--claude-border);
+}
+
+.claude-customize-tab {
+	height: 28px;
+	margin-bottom: -1px;
+	padding: 0 var(--claude-space-4);
+	border: none;
+	border-bottom: 2px solid transparent;
+	background: transparent;
+	color: var(--claude-fg-muted);
+	font: inherit;
+	font-size: var(--claude-text-md);
+	cursor: pointer;
+}
+
+.claude-customize-tab:hover {
+	color: var(--claude-fg-strong);
+}
+
+/* The selected tab is marked with a neutral ink line, like the editor's active tab (DL-09). */
+.claude-customize-tab.is-selected {
+	color: var(--claude-fg-strong);
+	border-bottom-color: var(--claude-mark);
+}
+
+.claude-discover {
+	display: flex;
+	flex-direction: column;
+	gap: var(--claude-space-5);
+}
+
+.claude-discover > .claude-customize-chips {
+	margin-top: 0;
+}
+
+.claude-discover-item {
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.claude-discover-open {
+	flex: 1;
+	min-width: 0;
+	min-height: 51px;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	gap: var(--claude-space-5);
+	border: none;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: start;
+	cursor: pointer;
+}
+
+.claude-discover-open > .claude-customize-text > .name,
+.claude-discover-open > .claude-customize-text > .detail {
+	display: block;
+}
+
+.claude-discover-open:hover > .claude-customize-text > .name {
+	text-decoration: underline;
+}
+
+.claude-discover-hint {
+	margin: var(--claude-space-3) var(--claude-space-2) 0;
+	color: var(--claude-fg-faint);
+	font-size: var(--claude-text-sm);
+}
+
+.claude-discover .claude-customize-text > .detail.is-error,
+.claude-discover .claude-settings-row-description.is-error {
+	color: var(--vscode-errorForeground);
+}
+
+.claude-discover-details {
+	display: flex;
+	flex-direction: column;
+	gap: var(--claude-space-4);
+}
+
+.claude-discover-head {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--claude-space-5);
+	padding: var(--claude-space-5);
+}
+
+.claude-discover-head-text {
+	flex: 1;
+	min-width: 0;
+}
+
+.claude-discover-title {
+	margin: 0;
+	color: var(--claude-fg-strong);
+	font-size: var(--claude-text-lg);
+	font-weight: 600;
+	line-height: 22px;
+}
+
+.claude-discover-meta {
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-sm);
+}
+
+.claude-discover-description {
+	margin: var(--claude-space-3) 0 0;
+	color: var(--claude-fg);
+}
+
+.claude-discover-actions {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: var(--claude-space-3);
+}
+
+.claude-discover-code {
+	font-family: var(--claude-font-mono);
+	font-size: var(--claude-text-sm);
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.claude-discover-readme {
+	padding: var(--claude-space-5) var(--claude-space-6);
+	color: var(--claude-fg);
+	line-height: 20px;
+	overflow-wrap: anywhere;
+}
+
+.claude-discover-readme img {
+	max-width: 100%;
+}
+
+.claude-discover-readme pre {
+	overflow-x: auto;
+}
+
+/* Default On and Required (issue 523). Required carries the managed-settings briefcase (DL-26). */
+.claude-discover-policy {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--claude-space-1);
+	flex-shrink: 0;
+}
+
+.claude-discover-policy .codicon {
+	font-size: var(--claude-text-sm);
+}
+
+/*
+ * Plugin icons (issue 534, DL-57). The plugin's own image fills the 28px
+ * customize tile and takes its radius; without one, the first letter of its
+ * name sits on one of six chart tints the name picks, so rows stay apart offline.
+ */
+.claude-plugin-icon {
+	overflow: hidden;
+}
+
+.claude-plugin-icon > img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.claude-plugin-icon.is-monogram {
+	color: var(--claude-fg-strong);
+	font-size: var(--claude-text-sm);
+	font-weight: var(--claude-weight-strong);
+	line-height: 1;
+}
+
+.claude-plugin-icon.is-monogram[data-tint="0"] { background: color-mix(in srgb, var(--vscode-charts-blue) 24%, transparent); }
+.claude-plugin-icon.is-monogram[data-tint="1"] { background: color-mix(in srgb, var(--vscode-charts-green) 24%, transparent); }
+.claude-plugin-icon.is-monogram[data-tint="2"] { background: color-mix(in srgb, var(--vscode-charts-yellow) 24%, transparent); }
+.claude-plugin-icon.is-monogram[data-tint="3"] { background: color-mix(in srgb, var(--vscode-charts-orange) 24%, transparent); }
+.claude-plugin-icon.is-monogram[data-tint="4"] { background: color-mix(in srgb, var(--vscode-charts-red) 24%, transparent); }
+.claude-plugin-icon.is-monogram[data-tint="5"] { background: color-mix(in srgb, var(--vscode-charts-purple) 24%, transparent); }

@@ -1,0 +1,4 @@
+{"type":"session.started","sessionId":"$session"}
+{"type":"assistant.delta","sessionId":"$session","text":"Partial answer"}
+{"type":"tool.started","sessionId":"$session","call":{"id":"read-1","name":"Read","category":"read","input":{"file_path":"src/app.ts"},"display":{"label":"Read src/app.ts","file":"src/app.ts"}}}
+{"type":"session.failed","sessionId":"$session","message":"process exited"}

@@ -1,0 +1,36 @@
+[
+	{
+		"type": "system",
+		"subtype": "init",
+		"apiKeySource": "none",
+		"claude_code_version": "2.1.288",
+		"cwd": "/sample",
+		"tools": [],
+		"mcp_servers": [],
+		"model": "claude-sonnet",
+		"permissionMode": "default",
+		"slash_commands": ["review", "compact"],
+		"skills": ["code-review"],
+		"plugins": [],
+		"output_style": "default",
+		"uuid": "00000000-0000-4000-8000-000000000002",
+		"session_id": "sdk-session"
+	},
+	{
+		"type": "result",
+		"subtype": "success",
+		"duration_ms": 1,
+		"duration_api_ms": 0,
+		"is_error": false,
+		"num_turns": 1,
+		"result": "Review is a Claude command.",
+		"stop_reason": "end_turn",
+		"total_cost_usd": 0,
+		"usage": { "input_tokens": 1, "output_tokens": 1 },
+		"modelUsage": {},
+		"permission_denials": [],
+		"local_command": "/review",
+		"uuid": "00000000-0000-4000-8000-000000000003",
+		"session_id": "sdk-session"
+	}
+]

@@ -1,0 +1,168 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/*
+ * Compare editor (issue 424). Columns are cards on the editor ground: a
+ * hairline and the card radius (DL-03, DL-07), spacing on the 4px ramp
+ * (DL-04), the type ramp (DL-05) and controls on the row ramp (DL-06).
+ */
+
+.claude-compare-editor {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	background: var(--claude-bg-editor);
+	color: var(--claude-fg);
+	font-size: var(--claude-text-md);
+}
+
+.claude-compare-header {
+	display: flex;
+	flex: none;
+	align-items: flex-start;
+	gap: var(--claude-space-5);
+	padding: var(--claude-space-5) var(--claude-space-6);
+	border-bottom: 1px solid var(--claude-border);
+}
+
+.claude-compare-heading {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: var(--claude-space-2);
+	min-width: 0;
+}
+
+.claude-compare-title {
+	color: var(--claude-fg-strong);
+	font-size: var(--claude-text-lg);
+	font-weight: var(--claude-weight-strong);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.claude-compare-summary {
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-sm);
+}
+
+/* The judge is ranking: the same icon and gap as a run's status line. */
+.claude-compare-summary.is-judging {
+	display: flex;
+	align-items: center;
+	gap: var(--claude-space-3);
+}
+
+.claude-compare-columns {
+	display: grid;
+	grid-auto-columns: minmax(240px, 1fr);
+	grid-auto-flow: column;
+	align-items: start;
+	gap: var(--claude-space-5);
+	padding: var(--claude-space-6);
+}
+
+.claude-compare-run {
+	display: flex;
+	flex-direction: column;
+	gap: var(--claude-space-4);
+	padding: var(--claude-space-5);
+	border: 1px solid var(--claude-border);
+	border-radius: var(--claude-radius-xl);
+	background: var(--claude-bg-card);
+	min-width: 0;
+}
+
+/* The judge's first pick is marked by the border, the accent stays on its Keep (DL-09). */
+.claude-compare-run.is-top {
+	border-color: var(--claude-border-strong);
+}
+
+.claude-compare-run-head {
+	display: flex;
+	align-items: center;
+	gap: var(--claude-space-3);
+	min-height: 22px;
+}
+
+.claude-compare-model {
+	flex: 1;
+	min-width: 0;
+	color: var(--claude-fg-strong);
+	font-weight: var(--claude-weight-strong);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.claude-compare-rank,
+.claude-compare-score {
+	padding: 0 var(--claude-space-3);
+	border-radius: var(--claude-radius-xs);
+	background: var(--claude-bg-subtle);
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-xs);
+	line-height: 18px;
+	white-space: nowrap;
+}
+
+.claude-compare-status {
+	display: flex;
+	align-items: center;
+	gap: var(--claude-space-3);
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-sm);
+}
+
+.claude-compare-status.is-success .codicon {
+	color: var(--claude-success);
+}
+
+.claude-compare-status.is-error .codicon {
+	color: var(--claude-error);
+}
+
+.claude-compare-stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--claude-space-2) var(--claude-space-5);
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-sm);
+	font-variant-numeric: tabular-nums;
+}
+
+.claude-compare-message {
+	color: var(--claude-error);
+	font-size: var(--claude-text-sm);
+}
+
+.claude-compare-label {
+	color: var(--claude-fg-faint);
+	font-size: var(--claude-text-xs);
+}
+
+.claude-compare-reasons p,
+.claude-compare-answer p {
+	margin: var(--claude-space-1) 0 0;
+	font-size: var(--claude-text-sm);
+	line-height: 1.5;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.claude-compare-answer p {
+	color: var(--claude-fg-muted);
+}
+
+.claude-compare-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--claude-space-3);
+}
+
+.claude-compare-actions:empty {
+	display: none;
+}

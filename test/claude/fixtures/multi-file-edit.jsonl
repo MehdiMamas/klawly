@@ -1,0 +1,11 @@
+{"type":"session.started","sessionId":"$session"}
+{"type":"tool.started","sessionId":"$session","call":{"id":"write-1","name":"Edit","category":"write","input":{"file_path":"src/a.ts"},"display":{"label":"Edit src/a.ts","file":"src/a.ts"}}}
+{"type":"file.beforeWrite","sessionId":"$session","uri":"file:///repo/src/a.ts","before":"export const a = 1;\n"}
+{"type":"file.afterWrite","sessionId":"$session","uri":"file:///repo/src/a.ts","after":"export const a = 2;\n"}
+{"type":"tool.completed","sessionId":"$session","callId":"write-1","result":{"ok":true}}
+{"type":"tool.started","sessionId":"$session","call":{"id":"write-2","name":"Edit","category":"write","input":{"file_path":"src/b.ts"},"display":{"label":"Edit src/b.ts","file":"src/b.ts"}}}
+{"type":"file.beforeWrite","sessionId":"$session","uri":"file:///repo/src/b.ts","before":null}
+{"type":"file.afterWrite","sessionId":"$session","uri":"file:///repo/src/b.ts","after":"export const b = 1;\n"}
+{"type":"tool.completed","sessionId":"$session","callId":"write-2","result":{"ok":true}}
+{"type":"assistant.completed","sessionId":"$session","text":"Updated both files."}
+{"type":"session.completed","sessionId":"$session"}

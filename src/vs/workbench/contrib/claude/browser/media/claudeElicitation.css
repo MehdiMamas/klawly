@@ -1,0 +1,192 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/*
+ * MCP form and sign-in cards (issue 428). They reuse the permission card's
+ * border, head and action row (claude.css); this file adds the server chip, the
+ * message, the fields and the host warning. Fields are 26px (DL-06), hairlines
+ * and no shadow (DL-07); the warning uses the amber status color, never a
+ * second accent (DL-09). Tokens come from claude.css (`--claude-*`).
+ */
+
+.claude-elicitation-server {
+	margin-left: auto;
+	flex: none;
+	padding: 0 var(--claude-space-3);
+	border: 1px solid var(--claude-border);
+	border-radius: var(--claude-radius-pill);
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-xs);
+	font-weight: normal;
+	line-height: var(--claude-leading-tight);
+	white-space: nowrap;
+}
+
+.claude-elicitation-message {
+	padding: 0 var(--claude-space-5);
+	color: var(--claude-fg-strong);
+	font-size: var(--claude-text-sm);
+	line-height: 18px;
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
+}
+
+.claude-elicitation-fields {
+	display: flex;
+	flex-direction: column;
+	gap: var(--claude-space-4);
+	padding: var(--claude-space-4) var(--claude-space-5) 0;
+}
+
+.claude-elicitation-field {
+	display: flex;
+	flex-direction: column;
+	gap: var(--claude-space-2);
+	min-width: 0;
+}
+
+.claude-elicitation-field.is-check,
+.claude-elicitation-option {
+	flex-direction: row;
+	align-items: center;
+	gap: var(--claude-space-3);
+	font-size: var(--claude-text-sm);
+}
+
+.claude-elicitation-field.is-check {
+	flex-wrap: wrap;
+}
+
+.claude-elicitation-field.is-check > .claude-elicitation-hint,
+.claude-elicitation-field.is-check > .claude-elicitation-problem {
+	flex-basis: 100%;
+}
+
+.claude-elicitation-check-label,
+.claude-elicitation-option > span {
+	cursor: pointer;
+}
+
+.claude-elicitation-option {
+	display: flex;
+}
+
+.claude-elicitation-options {
+	display: flex;
+	flex-direction: column;
+	gap: var(--claude-space-2);
+}
+
+.claude-elicitation-field .monaco-checkbox {
+	margin: 0;
+}
+
+.claude-elicitation-label {
+	color: var(--claude-fg-strong);
+	font-size: var(--claude-text-xs);
+}
+
+.claude-elicitation-required {
+	margin-left: var(--claude-space-1);
+	color: var(--claude-error);
+}
+
+.claude-elicitation-input .monaco-inputbox,
+.claude-elicitation-select .monaco-select-box {
+	height: var(--claude-control-h);
+	border-radius: var(--claude-radius-md); /* DL-03: a text field */
+}
+
+.claude-elicitation-select {
+	align-self: flex-start;
+	min-width: 160px;
+	max-width: 100%;
+}
+
+.claude-elicitation-json .monaco-inputbox {
+	border-radius: var(--claude-radius-md); /* DL-03: a text field */
+	font-family: var(--claude-font-mono);
+}
+
+.claude-elicitation-field.is-invalid .monaco-inputbox,
+.claude-elicitation-field.is-invalid .monaco-select-box,
+.claude-elicitation-field.is-invalid .claude-elicitation-options {
+	outline: 1px solid var(--claude-error);
+	outline-offset: -1px;
+}
+
+.claude-elicitation-hint {
+	color: var(--claude-fg-faint);
+	font-size: var(--claude-text-xs);
+	line-height: var(--claude-leading-tight);
+}
+
+.claude-elicitation-problem {
+	display: flex;
+	align-items: center;
+	gap: var(--claude-space-2);
+	color: var(--claude-error);
+	font-size: var(--claude-text-xs);
+	line-height: var(--claude-leading-tight);
+}
+
+.claude-elicitation-problem:empty {
+	display: none;
+}
+
+.claude-elicitation-problem .codicon {
+	font-size: var(--claude-icon-compact);
+}
+
+.claude-elicitation-host {
+	color: var(--claude-fg-strong);
+	font-family: var(--claude-font-mono);
+	overflow-wrap: anywhere;
+}
+
+.claude-elicitation-warning {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--claude-space-3);
+	margin: var(--claude-space-4) var(--claude-space-5) 0;
+	padding: var(--claude-space-3) var(--claude-space-4);
+	/* DL-07, DL-09: a warning inside a card is an amber tone, not a box. */
+	background: color-mix(in srgb, var(--claude-warning) 8%, transparent);
+	border-radius: var(--claude-radius-md);
+	color: var(--claude-fg-strong);
+	font-size: var(--claude-text-xs);
+	line-height: var(--claude-leading-tight);
+}
+
+.claude-elicitation-warning .codicon {
+	flex: none;
+	color: var(--claude-warning);
+	font-size: var(--claude-icon-md);
+}
+
+.claude-elicitation .claude-permission-actions .claude-btn .codicon {
+	margin-left: var(--claude-space-2);
+	font-size: var(--claude-icon-compact);
+}
+
+.claude-elicitation .claude-permission-actions .claude-btn[data-choice="decline"] {
+	margin-left: auto;
+}
+
+.claude-elicitation-note {
+	color: var(--claude-fg-faint);
+	gap: var(--claude-space-2);
+}
+
+.claude-elicitation-note .codicon {
+	font-size: var(--claude-icon-compact);
+}
+
+/* DL-02, DL-07: high contrast keeps the warning's edge and no tint. */
+.monaco-workbench.hc-black .claude-elicitation-warning,
+.monaco-workbench.hc-light .claude-elicitation-warning {
+	border: 1px solid color-mix(in srgb, var(--claude-warning) 45%, var(--claude-border));
+	background: transparent;
+}

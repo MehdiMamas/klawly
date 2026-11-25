@@ -1,0 +1,155 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* Split into Pull Requests group editor (issue 970, DL-106): one column per pull request. */
+.claude-split {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	height: 100%;
+	padding: 16px;
+	gap: 12px;
+	background: var(--vscode-editor-background);
+	color: var(--vscode-foreground);
+}
+
+.claude-split-title {
+	margin: 0;
+	font-size: var(--claude-text-title, 16px);
+	font-weight: 600;
+}
+
+.claude-split-hint {
+	margin: 4px 0 0;
+	color: var(--vscode-descriptionForeground);
+	font-size: var(--claude-text-secondary);
+}
+
+.claude-split-board {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	gap: 12px;
+	overflow: auto;
+}
+
+.claude-split-group {
+	display: flex;
+	flex: 0 0 280px;
+	flex-direction: column;
+	gap: 6px;
+	padding: 8px;
+	border: 1px solid var(--vscode-widget-border, var(--vscode-panel-border));
+	border-radius: 6px;
+	min-height: 0;
+}
+
+.claude-split-title-input,
+.claude-split-branch-input {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 4px 6px;
+	border: 1px solid var(--vscode-input-border, transparent);
+	background: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+}
+
+.claude-split-branch-input {
+	font-family: var(--vscode-editor-font-family);
+	font-size: var(--claude-text-secondary);
+}
+
+.claude-split-hunks {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: 4px;
+	min-height: 48px;
+	padding: 4px;
+	overflow: auto;
+	border: 1px dashed transparent;
+	border-radius: 4px;
+}
+
+.claude-split-hunks.drop {
+	border-color: var(--vscode-focusBorder);
+	background: var(--vscode-list-hoverBackground);
+}
+
+.claude-split-empty {
+	padding: 12px 0;
+	text-align: center;
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-split-hunk {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 0 8px;
+	padding: 4px 6px;
+	cursor: grab;
+	border-radius: 4px;
+	background: var(--vscode-list-inactiveSelectionBackground);
+}
+
+.claude-split-hunk:focus-visible {
+	outline: 1px solid var(--vscode-focusBorder);
+}
+
+.claude-split-hunk.dragging {
+	opacity: 0.5;
+}
+
+.claude-split-hunk-file {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.claude-split-hunk-range,
+.claude-split-hunk-count {
+	color: var(--vscode-descriptionForeground);
+	font-size: var(--claude-text-secondary);
+}
+
+.claude-split-footer {
+	display: flex;
+	flex: 0 0 auto;
+	gap: 8px;
+	align-items: center;
+}
+
+.claude-split-problems {
+	flex: 1 1 auto;
+	color: var(--vscode-errorForeground);
+	font-size: var(--claude-text-secondary);
+}
+
+.claude-split-button,
+.claude-split-remove {
+	padding: 4px 10px;
+	border: 1px solid var(--vscode-button-border, transparent);
+	border-radius: 4px;
+	cursor: pointer;
+	background: var(--vscode-button-secondaryBackground);
+	color: var(--vscode-button-secondaryForeground);
+}
+
+.claude-split-stack {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.claude-split-button.primary {
+	background: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+}
+
+.claude-split-button:disabled,
+.claude-split-remove:disabled {
+	opacity: 0.5;
+	cursor: default;
+}

@@ -8,6 +8,7 @@ import { Codicon } from '../../../../base/common/codicons.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { localize } from '../../../../nls.js';
+import { formatProductVersion, formatReleaseVersion } from '../../../../platform/claude/common/claudeRelease.js';
 import { IClipboardService } from '../../../../platform/clipboard/common/clipboardService.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
@@ -139,7 +140,7 @@ export class UpdateTooltip extends Disposable {
 	}
 
 	private updateCurrentVersion() {
-		const productVersion = this.productService.version;
+		const productVersion = this.productService.version && formatReleaseVersion(this.productService.version, this.productService.klawlyRelease);
 		if (productVersion) {
 			const currentCommitId = this.productService.commit?.substring(0, 7);
 			this.currentVersionNode.textContent = currentCommitId
@@ -377,8 +378,9 @@ export class UpdateTooltip extends Disposable {
 		this.titleNode.textContent = title;
 
 		// Latest version
-		const version = update?.productVersion;
-		if (version) {
+		const productVersion = update?.productVersion;
+		if (productVersion) {
+			const version = formatProductVersion(productVersion);
 			const updateCommitId = update.version?.substring(0, 7);
 			this.latestVersionNode.textContent = updateCommitId
 				? localize('updateTooltip.latestVersionLabelWithCommit', "Latest Version: {0} ({1})", version, updateCommitId)
@@ -401,7 +403,7 @@ export class UpdateTooltip extends Disposable {
 		}
 
 		// Release notes button
-		this.releaseNotesVersion = version ?? this.productService.version;
+		this.releaseNotesVersion = productVersion ?? this.productService.version;
 		this.releaseNotesButton.style.display = this.releaseNotesVersion ? '' : 'none';
 		this.releaseNotesButton.tabIndex = this.releaseNotesVersion ? 0 : -1;
 		this.releaseNotesButton.style.marginRight = this.releaseNotesVersion ? 'auto' : '';

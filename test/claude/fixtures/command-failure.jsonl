@@ -1,0 +1,5 @@
+{"type":"session.started","sessionId":"$session"}
+{"type":"tool.started","sessionId":"$session","call":{"id":"bash-1","name":"Bash","category":"shell","input":{"command":"npm test"},"display":{"label":"npm test","command":"npm test"}}}
+{"type":"tool.updated","sessionId":"$session","callId":"bash-1","update":{"stdout":"FAIL src/app.test.ts\n"}}
+{"type":"tool.completed","sessionId":"$session","callId":"bash-1","result":{"ok":false,"error":"exit 1","output":"FAIL src/app.test.ts"}}
+{"type":"session.failed","sessionId":"$session","message":"command failed"}

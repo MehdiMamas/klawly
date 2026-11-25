@@ -198,11 +198,11 @@ function getSectionForCatalogType(type: 'skill' | 'mcp' | 'plugin'): AICustomiza
 
 function getSourceLabel(item: IAICustomizationListItem): string | undefined {
 	if (item.isBuiltin) {
-		return localize('customizationDiscovery.vsCodeSource', "VS Code");
+		return localize('customizationDiscovery.vsCodeSource', "Klawly");
 	}
 	switch (item.source) {
 		case 'extension': return item.extensionId;
-		case 'builtin': return localize('customizationDiscovery.vsCodeSource', "VS Code");
+		case 'builtin': return localize('customizationDiscovery.vsCodeSource', "Klawly");
 		default: return undefined;
 	}
 }

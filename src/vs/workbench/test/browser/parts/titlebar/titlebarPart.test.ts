@@ -10,6 +10,7 @@ import { mock } from '../../../../../base/test/common/mock.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { IContextMenuService } from '../../../../../platform/contextview/browser/contextView.js';
 import { IThemeService } from '../../../../../platform/theme/common/themeService.js';
+import { DEFAULT_CUSTOM_TITLEBAR_HEIGHT } from '../../../../../platform/window/common/window.js';
 import { TestColorTheme, TestThemeService } from '../../../../../platform/theme/test/common/testThemeService.js';
 import { CustomMenubarControl } from '../../../../browser/parts/titlebar/menubarControl.js';
 import { BrowserTitlebarPart } from '../../../../browser/parts/titlebar/titlebarPart.js';
@@ -234,6 +235,26 @@ suite('Workbench - Titlebar Part', () => {
 			centerHiddenFirst: [true, false],
 			bothHidden: [true, true],
 			bothVisible: [false, false],
+		});
+	});
+
+	test('keeps the default height without the command center and shrinks only when compact', () => {
+		const heightOf = (isCompact: boolean, isCommandCenterVisible: boolean) => {
+			const titlebarPart = Object.create(BrowserTitlebarPart.prototype) as BrowserTitlebarPart;
+			Reflect.set(titlebarPart, 'isCompact', isCompact);
+			Object.defineProperty(titlebarPart, 'isCommandCenterVisible', { value: isCommandCenterVisible });
+			Object.defineProperty(titlebarPart, 'preventZoom', { value: false });
+			return titlebarPart.minimumHeight;
+		};
+
+		assert.deepStrictEqual({
+			commandCenter: heightOf(false, true),
+			noCommandCenter: heightOf(false, false),
+			compact: heightOf(true, false),
+		}, {
+			commandCenter: DEFAULT_CUSTOM_TITLEBAR_HEIGHT,
+			noCommandCenter: DEFAULT_CUSTOM_TITLEBAR_HEIGHT,
+			compact: 30,
 		});
 	});
 });

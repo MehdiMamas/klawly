@@ -1,0 +1,8 @@
+# Fast mode runs, hits a rate limit and cools down, then returns (issue 456).
+{"type":"session.started","sessionId":"$session","model":"fixture-opus"}
+{"type":"session.fastMode","sessionId":"$session","status":{"state":"on"}}
+{"type":"assistant.delta","sessionId":"$session","text":"Working at fast speed. "}
+{"type":"session.fastMode","sessionId":"$session","status":{"state":"cooldown","resumesAt":4102444800000},"previous":{"state":"on"}}
+{"type":"assistant.delta","sessionId":"$session","text":"Now at standard speed."}
+{"type":"assistant.completed","sessionId":"$session","text":"Working at fast speed. Now at standard speed."}
+{"type":"session.completed","sessionId":"$session"}

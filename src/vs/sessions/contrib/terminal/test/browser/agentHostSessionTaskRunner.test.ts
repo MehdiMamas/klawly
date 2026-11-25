@@ -52,7 +52,7 @@ function makeSession(opts: { providerId: string; cwd?: URI; remoteConnectionStat
 		sessionType: 'background',
 		harness: 'copilot',
 		environment: 'local',
-		application: constObservable({ id: 'vscode', label: 'VS Code' }),
+		application: constObservable({ id: 'vscode', label: 'Klawly' }),
 		icon: Codicon.copilot,
 		createdAt: new Date(),
 		workspace: observableValue('workspace', workspace),

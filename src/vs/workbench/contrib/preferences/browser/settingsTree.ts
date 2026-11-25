@@ -472,6 +472,14 @@ export function resolveSettingsTree(tocData: ITOCEntry<string>, coreSettingsGrou
 	};
 }
 
+/**
+ * Klawly: `tocData` hides upstream's Chat entry because upstream chat is off by default.
+ * Returns the layout with that entry shown, for while upstream chat is on (`chat.disableAIFeatures` off).
+ */
+export function withChatTocEntry(tocData: ITOCEntry<string>): ITOCEntry<string> {
+	return { ...tocData, children: tocData.children?.map(child => child.id === 'chat' ? { ...child, hide: false } : child) };
+}
+
 export function resolveConfiguredUntrustedSettings(groups: ISettingsGroup[], target: SettingsTarget, languageFilter: string | undefined, configurationService: IWorkbenchConfigurationService): ISetting[] {
 	const allSettings = getFlatSettings(groups);
 	return [...allSettings].filter(setting => setting.restricted && inspectSetting(setting.key, target, languageFilter, configurationService).isConfigured);

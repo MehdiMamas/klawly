@@ -29,7 +29,7 @@ const auxiliaryBarLeftOffIcon = registerIcon('auxiliarybar-left-off-layout-icon'
 export class ToggleAuxiliaryBarAction extends Action2 {
 
 	static readonly ID = 'workbench.action.toggleAuxiliaryBar';
-	static readonly LABEL = localize2('toggleAuxiliaryBar', "Toggle Secondary Side Bar Visibility");
+	static readonly LABEL = localize2('toggleAgentVisibility', "Toggle Agent Visibility");
 
 	constructor() {
 		super({
@@ -37,14 +37,14 @@ export class ToggleAuxiliaryBarAction extends Action2 {
 			title: ToggleAuxiliaryBarAction.LABEL,
 			toggled: {
 				condition: SecondarySideBarVisibleContext,
-				title: localize('closeSecondarySideBar', 'Hide Secondary Side Bar'),
+				title: localize('hideAgent', "Hide Agent"),
 				icon: closeIcon,
-				mnemonicTitle: localize({ key: 'miCloseSecondarySideBar', comment: ['&& denotes a mnemonic'] }, "&&Secondary Side Bar"),
+				mnemonicTitle: localize({ key: 'miAgent', comment: ['&& denotes a mnemonic'] }, "&&Agent"),
 			},
 			icon: closeIcon,
 			category: Categories.View,
 			metadata: {
-				description: localize('openAndCloseAuxiliaryBar', 'Open/Show and Close/Hide Secondary Side Bar'),
+				description: localize('openAndCloseAgent', "Open/Show and Close/Hide Agent"),
 			},
 			f1: true,
 			keybinding: {
@@ -76,7 +76,7 @@ registerAction2(ToggleAuxiliaryBarAction);
 MenuRegistry.appendMenuItem(MenuId.AuxiliaryBarTitle, {
 	command: {
 		id: ToggleAuxiliaryBarAction.ID,
-		title: localize('closeSecondarySideBar', 'Hide Secondary Side Bar'),
+		title: localize('hideAgent', "Hide Agent"),
 		icon: closeIcon
 	},
 	group: 'navigation',
@@ -88,7 +88,7 @@ registerAction2(class extends Action2 {
 	constructor() {
 		super({
 			id: 'workbench.action.closeAuxiliaryBar',
-			title: localize2('closeSecondarySideBar', 'Hide Secondary Side Bar'),
+			title: localize2('hideAgent', "Hide Agent"),
 			category: Categories.View,
 			precondition: AuxiliaryBarVisibleContext,
 			f1: true,
@@ -102,7 +102,7 @@ registerAction2(class extends Action2 {
 registerAction2(class FocusAuxiliaryBarAction extends Action2 {
 
 	static readonly ID = 'workbench.action.focusAuxiliaryBar';
-	static readonly LABEL = localize2('focusAuxiliaryBar', "Focus into Secondary Side Bar");
+	static readonly LABEL = localize2('focusIntoAgent', "Focus into Agent");
 
 	constructor() {
 		super({
@@ -135,7 +135,7 @@ MenuRegistry.appendMenuItems([
 			group: 'navigation',
 			command: {
 				id: ToggleAuxiliaryBarAction.ID,
-				title: localize('toggleSecondarySideBar', "Toggle Secondary Side Bar"),
+				title: localize('toggleAgent', "Toggle Agent"),
 				toggled: { condition: AuxiliaryBarVisibleContext, icon: auxiliaryBarLeftIcon },
 				icon: auxiliaryBarLeftOffIcon,
 			},
@@ -154,7 +154,7 @@ MenuRegistry.appendMenuItems([
 			group: 'navigation',
 			command: {
 				id: ToggleAuxiliaryBarAction.ID,
-				title: localize('toggleSecondarySideBar', "Toggle Secondary Side Bar"),
+				title: localize('toggleAgent', "Toggle Agent"),
 				toggled: { condition: AuxiliaryBarVisibleContext, icon: auxiliaryBarRightIcon },
 				icon: auxiliaryBarRightOffIcon,
 			},
@@ -173,7 +173,7 @@ MenuRegistry.appendMenuItems([
 			group: '3_workbench_layout_move',
 			command: {
 				id: ToggleAuxiliaryBarAction.ID,
-				title: localize2('hideAuxiliaryBar', 'Hide Secondary Side Bar'),
+				title: localize2('hideAgent', "Hide Agent"),
 			},
 			when: ContextKeyExpr.and(AuxiliaryBarVisibleContext, ContextKeyExpr.equals('viewContainerLocation', ViewContainerLocationToString(ViewContainerLocation.AuxiliaryBar))),
 			order: 2
@@ -185,7 +185,7 @@ registerAction2(class extends SwitchCompositeViewAction {
 	constructor() {
 		super({
 			id: 'workbench.action.previousAuxiliaryBarView',
-			title: localize2('previousAuxiliaryBarView', 'Previous Secondary Side Bar View'),
+			title: localize2('previousAgentView', "Previous Agent View"),
 			category: Categories.View,
 			f1: true
 		}, ViewContainerLocation.AuxiliaryBar, -1);
@@ -196,7 +196,7 @@ registerAction2(class extends SwitchCompositeViewAction {
 	constructor() {
 		super({
 			id: 'workbench.action.nextAuxiliaryBarView',
-			title: localize2('nextAuxiliaryBarView', 'Next Secondary Side Bar View'),
+			title: localize2('nextAgentView', "Next Agent View"),
 			category: Categories.View,
 			f1: true
 		}, ViewContainerLocation.AuxiliaryBar, 1);
@@ -212,8 +212,8 @@ class MaximizeAuxiliaryBar extends Action2 {
 	constructor() {
 		super({
 			id: MaximizeAuxiliaryBar.ID,
-			title: localize2('maximizeAuxiliaryBar', 'Maximize Secondary Side Bar'),
-			tooltip: localize('maximizeAuxiliaryBarTooltip', "Maximize Secondary Side Bar"),
+			title: localize2('maximizeAgent', "Maximize Agent"),
+			tooltip: localize('maximizeAgent', "Maximize Agent"),
 			category: Categories.View,
 			f1: true,
 			precondition: AuxiliaryBarMaximizedContext.negate(),
@@ -235,8 +235,8 @@ class RestoreAuxiliaryBar extends Action2 {
 	constructor() {
 		super({
 			id: RestoreAuxiliaryBar.ID,
-			title: localize2('restoreAuxiliaryBar', 'Restore Secondary Side Bar'),
-			tooltip: localize('restoreAuxiliaryBar', 'Restore Secondary Side Bar'),
+			title: localize2('restoreAgent', "Restore Agent"),
+			tooltip: localize('restoreAgent', "Restore Agent"),
 			category: Categories.View,
 			f1: true,
 			precondition: AuxiliaryBarMaximizedContext,
@@ -263,14 +263,14 @@ class ToggleMaximizedAuxiliaryBar extends Action2 {
 	constructor() {
 		super({
 			id: ToggleMaximizedAuxiliaryBar.ID,
-			title: localize2('toggleMaximizedAuxiliaryBar', 'Toggle Maximized Secondary Side Bar'),
-			tooltip: localize('maximizeAuxiliaryBarTooltip2', "Maximize Secondary Side Bar"),
+			title: localize2('toggleMaximizedAgent', "Toggle Maximized Agent"),
+			tooltip: localize('maximizeAgent', "Maximize Agent"),
 			f1: true,
 			category: Categories.View,
 			icon: maximizeIcon,
 			toggled: {
 				condition: AuxiliaryBarMaximizedContext,
-				tooltip: localize('restoreAuxiliaryBar', 'Restore Secondary Side Bar'),
+				tooltip: localize('restoreAgent', "Restore Agent"),
 			},
 			menu: {
 				id: MenuId.AuxiliaryBarTitle,

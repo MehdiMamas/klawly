@@ -51,6 +51,8 @@ import { ICommandService } from '../../../platform/commands/common/commands.js';
 import { IDefaultAccountService } from '../../../platform/defaultAccount/common/defaultAccount.js';
 import { WORKBENCH_MENU_MOTION_CLASS, workbenchMenuCloseAnimation } from '../actions/menuMotion.js';
 import { createCodexAccountMenuActions, ICodexAccountService, shouldShowCodexAccount } from '../../services/agentHost/browser/codexAccountService.js';
+import { IKlawlyAccountService, KLAWLY_PROFILE_PROVIDER_ID } from '../../services/claude/common/klawlyAccount.js';
+import { klawlyProfileMenuActions, klawlyProfileTitle } from '../../services/claude/common/klawlyProfileMenu.js';
 
 export class GlobalCompositeBar extends Disposable {
 
@@ -306,6 +308,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 		@ICommandService private readonly commandService: ICommandService,
 		@ICodexAccountService private readonly codexAccountService: ICodexAccountService,
 		@IDefaultAccountService private readonly defaultAccountService: IDefaultAccountService,
+		@IKlawlyAccountService private readonly klawlyAccountService: IKlawlyAccountService,
 	) {
 		const action = instantiationService.createInstance(CompositeBarAction, {
 			id: ACCOUNTS_ACTIVITY_ID,
@@ -354,6 +357,12 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 
 		this._register(this.defaultAccountService.onDidChangeDefaultAccount(() => {
 			this.updateAvatar();
+		}));
+
+		// Klawly (issue 446): the entry is the GitHub profile; its avatar and name follow the sign-in.
+		this._register(this.klawlyAccountService.onDidChangeAccount(() => {
+			this.updateAvatar();
+			this.updateActivity();
 		}));
 	}
 
@@ -417,7 +426,8 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 
 		let avatarIcon: URI | undefined;
 		if (this.configurationService.getValue<boolean>(ACCOUNTS_AVATAR_SETTING)) {
-			avatarIcon = this.getDefaultAccountAvatarIcon();
+			const profileAvatar = this.klawlyAccountService.account?.avatarUrl;
+			avatarIcon = profileAvatar ? URI.parse(profileAvatar) : this.getDefaultAccountAvatarIcon();
 			if (!avatarIcon) {
 				for (const accounts of this.groupedAccounts.values()) {
 					for (const account of accounts) {
@@ -456,6 +466,13 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 
 	//#region overrides
 
+	protected override computeTitle(): string {
+		const title = super.computeTitle();
+		const name = this.compositeBarActionItem.name;
+		// Klawly (issue 446): the hover names the profile, "@login (GitHub)" or "Sign In with GitHub".
+		return title.startsWith(name) ? klawlyProfileTitle(this.klawlyAccountService) + title.substring(name.length) : title;
+	}
+
 	protected override async resolveMainMenuActions(accountsMenu: IMenu, disposables: DisposableStore): Promise<IAction[]> {
 		await super.resolveMainMenuActions(accountsMenu, disposables);
 
@@ -472,9 +489,10 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 
 			for (const providerId of registeredProviders) {
 				const provider = this.authenticationService.getProvider(providerId);
-				const accounts = this.groupedAccounts.get(providerId);
-				if (!accounts) {
-					if (this.problematicProviders.has(providerId)) {
+				// Klawly (issue 446): the profile's GitHub account is the header above, not a second row.
+				const accounts = this.groupedAccounts.get(providerId)?.filter(account => providerId !== KLAWLY_PROFILE_PROVIDER_ID || account.label !== this.klawlyAccountService.account?.login);
+				if (!accounts?.length) {
+					if (!accounts && this.problematicProviders.has(providerId)) {
 						const providerUnavailableAction = disposables.add(new Action('providerUnavailable', localize('authProviderUnavailable', '{0} is currently unavailable', provider.label), undefined, false));
 						menus.push(providerUnavailableAction);
 						// try again in the background so that if the failure was intermittent, we can resolve it on the next showing of the menu
@@ -610,6 +628,15 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 		}
 
 		appendCommandGroups(remainingCommandGroups);
+
+		// Klawly (issue 446, DL-69): the GitHub profile heads the menu, its service accounts under it.
+		const profile = klawlyProfileMenuActions(this.klawlyAccountService, (commandId, ...args) => this.commandService.executeCommand(commandId, ...args));
+		for (const action of profile) {
+			if (action instanceof Action) {
+				disposables.add(action);
+			}
+		}
+		menus = menus.length ? [...profile, new Separator(), ...menus] : profile;
 
 		return menus;
 	}
@@ -799,6 +826,7 @@ export class SimpleAccountActivityActionViewItem extends AccountsActivityActionV
 		@ICommandService commandService: ICommandService,
 		@ICodexAccountService codexAccountService: ICodexAccountService,
 		@IDefaultAccountService defaultAccountService: IDefaultAccountService,
+		@IKlawlyAccountService klawlyAccountService: IKlawlyAccountService,
 	) {
 		super(() => simpleActivityContextMenuActions(storageService, true),
 			{
@@ -809,7 +837,7 @@ export class SimpleAccountActivityActionViewItem extends AccountsActivityActionV
 				}),
 				hoverOptions,
 				compact: true,
-			}, () => undefined, actions => actions, themeService, lifecycleService, hoverService, contextMenuService, menuService, contextKeyService, authenticationService, environmentService, productService, configurationService, keybindingService, secretStorageService, logService, activityService, instantiationService, commandService, codexAccountService, defaultAccountService);
+			}, () => undefined, actions => actions, themeService, lifecycleService, hoverService, contextMenuService, menuService, contextKeyService, authenticationService, environmentService, productService, configurationService, keybindingService, secretStorageService, logService, activityService, instantiationService, commandService, codexAccountService, defaultAccountService, klawlyAccountService);
 	}
 }
 

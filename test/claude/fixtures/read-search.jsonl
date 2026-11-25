@@ -1,0 +1,7 @@
+{"type":"session.started","sessionId":"$session"}
+{"type":"tool.started","sessionId":"$session","call":{"id":"read-1","name":"Read","category":"read","input":{"file_path":"src/app.ts"},"display":{"label":"Read src/app.ts","file":"src/app.ts"}}}
+{"type":"tool.completed","sessionId":"$session","callId":"read-1","result":{"ok":true,"output":"export function main() {}"}}
+{"type":"tool.started","sessionId":"$session","call":{"id":"search-1","name":"Grep","category":"search","input":{"pattern":"verifyToken"},"display":{"label":"Search verifyToken","query":"verifyToken"}}}
+{"type":"tool.completed","sessionId":"$session","callId":"search-1","result":{"ok":true,"output":"src/auth.ts:12"}}
+{"type":"assistant.completed","sessionId":"$session","text":"Found verifyToken in src/auth.ts."}
+{"type":"session.completed","sessionId":"$session"}

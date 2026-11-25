@@ -71,6 +71,7 @@ export class SettingsChangeRelauncher extends Disposable implements IWorkbenchCo
 		'chat.extensionUnification.enabled',
 		'chat.agentSessions.migrateLegacyCopilotCli',
 		'chat.agentHost.claudeAgent.enabled',
+		'claude.agentsWindow.enabled',
 		'chat.editor.codex.preferAgentHost',
 		'chat.agentHost.otel.enabled',
 		'chat.agentHost.otel.exporterType',

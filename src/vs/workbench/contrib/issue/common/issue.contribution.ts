@@ -4,11 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from '../../../../base/common/lifecycle.js';
-import { localize, localize2 } from '../../../../nls.js';
-import { ICommandAction } from '../../../../platform/action/common/action.js';
-import { Categories } from '../../../../platform/action/common/actionCommonCategories.js';
-import { MenuId, MenuRegistry } from '../../../../platform/actions/common/actions.js';
-import { CommandsRegistry, ICommandMetadata } from '../../../../platform/commands/common/commands.js';
+import { CommandsRegistry, ICommandMetadata, ICommandService } from '../../../../platform/commands/common/commands.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
@@ -17,6 +13,8 @@ import { IssueReporterData, IWorkbenchIssueService } from './issue.js';
 
 const OpenIssueReporterActionId = 'workbench.action.openIssueReporter';
 const OpenIssueReporterApiId = 'vscode.openIssueReporter';
+// Klawly: a report about the app itself goes to Send Feedback, since `reportIssueUrl` is a private repo (issue 765)
+const KlawlySendFeedbackCommandId = 'klawly.sendFeedback';
 
 const OpenIssueReporterCommandMetadata: ICommandMetadata = {
 	description: 'Open the issue reporter and optionally prefill part of the form.',
@@ -92,6 +90,9 @@ export class BaseIssueContribution extends Disposable implements IWorkbenchContr
 							? { extensionId: args[0] }
 							: args ?? {};
 
+				if (!data.extensionId) {
+					return accessor.get(ICommandService).executeCommand(KlawlySendFeedbackCommandId);
+				}
 				return accessor.get(IWorkbenchIssueService).openReporter(data);
 			},
 			metadata: OpenIssueReporterCommandMetadata
@@ -112,21 +113,6 @@ export class BaseIssueContribution extends Disposable implements IWorkbenchContr
 			metadata: OpenIssueReporterCommandMetadata
 		}));
 
-		const reportIssue: ICommandAction = {
-			id: OpenIssueReporterActionId,
-			title: localize2({ key: 'reportIssueInEnglish', comment: ['Translate this to "Report Issue in English" in all languages please!'] }, "Report Issue..."),
-			category: Categories.Help
-		};
-
-		this._register(MenuRegistry.appendMenuItem(MenuId.CommandPalette, { command: reportIssue }));
-
-		this._register(MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
-			group: '3_feedback',
-			command: {
-				id: OpenIssueReporterActionId,
-				title: localize({ key: 'miReportIssue', comment: ['&& denotes a mnemonic', 'Translate this to "Report Issue in English" in all languages please!'] }, "Report &&Issue")
-			},
-			order: 3
-		}));
+		// Klawly: Help > Send Feedback and its palette entry replace Report Issue (issue 765)
 	}
 }

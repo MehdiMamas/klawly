@@ -291,8 +291,7 @@ export class NotificationsCenter extends Themable implements INotificationsCente
 		this.configureDoNotDisturbAction = this._register(this.instantiationService.createInstance(ConfigureDoNotDisturbAction, ConfigureDoNotDisturbAction.ID, ConfigureDoNotDisturbAction.LABEL));
 		notificationsToolBar.push(this.configureDoNotDisturbAction, { icon: true, label: false });
 
-		const configureNotificationsPositionAction = this._register(this.instantiationService.createInstance(ConfigureNotificationsPositionAction, ConfigureNotificationsPositionAction.ID, ConfigureNotificationsPositionAction.LABEL));
-		notificationsToolBar.push(configureNotificationsPositionAction, { icon: true, label: false });
+		// Klawly: no position action in the header; the position stays in the `workbench.notifications.position` setting.
 
 		this.hideAction = this._register(this.instantiationService.createInstance(HideNotificationsCenterAction, HideNotificationsCenterAction.ID, HideNotificationsCenterAction.LABEL));
 		this.updateHideActionIcon();

@@ -1,0 +1,17 @@
+{
+	"type": "system",
+	"subtype": "init",
+	"apiKeySource": "none",
+	"claude_code_version": "2.1.288",
+	"cwd": "/sample",
+	"tools": ["Read", "Grep"],
+	"mcp_servers": [],
+	"model": "claude-sonnet",
+	"permissionMode": "default",
+	"slash_commands": ["review", "compact", "help"],
+	"skills": ["code-review"],
+	"plugins": [],
+	"output_style": "default",
+	"uuid": "00000000-0000-4000-8000-000000000001",
+	"session_id": "sdk-session"
+}

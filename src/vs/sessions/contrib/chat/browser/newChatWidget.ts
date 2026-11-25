@@ -974,7 +974,7 @@ export class NewChatWidget extends Disposable {
 				headers: {
 					'Authorization': `token ${session.accessToken}`,
 					'Accept': 'application/vnd.github.v3+json',
-					'User-Agent': 'VSCode-Sessions',
+					'User-Agent': 'Klawly-Sessions',
 				},
 			}, CancellationToken.None);
 			if (!isSuccess(response)) {

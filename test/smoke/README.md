@@ -1,11 +1,11 @@
-# VS Code Smoke Test
+# Klawly Smoke Test
 
 Make sure you are on **Node v12.x**.
 
 ## Quick Overview
 
 ```bash
-# Build extensions in the VS Code repo (if needed)
+# Build extensions in the Klawly repo (if needed)
 npm i && npm run compile
 
 # Dev (Electron)

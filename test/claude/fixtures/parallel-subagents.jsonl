@@ -1,0 +1,11 @@
+{"type":"session.started","sessionId":"$session"}
+{"type":"subagent.started","sessionId":"$session","run":{"id":"run-a","agentType":"Explore","description":"Find auth call sites","background":false,"state":"running","startedAt":1,"toolCallCount":0}}
+{"type":"subagent.started","sessionId":"$session","run":{"id":"run-b","agentType":"general-purpose","description":"Read the login handler","background":false,"state":"running","startedAt":1,"toolCallCount":0}}
+{"type":"tool.started","sessionId":"$session","parentRunId":"run-a","call":{"id":"grep-a","name":"Grep","category":"search","input":{"pattern":"login"},"display":{"label":"Search login","query":"login"}}}
+{"type":"tool.started","sessionId":"$session","parentRunId":"run-b","call":{"id":"read-b","name":"Read","category":"read","input":{"file_path":"src/login.ts"},"display":{"label":"Read src/login.ts","file":"src/login.ts"}}}
+{"type":"tool.completed","sessionId":"$session","parentRunId":"run-a","callId":"grep-a","result":{"ok":true,"output":"src/login.ts:4"}}
+{"type":"tool.completed","sessionId":"$session","parentRunId":"run-b","callId":"read-b","result":{"ok":true,"output":"export function login() {}"}}
+{"type":"subagent.finished","sessionId":"$session","runId":"run-a","state":"success","resultText":"Three call sites."}
+{"type":"subagent.finished","sessionId":"$session","runId":"run-b","state":"success","resultText":"Handler is in login.ts."}
+{"type":"assistant.completed","sessionId":"$session","text":"Both lookups finished."}
+{"type":"session.completed","sessionId":"$session"}

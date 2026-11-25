@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { appendEscapedMarkdownCodeBlockFence, escapeMarkdownSyntaxTokens } from '../../../base/common/htmlContent.js';
+import { getErrorMessage } from '../../../base/common/errors.js';
+import { IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
 import { escape } from '../../../base/common/strings.js';
 import { localize } from '../../../nls.js';
 import { getAgentHostPolicyGapImpact, IAgentHostPolicyGap } from '../../../platform/agentHost/common/agentHostPolicyReadiness.js';
@@ -22,7 +24,7 @@ export function agentHostPolicyReadiness(gaps: readonly IAgentHostPolicyReadines
 		entries.map(gap => [gap.policyName, gap.settingId, gap.source, getAgentHostPolicyGapImpact(gap.policyName)])
 	);
 	if (gaps.length === 0) {
-		content += localize('policyReadiness.noGaps', "No known unsupported requirements were found in the applied VS Code policies. This does not establish full runtime policy parity; user settings and unprojected runtime managed settings are outside this check.") + '\n\n';
+		content += localize('policyReadiness.noGaps', "No known unsupported requirements were found in the applied Klawly policies. This does not establish full runtime policy parity; user settings and unprojected runtime managed settings are outside this check.") + '\n\n';
 	}
 	if (notEnforced.length > 0) {
 		content += `### ${localize('policyReadiness.notEnforced', "Applied requirements not enforced by Agent Host")} (${notEnforced.length})\n\n`;
@@ -30,7 +32,7 @@ export function agentHostPolicyReadiness(gaps: readonly IAgentHostPolicyReadines
 	}
 	if (needsVerification.length > 0) {
 		content += `### ${localize('policyReadiness.needsVerification', "Applied requirements needing verification")} (${needsVerification.length})\n\n`;
-		content += localize('policyReadiness.conditional', "These policies have incomplete coverage for some paths or delivery sources. This is not a finding that your current source or session fails to enforce them. Check the conditions below; a runtime-managed value may already be enforced even when its VS Code-only equivalent is not.") + '\n\n';
+		content += localize('policyReadiness.conditional', "These policies have incomplete coverage for some paths or delivery sources. This is not a finding that your current source or session fails to enforce them. Check the conditions below; a runtime-managed value may already be enforced even when its Klawly-only equivalent is not.") + '\n\n';
 		content += gapTable(needsVerification);
 	}
 	content += `### ${localize('policyReadiness.rollout', "Rollout and harness selection")}\n\n`;
@@ -43,10 +45,36 @@ export function agentHostPolicyReadiness(gaps: readonly IAgentHostPolicyReadines
 }
 
 export function policyDiagnosticsReport(readiness: string, diagnosticSections: string): string {
-	return '# VS Code Policy Diagnostics\n\n' +
+	return '# Klawly Policy Diagnostics\n\n' +
 		'*WARNING: This file may contain sensitive information.*\n\n' +
 		diagnosticSections +
 		readiness;
+}
+
+const contributedSections: string[] = [];
+
+/** Adds a section to the report: a command that returns Markdown, run each time the report opens. */
+export function registerPolicyDiagnosticsSection(commandId: string): IDisposable {
+	contributedSections.push(commandId);
+	return toDisposable(() => {
+		const index = contributedSections.indexOf(commandId);
+		if (index >= 0) {
+			contributedSections.splice(index, 1);
+		}
+	});
+}
+
+/** The registered sections in order; a section that fails says so in its place. */
+export async function policyDiagnosticsContributedSections(run: (commandId: string) => Promise<unknown>): Promise<string> {
+	const sections = await Promise.all(contributedSections.map(async commandId => {
+		try {
+			const section = await run(commandId);
+			return typeof section === 'string' ? section : '';
+		} catch (error) {
+			return `*Error retrieving ${markdownText(commandId)}: ${markdownText(getErrorMessage(error))}*\n\n`;
+		}
+	}));
+	return sections.join('');
 }
 
 function escapeMarkdownText(value: string): string {

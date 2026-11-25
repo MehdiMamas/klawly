@@ -45,7 +45,7 @@
                             </g>
                           </mask>
                           <g mask="url(#mask3_1401_17298)">
-                            <path d="M16 58.4819V59.4032H141.223V58.4819V57.5605H16V58.4819Z" fill="var(--vscode-tab-activeBorderTop, #0078D4)" />
+                            <path d="M16 58.4819V59.4032H141.223V58.4819V57.5605H16V58.4819Z" fill="var(--vscode-tab-activeBorderTop, #DD8F52)" />
                           </g>
                         </g>
                         <g>
@@ -121,58 +121,58 @@
                   </g>
                   <g>
                     <path d="M88 367C88 364.791 86.2091 363 84 363C81.7909 363 80 364.791 80 367C80 369.209 81.7909 371 84 371C86.2091 371 88 369.209 88 367Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
-                    <path d="M110 363H96C93.7909 363 92 364.791 92 367C92 369.209 93.7909 371 96 371H110C112.209 371 114 369.209 114 367C114 364.791 112.209 363 110 363Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M110 363H96C93.7909 363 92 364.791 92 367C92 369.209 93.7909 371 96 371H110C112.209 371 114 369.209 114 367C114 364.791 112.209 363 110 363Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                     <path d="M126 367C126 364.791 124.209 363 122 363C119.791 363 118 364.791 118 367C118 369.209 119.791 371 122 371C124.209 371 126 369.209 126 367Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
                   </g>
                   <g>
-                    <path d="M110 347H96C93.7909 347 92 348.791 92 351C92 353.209 93.7909 355 96 355H110C112.209 355 114 353.209 114 351C114 348.791 112.209 347 110 347Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M110 347H96C93.7909 347 92 348.791 92 351C92 353.209 93.7909 355 96 355H110C112.209 355 114 353.209 114 351C114 348.791 112.209 347 110 347Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                     <path d="M126 351C126 348.791 124.209 347 122 347C119.791 347 118 348.791 118 351C118 353.209 119.791 355 122 355C124.209 355 126 353.209 126 351Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
                   </g>
                   <g>
-                    <path d="M125 331H96C93.7909 331 92 332.791 92 335C92 337.209 93.7909 339 96 339H125C127.209 339 129 337.209 129 335C129 332.791 127.209 331 125 331Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M125 331H96C93.7909 331 92 332.791 92 335C92 337.209 93.7909 339 96 339H125C127.209 339 129 337.209 129 335C129 332.791 127.209 331 125 331Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                     <path d="M141 335C141 332.791 139.209 331 137 331C134.791 331 133 332.791 133 335C133 337.209 134.791 339 137 339C139.209 339 141 337.209 141 335Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
                   </g>
                   <g>
-                    <path d="M155 315H96C93.7909 315 92 316.791 92 319C92 321.209 93.7909 323 96 323H155C157.209 323 159 321.209 159 319C159 316.791 157.209 315 155 315Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M155 315H96C93.7909 315 92 316.791 92 319C92 321.209 93.7909 323 96 323H155C157.209 323 159 321.209 159 319C159 316.791 157.209 315 155 315Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                     <path d="M171 319C171 316.791 169.209 315 167 315C164.791 315 163 316.791 163 319C163 321.209 164.791 323 167 323C169.209 323 171 321.209 171 319Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
                   </g>
                   <g>
-                    <path d="M119 299H96C93.7909 299 92 300.791 92 303C92 305.209 93.7909 307 96 307H119C121.209 307 123 305.209 123 303C123 300.791 121.209 299 119 299Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M119 299H96C93.7909 299 92 300.791 92 303C92 305.209 93.7909 307 96 307H119C121.209 307 123 305.209 123 303C123 300.791 121.209 299 119 299Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                     <path d="M135 303C135 300.791 133.209 299 131 299C128.791 299 127 300.791 127 303C127 305.209 128.791 307 131 307C133.209 307 135 305.209 135 303Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
                   </g>
                   <g>
-                    <path d="M107 283H84C81.7909 283 80 284.791 80 287C80 289.209 81.7909 291 84 291H107C109.209 291 111 289.209 111 287C111 284.791 109.209 283 107 283Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M107 283H84C81.7909 283 80 284.791 80 287C80 289.209 81.7909 291 84 291H107C109.209 291 111 289.209 111 287C111 284.791 109.209 283 107 283Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                     <path d="M155 283H119C116.791 283 115 284.791 115 287C115 289.209 116.791 291 119 291H155C157.209 291 159 289.209 159 287C159 284.791 157.209 283 155 283Z" fill="var(--vscode-terminal-ansiBrightYellow, var(--vscode-terminal-ansiBrightYellow, #f5f543))" />
                     <path d="M171 287C171 284.791 169.209 283 167 283C164.791 283 163 284.791 163 287C163 289.209 164.791 291 167 291C169.209 291 171 289.209 171 287Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
                   </g>
                   <path d="M85 255C85 252.791 83.2091 251 81 251C78.7909 251 77 252.791 77 255C77 257.209 78.7909 259 81 259C83.2091 259 85 257.209 85 255Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
                   <g>
-                    <path d="M124 219H96C93.7909 219 92 220.791 92 223C92 225.209 93.7909 227 96 227H124C126.209 227 128 225.209 128 223C128 220.791 126.209 219 124 219Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M124 219H96C93.7909 219 92 220.791 92 223C92 225.209 93.7909 227 96 227H124C126.209 227 128 225.209 128 223C128 220.791 126.209 219 124 219Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                     <path d="M140 223C140 220.791 138.209 219 136 219C133.791 219 132 220.791 132 223C132 225.209 133.791 227 136 227C138.209 227 140 225.209 140 223Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
                     <path d="M184 219H148C145.791 219 144 220.791 144 223C144 225.209 145.791 227 148 227H184C186.209 227 188 225.209 188 223C188 220.791 186.209 219 184 219Z" fill="var(--vscode-terminal-ansiGreen, var(--vscode-terminal-ansiGreen, #0dbc79))" />
                   </g>
                   <g>
-                    <path d="M158 203H96C93.7909 203 92 204.791 92 207C92 209.209 93.7909 211 96 211H158C160.209 211 162 209.209 162 207C162 204.791 160.209 203 158 203Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M158 203H96C93.7909 203 92 204.791 92 207C92 209.209 93.7909 211 96 211H158C160.209 211 162 209.209 162 207C162 204.791 160.209 203 158 203Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                     <path d="M174 207C174 204.791 172.209 203 170 203C167.791 203 166 204.791 166 207C166 209.209 167.791 211 170 211C172.209 211 174 209.209 174 207Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
                     <path d="M218 203H182C179.791 203 178 204.791 178 207C178 209.209 179.791 211 182 211H218C220.209 211 222 209.209 222 207C222 204.791 220.209 203 218 203Z" fill="var(--vscode-terminal-ansiGreen, var(--vscode-terminal-ansiGreen, #0dbc79))" />
                   </g>
                   <g>
-                    <path d="M118 187H96C93.7909 187 92 188.791 92 191C92 193.209 93.7909 195 96 195H118C120.209 195 122 193.209 122 191C122 188.791 120.209 187 118 187Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M118 187H96C93.7909 187 92 188.791 92 191C92 193.209 93.7909 195 96 195H118C120.209 195 122 193.209 122 191C122 188.791 120.209 187 118 187Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                     <path d="M134 191C134 188.791 132.209 187 130 187C127.791 187 126 188.791 126 191C126 193.209 127.791 195 130 195C132.209 195 134 193.209 134 191Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
                     <path d="M178 187H142C139.791 187 138 188.791 138 191C138 193.209 139.791 195 142 195H178C180.209 195 182 193.209 182 191C182 188.791 180.209 187 178 187Z" fill="var(--vscode-terminal-ansiGreen, var(--vscode-terminal-ansiGreen, #0dbc79))" />
                   </g>
                   <g>
-                    <path d="M133 171H84C81.7909 171 80 172.791 80 175C80 177.209 81.7909 179 84 179H133C135.209 179 137 177.209 137 175C137 172.791 135.209 171 133 171Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M133 171H84C81.7909 171 80 172.791 80 175C80 177.209 81.7909 179 84 179H133C135.209 179 137 177.209 137 175C137 172.791 135.209 171 133 171Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                     <path d="M181 171H145C142.791 171 141 172.791 141 175C141 177.209 142.791 179 145 179H181C183.209 179 185 177.209 185 175C185 172.791 183.209 171 181 171Z" fill="var(--vscode-terminal-ansiGreen, var(--vscode-terminal-ansiGreen, #0dbc79))" />
                   </g>
                   <g>
                     <path d="M113 139H84C81.7909 139 80 140.791 80 143C80 145.209 81.7909 147 84 147H113C115.209 147 117 145.209 117 143C117 140.791 115.209 139 113 139Z" fill="var(--vscode-terminal-ansiBrightMagenta, var(--vscode-terminal-ansiBrightMagenta, #d670d6))" />
                     <path d="M129 143C129 140.791 127.209 139 125 139C122.791 139 121 140.791 121 143C121 145.209 122.791 147 125 147C127.209 147 129 145.209 129 143Z" fill="var(--vscode-disabledForeground, var(--vscode-icon-foreground, #cccccc))" fill-opacity="0.501961" />
-                    <path d="M170 139H137C134.791 139 133 140.791 133 143C133 145.209 134.791 147 137 147H170C172.209 147 174 145.209 174 143C174 140.791 172.209 139 170 139Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M170 139H137C134.791 139 133 140.791 133 143C133 145.209 134.791 147 137 147H170C172.209 147 174 145.209 174 143C174 140.791 172.209 139 170 139Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                   </g>
                   <g>
                     <path d="M113 107H84C81.7909 107 80 108.791 80 111C80 113.209 81.7909 115 84 115H113C115.209 115 117 113.209 117 111C117 108.791 115.209 107 113 107Z" fill="var(--vscode-terminal-ansiBrightMagenta, var(--vscode-terminal-ansiBrightMagenta, #d670d6))" />
-                    <path d="M144 107H125C122.791 107 121 108.791 121 111C121 113.209 122.791 115 125 115H144C146.209 115 148 113.209 148 111C148 108.791 146.209 107 144 107Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #3794ff))" />
+                    <path d="M144 107H125C122.791 107 121 108.791 121 111C121 113.209 122.791 115 125 115H144C146.209 115 148 113.209 148 111C148 108.791 146.209 107 144 107Z" fill="var(--vscode-charts-blue, var(--vscode-charts-blue, #EBA874))" />
                     <path d="M189 107H156C153.791 107 152 108.791 152 111C152 113.209 153.791 115 156 115H189C191.209 115 193 113.209 193 111C193 108.791 191.209 107 189 107Z" fill="var(--vscode-terminal-ansiBrightMagenta, var(--vscode-terminal-ansiBrightMagenta, #d670d6))" />
                   </g>
                   <g>
@@ -248,7 +248,7 @@
       <g>
         <g>
           <rect x="286.5" y="392.5" width="292" height="85" rx="3.5" fill="var(--vscode-input-background, var(--vscode-widget-border, #313131))" />
-          <rect x="286.5" y="392.5" width="292" height="85" rx="3.5" stroke="var(--vscode-tab-activeBorderTop, #0078D4)" />
+          <rect x="286.5" y="392.5" width="292" height="85" rx="3.5" stroke="var(--vscode-tab-activeBorderTop, #DD8F52)" />
           <g>
             <g>
               <rect x="294.5" y="400.5" width="19" height="19" rx="3.5" stroke="var(--vscode-tab-activeForeground, #FFFFFF)" stroke-opacity="0.0705882" />

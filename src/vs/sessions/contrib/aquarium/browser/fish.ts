@@ -245,7 +245,7 @@ function createVSCodeLogoSymbol(): SVGSymbolElement {
 	const logoPath = $.SVG<SVGPathElement>('path');
 	logoPath.setAttribute('d', VSCODE_LOGO_PATH);
 	logoPath.setAttribute('fill', 'currentColor');
-	logoPath.setAttribute('fill-rule', 'evenodd');
+	logoPath.setAttribute('fill-rule', 'nonzero'); // Klawly: the mark's arms overlap its stem
 	symbol.appendChild(logoPath);
 
 	return symbol;

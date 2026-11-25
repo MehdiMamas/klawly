@@ -29,19 +29,16 @@ export interface ITOCEntry<T> {
 }
 
 const COMMONLY_USED_SETTINGS: readonly string[] = [
-	'editor.fontSize',
-	'editor.formatOnSave',
 	'files.autoSave',
-	'GitHub.copilot-chat.manageExtension',
-	'editor.defaultFormatter',
+	'editor.fontSize',
 	'editor.fontFamily',
-	'editor.wordWrap',
-	'chat.agent.maxRequests',
-	'files.exclude',
-	'workbench.colorTheme',
 	'editor.tabSize',
-	'editor.mouseWheelZoom',
-	'editor.formatOnPaste'
+	'editor.renderWhitespace',
+	'editor.cursorStyle',
+	'editor.insertSpaces',
+	'editor.wordWrap',
+	'files.exclude',
+	'workbench.editor.enablePreview'
 ];
 
 export function getCommonlyUsedData(settingGroups: ISettingsGroup[]): ITOCEntry<ISetting> {
@@ -180,6 +177,7 @@ export const tocData: ITOCEntry<string> = {
 		{
 			id: 'chat',
 			label: localize('chat', "Chat"),
+			hide: true, // Klawly: upstream chat is off by default; the agent's settings are AI / Claude
 			children: [
 				{
 					id: 'chat/agent',
@@ -439,6 +437,12 @@ export const tocData: ITOCEntry<string> = {
 					settings: ['security.workspace.*']
 				}
 			]
+		},
+		{
+			// Klawly: the agent's own settings (configuration title "AI / Claude")
+			id: 'claude',
+			label: localize('claude', "AI / Claude"),
+			settings: ['claude.*']
 		}
 	]
 };

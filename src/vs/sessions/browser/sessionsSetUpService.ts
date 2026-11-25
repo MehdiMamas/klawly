@@ -30,6 +30,7 @@ import { SessionsWelcomeVisibleContext } from '../common/contextkeys.js';
 import { ConditionalAuthState, conditionalAuthState, observeAllowSignedOutWhenUsable, resolveSignedOutWindowGate, SignedOutWindowGate } from './sessionsAuthGate.js';
 
 import { IConfigurationService } from '../../platform/configuration/common/configuration.js';
+import { CLAUDE_AGENTS_WINDOW_ENABLED_SETTING } from '../../platform/claude/common/claudeAgentHost.js';
 import { Codicon } from '../../base/common/codicons.js';
 import { $, append } from '../../base/browser/dom.js';
 import { Dialog, DialogContentsAlignment } from '../../base/browser/ui/dialog/dialog.js';
@@ -153,7 +154,9 @@ class SessionsSetUpWidget extends Disposable {
 	}
 
 	private _start(): void {
-		if (!this.productService.defaultChatAgent?.chatExtensionId) {
+		// Klawly: with Klawly's Agents window setting on, Claude runs on the user's own Claude Code
+		// and account, so the window skips the GitHub welcome and sign-in (issue 617).
+		if (!this.productService.defaultChatAgent?.chatExtensionId || this.configurationService.getValue<boolean>(CLAUDE_AGENTS_WINDOW_ENABLED_SETTING) === true) {
 			this.onCompleted();
 			return;
 		}

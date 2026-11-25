@@ -69,8 +69,10 @@ suite('Sessions - Built-in theme borders', () => {
 				const connectedBorder = isHighContrast(theme.type)
 					? theme.getColor(contrastBorder)
 					: theme.getColor(EDITOR_GROUP_HEADER_TABS_BORDER) ?? theme.getColor(TAB_BORDER);
-				for (const background of [editorBackground, activeSessionViewBackground, inactiveSessionViewBackground]) {
-					checkBorder('connected tabs', connectedBorder, background);
+				// Klawly: Klawly's themes draw no connected-tab line and set the frame apart by tone (DL-07), so its editor surface must differ from the session views under it.
+				const byTone = manifest.name === 'theme-klawly' && !!connectedBorder?.isTransparent();
+				for (const background of byTone ? [activeSessionViewBackground, inactiveSessionViewBackground] : [editorBackground, activeSessionViewBackground, inactiveSessionViewBackground]) {
+					checkBorder('connected tabs', byTone ? theme.getColor(editorBackground) : connectedBorder, background);
 				}
 			}
 		}

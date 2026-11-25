@@ -1,0 +1,38 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/*
+ * Line attribution (issue 503). DL-58: a thin mark at the left edge of the line
+ * decorations column, so it sits beside the source control change bar instead of
+ * on top of it. Kept Claude lines are solid, lines waiting for review are dashed,
+ * lines a person changed afterwards are neutral. DL-01: theme colors only; the
+ * agent's mark is the brand orange (DL-09).
+ */
+.monaco-editor .claude-attribution {
+	margin-left: 1px;
+	width: 2px !important;
+	box-sizing: border-box;
+	border-left: 2px solid transparent;
+}
+
+.monaco-editor .claude-attribution-agent {
+	border-left-color: var(--vscode-claude-attribution-agent, var(--vscode-progressBar-background));
+}
+
+.monaco-editor .claude-attribution-pending {
+	border-left-style: dashed;
+	border-left-color: var(--vscode-claude-attribution-agent, var(--vscode-progressBar-background));
+}
+
+.monaco-editor .claude-attribution-human {
+	border-left-color: var(--vscode-claude-attribution-human, #8b949e);
+}
+
+/* DL-02: high contrast keeps the stock look; the marks stay, at full strength. */
+.monaco-editor.hc-black .claude-attribution,
+.monaco-editor.hc-light .claude-attribution {
+	width: 3px !important;
+	border-left-width: 3px;
+}

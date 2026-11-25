@@ -4180,7 +4180,7 @@ suite('LocalAgentHostSessionsProvider', () => {
 			type: CustomizationType.Plugin,
 			id: 'vscode://synced-data',
 			uri: 'vscode://synced-data',
-			name: 'VS Code Synced Data',
+			name: 'Klawly Synced Data',
 			childEnablement: {
 				'docs-server': [{ kind: CustomizationEnablementKind.Global, enabled: true }],
 			},
@@ -4228,7 +4228,7 @@ suite('LocalAgentHostSessionsProvider', () => {
 			type: CustomizationType.Plugin,
 			id: 'vscode://synced-data',
 			uri: 'vscode://synced-data',
-			name: 'VS Code Synced Data',
+			name: 'Klawly Synced Data',
 			childEnablement: {
 				'docs-server': [{ kind: CustomizationEnablementKind.Global, enabled: false }],
 			},
@@ -4274,7 +4274,7 @@ suite('LocalAgentHostSessionsProvider', () => {
 					type: CustomizationType.Plugin,
 					id: 'vscode://synced-data',
 					uri: 'vscode://synced-data',
-					name: 'VS Code Synced Data',
+					name: 'Klawly Synced Data',
 					children: [{
 						type: CustomizationType.McpServer,
 						id: 'docs-server',

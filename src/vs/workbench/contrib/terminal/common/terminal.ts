@@ -660,6 +660,8 @@ export const DEFAULT_COMMANDS_TO_SKIP_SHELL: string[] = [
 	'workbench.action.terminal.chat.runCommand',
 	'workbench.action.terminal.chat.insertCommand',
 	'workbench.action.terminal.chat.viewInChat',
+	// Klawly: the terminal's Ask Claude card (contrib/claude/browser/terminal/claudeTerminalPrompt.ts).
+	'klawly.terminalPrompt.start',
 	...defaultTerminalContribCommandsToSkipShell,
 ];
 

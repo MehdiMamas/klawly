@@ -1,0 +1,3 @@
+{"type":"session.started","sessionId":"$session"}
+{"type":"assistant.delta","sessionId":"$session","text":"kept"}
+{"type":"assistant.delta"

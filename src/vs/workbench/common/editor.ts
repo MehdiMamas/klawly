@@ -880,7 +880,13 @@ export const enum EditorInputCapabilities {
 	 * click, or close commands. Callers with an explicit lifecycle
 	 * requirement can force the editor to close.
 	 */
-	CannotClose = 1 << 13
+	CannotClose = 1 << 13,
+
+	/**
+	 * Klawly: signals that the editor draws its own header, so the
+	 * group shows no breadcrumbs row while it is active.
+	 */
+	HideBreadcrumbs = 1 << 14
 }
 
 export type IUntypedEditorInput = IResourceEditorInput | ITextResourceEditorInput | IUntitledTextResourceEditorInput | IResourceDiffEditorInput | IResourceMultiDiffEditorInput | IResourceSideBySideEditorInput | IResourceMergeEditorInput;

@@ -700,7 +700,7 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
 				'type': 'string',
 				'enum': ['toggle', 'focus'],
 				'default': 'toggle',
-				'markdownDescription': localize({ comment: ['{0}, {1} will be a setting name rendered as a link'], key: 'activityBarIconClickBehavior' }, "Controls the behavior of clicking an Activity Bar icon in the workbench. This value is ignored when {0} is not set to {1}.", '`#workbench.activityBar.location#`', '`default`'),
+				'markdownDescription': localize({ comment: ['{0}, {1} will be a setting name rendered as a link'], key: 'activityBarIconClickBehavior' }, "Controls the behavior of clicking an Activity Bar icon of the Primary Side Bar in the workbench. This value is ignored when {0} is set to {1}.", '`#workbench.activityBar.location#`', '`hidden`'),
 				'enumDescriptions': [
 					localize('workbench.activityBar.iconClickBehavior.toggle', "Hide the Primary Side Bar if the clicked item is already visible."),
 					localize('workbench.activityBar.iconClickBehavior.focus', "Focus the Primary Side Bar if the clicked item is already visible.")
@@ -857,7 +857,7 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
 				maximum: ModernUIFrostedGlassOpacity.Maximum,
 				scope: ConfigurationScope.APPLICATION,
 				included: isNative,
-				markdownDescription: localize({ key: 'modernUIFrostedGlassOpacity', comment: ['{0} is a placeholder for a setting identifier.'] }, "Controls how see-through frosted glass backgrounds are, from 50% to 100%. Lower values reveal more of the blurred content behind them; higher values make the background more solid. Text and controls stay unchanged. Requires {0} and does not override reduced transparency settings in your operating system or VS Code.", '`#workbench.modernUIFrostedGlass#`'),
+				markdownDescription: localize({ key: 'modernUIFrostedGlassOpacity', comment: ['{0} is a placeholder for a setting identifier.'] }, "Controls how see-through frosted glass backgrounds are, from 50% to 100%. Lower values reveal more of the blurred content behind them; higher values make the background more solid. Text and controls stay unchanged. Requires {0} and does not override reduced transparency settings in your operating system or Klawly.", '`#workbench.modernUIFrostedGlass#`'),
 			},
 			[LayoutSettings.MODERN_UI_EDITOR_TAB_STYLE]: {
 				'type': 'string',
@@ -890,7 +890,7 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
 		localize('rootNameShort', "`${rootNameShort}`: shortened name of the workspace without suffixes (e.g. myFolder, myRemoteFolder or myWorkspace)."),
 		localize('rootPath', "`${rootPath}`: file path of the opened workspace or folder (e.g. /Users/Development/myWorkspace)."),
 		localize('profileName', "`${profileName}`: name of the profile in which the workspace is opened (e.g. Data Science (Profile)). Ignored if default profile is used."),
-		localize('appName', "`${appName}`: e.g. VS Code."),
+		localize('appName', "`${appName}`: e.g. Klawly."),
 		localize('remoteName', "`${remoteName}`: e.g. SSH"),
 		localize('dirty', "`${dirty}`: an indicator for when the active editor has unsaved changes."),
 		localize('focusedView', "`${focusedView}`: the name of the view that is currently focused."),

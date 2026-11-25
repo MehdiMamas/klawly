@@ -81,7 +81,7 @@ emitted from TypeScript) were classified as follows:
 
 ## Performance test suite
 
-The workbench CSS benchmark runs an isolated Code OSS window with Modern UI
+The workbench CSS benchmark runs an isolated Klawly window with Modern UI
 enabled and repeats these phases after a warmup:
 
 1. resize the workbench through alternating wide and narrow viewport sizes;

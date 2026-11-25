@@ -245,6 +245,10 @@ export interface MainThreadSecretStateShape extends IDisposable {
 	$getKeys(extensionId: string): Promise<string[]>;
 }
 
+export interface MainThreadKlawlyAgentShape extends IDisposable {
+	$startAgent(extensionId: string, extensionName: string, prompt: string): Promise<string>;
+}
+
 export interface MainThreadConfigurationShape extends IDisposable {
 	$updateConfigurationOption(target: ConfigurationTarget | null, key: string, value: unknown, overrides: IConfigurationOverrides | undefined, scopeToLanguage: boolean | undefined): Promise<void>;
 	$removeConfigurationOption(target: ConfigurationTarget | null, key: string, overrides: IConfigurationOverrides | undefined, scopeToLanguage: boolean | undefined): Promise<void>;
@@ -4102,6 +4106,7 @@ export const MainContext = {
 	MainThreadQuickOpen: createProxyIdentifier<MainThreadQuickOpenShape>('MainThreadQuickOpen'),
 	MainThreadStatusBar: createProxyIdentifier<MainThreadStatusBarShape>('MainThreadStatusBar'),
 	MainThreadSecretState: createProxyIdentifier<MainThreadSecretStateShape>('MainThreadSecretState'),
+	MainThreadKlawlyAgent: createProxyIdentifier<MainThreadKlawlyAgentShape>('MainThreadKlawlyAgent'),
 	MainThreadStorage: createProxyIdentifier<MainThreadStorageShape>('MainThreadStorage'),
 	MainThreadSpeech: createProxyIdentifier<MainThreadSpeechShape>('MainThreadSpeechProvider'),
 	MainThreadTelemetry: createProxyIdentifier<MainThreadTelemetryShape>('MainThreadTelemetry'),

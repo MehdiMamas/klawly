@@ -1,0 +1,87 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Klawly contributors. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/* Composer voice input (issue 429). Teal marks a running dictation, as it marks focus and progress (DL-09). */
+.claude-voice-button[data-state="preparing"],
+.claude-voice-button[data-state="listening"],
+.claude-voice-button[data-state="transcribing"] {
+	color: var(--claude-focus);
+	background: color-mix(in srgb, var(--claude-focus) 14%, transparent);
+}
+
+.claude-voice-button[data-state="error"] {
+	color: var(--claude-error);
+}
+
+/* One quiet line between the text and the toolbar: what the microphone is doing, in words (DL-11). */
+.claude-voice-bar {
+	display: flex;
+	align-items: center;
+	gap: var(--claude-space-3);
+	min-height: 18px;
+	color: var(--claude-fg-muted);
+	font-size: var(--claude-text-sm);
+	line-height: 18px;
+}
+
+.claude-voice-bar[hidden] {
+	display: none;
+}
+
+.claude-voice-bar[data-state="error"] {
+	color: var(--claude-error);
+}
+
+.claude-voice-label {
+	min-width: 0;
+}
+
+/* Five bars that grow with the microphone level; the middle bar moves most. */
+.claude-voice-meter {
+	--claude-voice-level: 0.15;
+	display: inline-flex;
+	align-items: center;
+	gap: var(--claude-space-1);
+	height: 14px;
+	flex: none;
+}
+
+.claude-voice-meter[hidden] {
+	display: none;
+}
+
+.claude-voice-meter > span {
+	width: 2px;
+	height: 14px;
+	border-radius: var(--claude-radius-xs);
+	background: var(--claude-focus);
+	transform-origin: center;
+	transform: scaleY(max(0.15, calc(var(--claude-voice-level) * var(--claude-voice-weight, 1))));
+	transition: transform var(--claude-dur-fast) var(--claude-ease-out);
+}
+
+.claude-voice-meter > span:nth-child(1),
+.claude-voice-meter > span:nth-child(5) {
+	--claude-voice-weight: 0.55;
+}
+
+.claude-voice-meter > span:nth-child(2),
+.claude-voice-meter > span:nth-child(4) {
+	--claude-voice-weight: 0.8;
+}
+
+/* Under reduced motion the meter holds still at a low level (DL-08). */
+@media (prefers-reduced-motion: reduce) {
+	.claude-voice-meter > span {
+		transition: none;
+		transform: scaleY(0.4);
+	}
+}
+
+/* And under workbench.reduceMotion "on", with the OS setting off (issue 787). */
+.monaco-workbench.monaco-reduce-motion .claude-voice-meter > span {
+	transition: none;
+	transform: scaleY(0.4);
+}

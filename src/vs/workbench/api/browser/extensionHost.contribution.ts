@@ -89,6 +89,7 @@ import './mainThreadAuthentication.js';
 import './mainThreadTimeline.js';
 import './mainThreadTesting.js';
 import './mainThreadSecretState.js';
+import './mainThreadKlawlyAgent.js';
 import './mainThreadShare.js';
 import './mainThreadProfileContentHandlers.js';
 import './mainThreadAiRelatedInformation.js';

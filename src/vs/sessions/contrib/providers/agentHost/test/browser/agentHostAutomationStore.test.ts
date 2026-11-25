@@ -370,7 +370,7 @@ suite('AgentHostAutomationStore', () => {
 		const activeClient = new TestActiveClientService();
 		const enabled = { ...plugin('virtual://client/plugins/enabled'), version: '1.2.3' };
 		const unnamed = { ...plugin('virtual://client/plugins/unnamed'), name: '' };
-		const bundle = { ...plugin('vscode-synced-customization:/bundle'), name: 'VS Code Synced Data' };
+		const bundle = { ...plugin('vscode-synced-customization:/bundle'), name: 'Klawly Synced Data' };
 		activeClient.customizations.set([enabled, plugin('virtual://client/plugins/disabled', false), unnamed, bundle], undefined);
 		const { store } = reconnectable(true, activeClient);
 		store.setConnection(customizationConnection());
@@ -381,7 +381,7 @@ suite('AgentHostAutomationStore', () => {
 			choices: [
 				{ id: enabled.id, label: 'Test Plugin', description: 'Version 1.2.3', selected: true, outdated: false },
 				{ id: unnamed.id, label: 'unnamed', description: undefined, selected: true, outdated: false },
-				{ id: bundle.id, label: 'VS Code Customizations', description: 'Customizations synced from VS Code.', selected: true, outdated: false },
+				{ id: bundle.id, label: 'Klawly Customizations', description: 'Customizations synced from Klawly.', selected: true, outdated: false },
 			],
 			scopes: [{ sessionType: 'copilotcli', roots: [], disposed: true }],
 		});

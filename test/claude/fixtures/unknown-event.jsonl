@@ -1,0 +1,4 @@
+{"type":"session.started","sessionId":"$session"}
+{"type":"future.widget","sessionId":"$session","payload":true}
+{"type":"assistant.completed","sessionId":"$session","text":"Still here"}
+{"type":"session.completed","sessionId":"$session"}

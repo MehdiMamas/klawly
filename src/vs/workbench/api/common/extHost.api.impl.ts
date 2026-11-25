@@ -1986,6 +1986,15 @@ export function createApiFactoryAndRegisterActors(accessor: ServicesAccessor): I
 			}
 		};
 
+		// namespace: klawly (issue 860)
+		const klawlyProxy = rpcProtocol.getProxy(MainContext.MainThreadKlawlyAgent);
+		const klawly: typeof vscode.klawly = {
+			startAgent(prompt: string) {
+				checkProposedApiEnabled(extension, 'klawlyAgent');
+				return klawlyProxy.$startAgent(extension.identifier.value, extension.displayName ?? extension.name, prompt);
+			}
+		};
+
 		// eslint-disable-next-line local/code-no-dangerous-type-assertions
 		return <typeof vscode>{
 			version: initData.version,
@@ -1999,6 +2008,7 @@ export function createApiFactoryAndRegisterActors(accessor: ServicesAccessor): I
 			env,
 			extensions,
 			interactive,
+			klawly,
 			l10n,
 			languages,
 			lm,

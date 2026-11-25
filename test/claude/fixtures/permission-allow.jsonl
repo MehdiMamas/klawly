@@ -1,0 +1,5 @@
+{"type":"session.started","sessionId":"$session"}
+{"type":"permission.requested","sessionId":"$session","request":{"id":"perm-1","toolName":"Bash","input":{"command":"npm test"},"reason":"run tests"}}
+{"type":"tool.started","sessionId":"$session","call":{"id":"bash-1","name":"Bash","category":"shell","input":{"command":"npm test"},"display":{"label":"npm test","command":"npm test"}}}
+{"type":"tool.completed","sessionId":"$session","callId":"bash-1","result":{"ok":true,"output":"ok"}}
+{"type":"session.completed","sessionId":"$session"}

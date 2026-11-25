@@ -1,0 +1,11 @@
+{"type":"session.started","sessionId":"$session"}
+{"type":"assistant.delta","sessionId":"$session","text":"line 1\n"}
+{"type":"assistant.delta","sessionId":"$session","text":"line 2\n"}
+{"type":"assistant.delta","sessionId":"$session","text":"line 3\n"}
+{"type":"assistant.delta","sessionId":"$session","text":"line 4\n"}
+{"type":"assistant.delta","sessionId":"$session","text":"line 5\n"}
+{"type":"assistant.delta","sessionId":"$session","text":"line 6\n"}
+{"type":"assistant.delta","sessionId":"$session","text":"line 7\n"}
+{"type":"assistant.delta","sessionId":"$session","text":"line 8\n"}
+{"type":"assistant.completed","sessionId":"$session","text":"line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\n"}
+{"type":"session.completed","sessionId":"$session"}

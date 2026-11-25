@@ -262,7 +262,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		const titlebarVisible = this.isVisible(Parts.TITLEBAR_PART, targetWindow);
 		if (titlebarVisible) {
 			top += this.getPart(Parts.TITLEBAR_PART).maximumHeight;
-			quickPickTop = top;
+			quickPickTop = top + 7; // Klawly: the quick input floats 7px below the title bar
 		}
 
 		const isCommandCenterVisible = titlebarVisible && this.configurationService.getValue<boolean>(LayoutSettings.COMMAND_CENTER) !== false;
@@ -1900,6 +1900,11 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		this.workbenchGrid.setViewVisible(this.bannerPartView, !hidden);
 	}
 
+	/** Klawly (#1522): a window opened with `--agents-layout` shows no editor and no panel, just the sidebar and the Agent pane. */
+	private isAgentsWindowLayout(): boolean {
+		return !!(this.environmentService as unknown as { args?: { 'agents-layout'?: boolean } }).args?.['agents-layout'];
+	}
+
 	private setEditorHidden(hidden: boolean): void {
 		if (!hidden && this.setAuxiliaryBarMaximized(false) && this.isVisible(Parts.EDITOR_PART)) {
 			return; // return: leaving maximised auxiliary bar made this part visible
@@ -1918,8 +1923,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		this.workbenchGrid.setViewVisible(this.editorPartView, !hidden);
 
 		// The editor and panel cannot be hidden at the same time
-		// unless we have a maximized auxiliary bar
-		if (hidden && !this.isVisible(Parts.PANEL_PART) && !this.isAuxiliaryBarMaximized()) {
+		// unless we have a maximized auxiliary bar (Klawly: or the Agents window, #1522)
+		if (hidden && !this.isVisible(Parts.PANEL_PART) && !this.isAuxiliaryBarMaximized() && !this.isAgentsWindowLayout()) {
 			this.setPanelHidden(false, true);
 		}
 	}
@@ -2857,7 +2862,7 @@ class InitializationStateKey<T extends StorageKeyType> extends WorkbenchLayoutSt
 	readonly runtime = false;
 }
 
-const LayoutStateKeys = {
+export const LayoutStateKeys = {
 
 	// Editor
 	MAIN_EDITOR_CENTERED: new RuntimeStateKey<boolean>('editor.centered', StorageScope.WORKSPACE, StorageTarget.MACHINE, false),
@@ -2936,7 +2941,7 @@ interface ILayoutStateLoadConfiguration {
 	readonly resetLayout: boolean;
 }
 
-class LayoutStateModel extends Disposable {
+export class LayoutStateModel extends Disposable {
 
 	static readonly STORAGE_PREFIX = 'workbench.';
 
@@ -2985,6 +2990,9 @@ class LayoutStateModel extends Disposable {
 	}
 
 	private updateLegacySettingsFromState<T extends StorageKeyType>(key: RuntimeStateKey<T>, value: T): void {
+		if (this.isAgentsWindow) {
+			return;
+		}
 		const isZenMode = this.getRuntimeValue(LayoutStateKeys.ZEN_MODE_ACTIVE);
 		if (key.zenModeIgnore && isZenMode) {
 			return;
@@ -3115,7 +3123,8 @@ class LayoutStateModel extends Disposable {
 		if (
 			this.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN) &&
 			this.getRuntimeValue(LayoutStateKeys.EDITOR_HIDDEN) &&
-			!this.getRuntimeValue(LayoutStateKeys.AUXILIARYBAR_WAS_LAST_MAXIMIZED)
+			!this.getRuntimeValue(LayoutStateKeys.AUXILIARYBAR_WAS_LAST_MAXIMIZED) &&
+			!this.isAgentsWindow
 		) {
 			this.setRuntimeValue(LayoutStateKeys.EDITOR_HIDDEN, false);
 		}
@@ -3223,7 +3232,15 @@ class LayoutStateModel extends Disposable {
 		this._onDidChangeState.fire({ key, value });
 	}
 
+	/** Klawly: the Agents window hides IDE parts, and an IDE window on the same folder must not inherit that (issue 1277). */
+	private get isAgentsWindow(): boolean {
+		return !!(this.environmentService as { args?: { 'agents-layout'?: boolean } }).args?.['agents-layout'];
+	}
+
 	private saveKeyToStorage<T extends StorageKeyType>(key: WorkbenchLayoutStateKey<T>): void {
+		if (this.isAgentsWindow) {
+			return;
+		}
 		const value = this.stateCache.get(key.name) as T;
 		this.storageService.store(`${LayoutStateModel.STORAGE_PREFIX}${key.name}`, typeof value === 'object' ? JSON.stringify(value) : value, key.scope, key.target);
 	}

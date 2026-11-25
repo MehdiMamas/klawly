@@ -161,7 +161,7 @@ suite('CustomizationMigrationDashboard', () => {
 			],
 			warning: 'Prompt-to-skill conversion changesConvert prompts to skills.',
 			checklistCopy: false,
-			intro: 'Some of your agent customizations need an update to keep working. Use Migrate to have VS Code update selected customizations, or Migrate with Agent for a guided migration in chat. Agent migration uses credits.',
+			intro: 'Some of your agent customizations need an update to keep working. Use Migrate to have Klawly update selected customizations, or Migrate with Agent for a guided migration in chat. Agent migration uses credits.',
 			agentButtonInTitleRow: true,
 			agentButtonIsSecondary: true,
 			migrateButtonIsSecondary: true,

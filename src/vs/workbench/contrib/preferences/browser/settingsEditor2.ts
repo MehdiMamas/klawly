@@ -72,7 +72,7 @@ import { SettingsTarget, SettingsTargetsWidget } from './preferencesWidgets.js';
 import { ISettingOverrideClickEvent } from './settingsEditorSettingIndicators.js';
 import { getCommonlyUsedData, ITOCEntry, tocData } from './settingsLayout.js';
 import { SettingsSearchFilterDropdownMenuActionViewItem } from './settingsSearchMenu.js';
-import { AbstractSettingRenderer, createTocTreeForExtensionSettings, HeightChangeParams, ISettingLinkClickEvent, resolveConfiguredUntrustedSettings, resolveSettingsTree, SettingsTree, SettingTreeRenderers } from './settingsTree.js';
+import { AbstractSettingRenderer, createTocTreeForExtensionSettings, HeightChangeParams, ISettingLinkClickEvent, resolveConfiguredUntrustedSettings, resolveSettingsTree, SettingsTree, SettingTreeRenderers, withChatTocEntry } from './settingsTree.js';
 import { ISettingsEditorViewState, parseQuery, SearchResultIdx, SearchResultModel, SettingsTreeElement, SettingsTreeGroupChild, SettingsTreeGroupElement, SettingsTreeModel, SettingsTreeSettingElement } from './settingsTreeModels.js';
 import { createTOCIterator, TOCTree, TOCTreeModel } from './tocTree.js';
 
@@ -245,6 +245,8 @@ export class SettingsEditor2 extends EditorPane {
 
 	/** Don't spam warnings */
 	private hasWarnedMissingSettings = false;
+	/** Klawly: whether the last resolved tree listed upstream's Chat entry */
+	private chatTocEntryShown: boolean | undefined;
 	private tocTreeDisposed = false;
 
 	/** Persist the search query upon reloads */
@@ -336,6 +338,9 @@ export class SettingsEditor2 extends EditorPane {
 
 		this._register(chatEntitlementService.onDidChangeSentiment(() => {
 			this.updateAiSearchToggleVisibility();
+			if (this.chatTocEntryShown !== undefined && this.chatTocEntryShown === chatEntitlementService.sentiment.hidden) {
+				this.onConfigUpdate(undefined, true); // Klawly: list or drop the Chat entry as upstream chat turns on or off
+			}
 		}));
 
 		this._register(userDataProfileService.onDidChangeCurrentProfile(e => {
@@ -1496,7 +1501,9 @@ export class SettingsEditor2 extends EditorPane {
 		}
 		const filter = this.canShowAdvancedSettings() ? undefined : { exclude: { tags: [ADVANCED_SETTING_TAG] } };
 
-		const settingsResult = resolveSettingsTree(tocData, coreSettingsGroups, filter, this.logService);
+		// Klawly: upstream's Chat entry is listed only while upstream chat is on (`chat.disableAIFeatures` off)
+		this.chatTocEntryShown = !this.chatEntitlementService.sentiment.hidden;
+		const settingsResult = resolveSettingsTree(this.chatTocEntryShown ? withChatTocEntry(tocData) : tocData, coreSettingsGroups, filter, this.logService);
 		const resolvedSettingsRoot = settingsResult.tree;
 
 		// Warn for settings not included in layout
