@@ -1199,7 +1199,7 @@ suite('CopilotSlashCommandCompletionProvider', () => {
 				[syncedPlugin('Klawly Synced Data', [skill('plan')])],
 			);
 			const items = await run(provider, '/');
-			assert.deepStrictEqual(runtimeOnly(items).map(i => i.insertText), ['/VS Code Synced Data:plan ']);
+			assert.deepStrictEqual(runtimeOnly(items).map(i => i.insertText), ['/Klawly Synced Data:plan ']);
 		});
 
 		test('keeps a prefixed synced-bundle skill whose bare name collides with a non-skill runtime command', async () => {
@@ -1213,7 +1213,7 @@ suite('CopilotSlashCommandCompletionProvider', () => {
 				[syncedPlugin('Klawly Synced Data', [skill('triage')])],
 			);
 			const items = await run(provider, '/');
-			assert.ok(runtimeOnly(items).some(i => i.insertText === '/VS Code Synced Data:triage '), 'bundled triage skill should remain reachable');
+			assert.ok(runtimeOnly(items).some(i => i.insertText === '/Klawly Synced Data:triage '), 'bundled triage skill should remain reachable');
 		});
 
 		test('does not strip real (non-synced) plugin prefixes when a synced bundle is present', async () => {

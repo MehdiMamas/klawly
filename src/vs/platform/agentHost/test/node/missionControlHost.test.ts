@@ -46,8 +46,8 @@ suite('Mission Control host integration', () => {
 	for (const [quality, nameShort, expected] of [
 		['stable', 'Klawly', 'Klawly'],
 		['insider', 'Klawly - Insiders', 'Klawly Insiders'],
-		[undefined, 'Code - OSS', 'Klawly OSS'],
-		[undefined, 'Code - OSS Dev', 'Klawly OSS'],
+		[undefined, 'Code - OSS', 'Code - OSS'],
+		[undefined, 'Code - OSS Dev', 'Code - OSS Dev'],
 		['exploration', 'Code - Exploration', 'Code - Exploration'],
 	] as const) {
 		test(`uses a machine-first name with the ${nameShort} application in parentheses`, () => {
