@@ -1,0 +1,7 @@
+{
+	"sources": {
+		"src/vs/workbench/contrib/claude/browser/claudeSplitEditor.ts": "6c8e6b8646b5",
+		"src/vs/workbench/contrib/claude/browser/media/claudeSplit.css": "e87da3807081"
+	},
+	"clicks": {}
+}

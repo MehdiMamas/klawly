@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Auto mode · Klawly</title>
+	<meta name="description" content="The Auto switch in the composer, its hover, the composer strip in every state (Idle to Guard hit), the plan card and the run card.">
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+	<style>
+		/* Frames sheet for Auto (#1215). Tokens only; DL-109 state wording, DL-110 cost pill. */
+		.am-page { max-width: 880px; margin: 0 auto; padding: 24px 16px 48px; color: var(--k-ink); background: var(--k-pane); font-family: var(--k-font); min-height: 100vh; }
+		.am-page h1 { font-size: 18px; margin: 0 0 4px; }
+		.am-page h2 { font-size: 13px; margin: 28px 0 8px; color: var(--k-ink-2); text-transform: uppercase; letter-spacing: .04em; }
+		.am-note { color: var(--k-muted); font-size: 12px; margin: 0 0 8px; }
+		.am-frame { border: 1px solid var(--k-line); border-radius: var(--k-radius-lg); background: var(--k-surface); padding: 10px 12px; margin-bottom: 8px; }
+		.am-frame > .am-tag { display: block; font-size: 11px; color: var(--k-faint); margin-bottom: 6px; }
+		.am-strip { display: flex; align-items: center; gap: 8px; min-height: var(--k-row-tall); font-size: 12px; flex-wrap: wrap; }
+		.am-strip .am-text { flex: 1; min-width: 160px; }
+		.am-strip .am-text b { font-weight: 600; color: var(--k-ink); }
+		.am-strip .am-text span { color: var(--k-muted); }
+		.am-dot { width: 8px; height: 8px; border-radius: var(--k-radius-pill); flex: none; background: var(--k-faint); }
+		.am-dot.is-work { background: var(--k-indigo); }
+		.am-dot.is-ask { background: var(--k-amber); }
+		.am-dot.is-ok { background: var(--k-green); }
+		.am-dot.is-bad { background: var(--k-red); }
+		.am-cost { flex: none; font-size: 11px; font-variant-numeric: tabular-nums; padding: 1px 8px; border-radius: var(--k-radius-pill); background: var(--k-fill-3); color: var(--k-ink-2); }
+		.am-cost.is-warn { background: color-mix(in srgb, var(--k-amber) 22%, transparent); color: var(--k-ink); }
+		.am-cost.is-free { color: var(--k-muted); }
+		.am-actions { display: flex; gap: 6px; flex: none; }
+		.am-switch-row { display: flex; align-items: center; gap: 8px; }
+		.am-frame .k-hovercard { position: static; display: block; margin-top: 8px; max-width: 320px; }
+		.am-card { border: 1px solid var(--k-line); border-radius: var(--k-radius-lg); background: var(--k-raised); padding: 12px; }
+		.am-card h3 { margin: 0 0 8px; font-size: 13px; }
+		.am-row { display: grid; grid-template-columns: 20px 1fr auto auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--k-line-faint); font-size: 12px; }
+		.am-row:first-of-type { border-top: 0; }
+		.am-row small { color: var(--k-muted); display: block; }
+		.am-model { color: var(--k-ink-2); font-size: 11px; }
+	</style>
+</head>
+<body>
+<main class="am-page" data-origin="klawly" data-label="Auto mode frames" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts">
+	<h1>Auto mode</h1>
+	<p class="am-note">One switch in the composer. Every state says what is happening in plain words (DL-109), shows the cost as a pill (DL-110) and has one main action. Menus: <a href="mode-menu.html">Mode</a>, <a href="model-menu.html">Model</a>. Settings: <a href="../settings/auto.html">Settings &gt; Auto</a>.</p>
+
+	<h2>The switch and its hover</h2>
+	<div class="am-frame" data-origin="klawly" data-label="Auto switch" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Composer toolbar, Auto on</span>
+		<div class="am-switch-row">
+			<button type="button" class="k-switch is-md is-on" data-toggle-class="is-on" role="switch" aria-checked="true" aria-label="Auto"></button>
+			<strong>Auto</strong><span class="am-note" style="margin:0">Opus plans, helpers build</span>
+		</div>
+		<div class="k-hovercard" data-origin="klawly" data-label="Auto hover" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+			<div class="k-hovercard-title">Auto is on</div>
+			Claude picks the model and the helpers for you and shows the cost as it goes. Turn it off to choose the mode and the model yourself.
+		</div>
+	</div>
+
+	<h2>Composer strip, every state</h2>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Idle" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Idle</span>
+		<div class="am-strip"><span class="am-dot"></span><div class="am-text"><b>Auto</b> <span>· ready</span></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Planning" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Planning</span>
+		<div class="am-strip"><span class="am-dot is-work"></span><div class="am-text"><b>Planning</b> <span>· Opus</span></div><span class="am-cost">$0.42</span><div class="am-actions"><button class="k-btn is-secondary is-sm">Stop</button></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Building" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Building (N helpers)</span>
+		<div class="am-strip"><span class="am-dot is-work"></span><div class="am-text"><b>Building</b> <span>· 2 helpers on Sonnet</span></div><span class="am-cost">$1.87</span><div class="am-actions"><button class="k-btn is-secondary is-sm">Stop</button></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Waiting on CI" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Waiting on CI</span>
+		<div class="am-strip"><span class="am-dot is-work"></span><div class="am-text"><b>Waiting on CI</b> <span>· no model running</span></div><span class="am-cost is-free">$0 while waiting · $2.31 total</span><div class="am-actions"><button class="k-btn is-secondary is-sm">Stop</button></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Reviewing" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Reviewing</span>
+		<div class="am-strip"><span class="am-dot is-work"></span><div class="am-text"><b>Reviewing</b> <span>· Opus, round 1 of 2</span></div><span class="am-cost">$3.05</span><div class="am-actions"><button class="k-btn is-secondary is-sm">Stop</button></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Waiting for you" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Waiting for you</span>
+		<div class="am-strip"><span class="am-dot is-ask"></span><div class="am-text"><b>Waiting for you</b> <span>· Two files define the same setting. Keep the one in settings.json?</span></div><span class="am-cost">$1.12</span><div class="am-actions"><button class="k-btn is-primary is-sm">Keep it</button><button class="k-btn is-secondary is-sm">Use the other</button></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Done" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Done</span>
+		<div class="am-strip"><span class="am-dot is-ok"></span><div class="am-text"><b>Done</b> <span>· 4 files changed · 6 min</span></div><span class="am-cost">$3.48</span><div class="am-actions"><button class="k-btn is-primary is-sm">Open PR</button></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Failed" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Failed + why</span>
+		<div class="am-strip"><span class="am-dot is-bad"></span><div class="am-text"><b>Failed</b> <span>· Tests still fail after two tries on Sonnet and one on Opus.</span></div><span class="am-cost">$4.90</span><div class="am-actions"><button class="k-btn is-primary is-sm">Retry</button><button class="k-btn is-ghost is-sm">Open log</button></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Failed, Opus not tried" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Failed + why (Opus has not run yet)</span>
+		<div class="am-strip"><span class="am-dot is-bad"></span><div class="am-text"><b>Failed</b> <span>· Tests still fail after two tries on Sonnet.</span></div><span class="am-cost">$2.10</span><div class="am-actions"><button class="k-btn is-primary is-sm">Retry on Opus</button><button class="k-btn is-secondary is-sm">Retry</button><button class="k-btn is-ghost is-sm">Open log</button></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Cost notice" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Notify: claude.auto.cost.notifyUsd ($25), one notification per chat</span>
+		<div class="am-strip"><span class="am-dot is-ask"></span><div class="am-text"><b>$25 Used</b> <span>· This chat and its helpers. Auto stops and asks at the limit</span></div><div class="am-actions"><button class="k-btn is-ghost is-sm">Continue</button><button class="k-btn is-ghost is-sm">Stop</button></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Guard hit, cost" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Stop: claude.auto.cost.stopUsd ($50). The chat and every helper are interrupted</span>
+		<div class="am-strip"><span class="am-dot is-ask"></span><div class="am-text"><b>Waiting for You: $50 Used</b> <span>· Auto stopped this chat and its helpers at the limit</span></div><div class="am-actions"><button class="k-btn is-ghost is-sm">Raise Limit</button><button class="k-btn is-ghost is-sm">Stop</button><button class="k-btn is-ghost is-sm">Hand Off With a Summary</button></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Context nudge at 80% of the cap" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Nudge: 80% of claude.auto.context.capTokens (150k)</span>
+		<div class="am-strip"><span class="am-dot is-ask"></span><div class="am-text"><b>Context Is Getting Large</b> <span>· Auto compacts this chat when it reaches the cap</span></div></div>
+	</div>
+	<div class="am-frame" data-origin="klawly" data-label="Strip: Guard hit, context" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<span class="am-tag">Guard hit: context</span>
+		<div class="am-strip"><span class="am-dot is-ask"></span><div class="am-text"><b>Context near full</b> <span>· Helpers are paused.</span></div><span class="am-cost is-warn">$7.60</span><div class="am-actions"><button class="k-btn is-primary is-sm">Hand off</button><button class="k-btn is-secondary is-sm">Continue</button><button class="k-btn is-ghost is-sm">Stop</button></div></div>
+	</div>
+
+	<h2>Plan card: who does what and why</h2>
+	<div class="am-card" data-origin="klawly" data-label="Plan card" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<h3>Plan <span class="am-model">· written by Opus</span></h3>
+		<div class="am-row"><span class="codicon codicon-sparkle"></span><div>Opus plans and reviews<small>Hard judgment work stays on the strongest model.</small></div><span class="am-model">Opus</span><span class="am-cost">~$1.20</span></div>
+		<div class="am-row"><span class="codicon codicon-code"></span><div>Two helpers build the settings page and its tests<small>Build work is cheaper on Sonnet and runs in parallel.</small></div><span class="am-model">Sonnet</span><span class="am-cost">~$2.00</span></div>
+		<div class="am-row"><span class="codicon codicon-play"></span><div>Waiting on CI<small>A free tool watches the run; no model is paid while waiting.</small></div><span class="am-model">tool</span><span class="am-cost is-free">$0</span></div>
+		<div class="am-actions" style="margin-top:10px"><button class="k-btn is-primary is-sm">Start</button><button class="k-btn is-ghost is-sm">Edit plan</button></div>
+	</div>
+
+	<h2>Run card: one row per helper</h2>
+	<div class="am-card" data-origin="klawly" data-label="Run card" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts" data-app="idea">
+		<h3>Building <span class="am-model">· 3 helpers · $2.31 so far</span></h3>
+		<div class="am-row"><span class="am-dot is-work"></span><div>Settings page<small>Working</small></div><span class="am-model">Sonnet</span><span class="am-cost">$0.88</span></div>
+		<div class="am-row"><span class="am-dot is-ok"></span><div>Tests<small>Done</small></div><span class="am-model">Sonnet</span><span class="am-cost">$0.64</span></div>
+		<div class="am-row"><span class="am-dot is-bad"></span><div>Docs<small>Failed twice, moved up to Opus</small></div><span class="am-model">Opus</span><span class="am-cost">$0.79</span></div>
+		<div class="am-actions" style="margin-top:10px"><button class="k-btn is-secondary is-sm">Stop</button></div>
+	</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+	"sources": {
+		"src/vs/sessions/browser/parts/chatView.ts": "3e93ed3ece51",
+		"src/vs/sessions/browser/parts/sessionView.ts": "97b02c2fc117",
+		"src/vs/sessions/browser/parts/sessionsPart.ts": "d427aabc44da",
+		"src/vs/sessions/browser/parts/sidebarPart.ts": "203412099228",
+		"src/vs/sessions/browser/parts/titlebarPart.ts": "4791ec9966d9",
+		"src/vs/sessions/contrib/sessions/browser/views/sessionsList.ts": "1470a86cc7a1",
+		"src/vs/sessions/contrib/sessions/browser/views/sessionsView.ts": "0731a2d54ca4"
+	},
+	"clicks": {}
+}

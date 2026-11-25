@@ -1,0 +1,10 @@
+{
+	"sources": {
+		"src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts": "b233507f3241"
+	},
+	"clicks": {
+		" | Mode |  -> chat/mode-menu.html": "app",
+		" | Model |  -> chat/model-menu.html": "app",
+		" | Settings &gt; Auto |  -> settings/auto.html": "app"
+	}
+}

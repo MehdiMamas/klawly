@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Settings · Klawly</title>
+	<meta name="description" content="The classic Code - OSS settings editor inside Klawly: search, User and Workspace scopes, a table of contents, Commonly Used settings and the AI / Claude group.">
+
+	<!-- Shared assets: icons, the global stylesheet, the settings parts, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+</head>
+<body>
+<!--
+	Window frame copied from workbench/editor.html. The settings editor fills the editor area;
+	the side bar and agent pane stay open, as they do when Klawly opens settings in a tab.
+-->
+<div class="k-window">
+
+	<!-- ===== Title bar ===== -->
+	<header class="k-titlebar" data-origin="mixed" data-label="Title bar" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts">
+		<img src="../assets/klawly-mark.svg" alt="Klawly" class="k-mark ml-1 mr-2">
+		<nav class="k-titlebar-menus" aria-label="Menu bar" data-origin="vscode" data-label="Menu bar" data-source="src/vs/workbench/browser/parts/titlebar/menubarControl.ts">
+			<a class="k-titlebar-menu flex items-center" href="../workbench/menus.html">File</a>
+			<span class="k-titlebar-menu flex items-center">Edit</span>
+			<span class="k-titlebar-menu flex items-center">Selection</span>
+			<span class="k-titlebar-menu flex items-center">View</span>
+			<span class="k-titlebar-menu flex items-center">Go</span>
+			<span class="k-titlebar-menu flex items-center">Run</span>
+			<span class="k-titlebar-menu flex items-center">Terminal</span>
+			<span class="k-titlebar-menu flex items-center">Help</span>
+		</nav>
+		<div class="k-titlebar-title">klawly-demo</div>
+		<div class="k-titlebar-actions">
+			<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-add"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Primary Side Bar"><span class="codicon codicon-layout-sidebar-left"></span></span>
+			<a class="k-icon-btn" href="../workbench/panel.html" title="Toggle Panel"><span class="codicon codicon-layout-panel-off"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Agent"><span class="codicon codicon-layout-sidebar-right"></span></span>
+			<a class="k-agents-pill ml-1" href="../chat/agents-window.html" title="Open the agent in its own window" data-origin="klawly" data-label="Agents Window button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-window is-sm"></span>Agents Window</a>
+			<span class="k-icon-btn ml-1" title="Accounts" data-origin="vscode" data-label="Accounts" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/browser/parts/titlebar/titlebarActions.ts"><span class="codicon codicon-account"></span></span>
+			<a class="k-icon-btn is-active ml-1" href="general.html" title="Klawly Settings" data-origin="klawly" data-label="Settings gear" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-settings-gear"></span></a>
+		</div>
+		<div class="k-window-controls" aria-hidden="true" data-origin="vscode" data-label="Window controls" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts">
+			<span><span class="codicon codicon-chrome-minimize"></span></span>
+			<span><span class="codicon codicon-chrome-maximize"></span></span>
+			<span class="is-close"><span class="codicon codicon-chrome-close"></span></span>
+		</div>
+	</header>
+
+	<div class="k-main">
+
+		<!-- ===== Side bar: view switcher + Explorer ===== -->
+		<aside class="k-sidebar" aria-label="Explorer" data-origin="vscode" data-label="Explorer" data-source="src/vs/workbench/contrib/files/browser/views/explorerView.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+			<nav class="k-viewswitcher" aria-label="Views" data-origin="vscode" data-label="View switcher" data-source="src/vs/workbench/browser/parts/paneCompositeBar.ts">
+				<a class="is-active" href="../workbench/editor.html" title="Explorer (Ctrl+Shift+E)"><span class="codicon codicon-files"></span></a>
+				<a href="../workbench/search.html" title="Search (Ctrl+Shift+F)"><span class="codicon codicon-search"></span></a>
+				<a href="../workbench/source-control.html" title="Source Control (Ctrl+Shift+G)"><span class="codicon codicon-source-control"></span><span class="k-count">3</span></a>
+				<a href="../workbench/run-debug.html" title="Run and Debug (Ctrl+Shift+D)"><span class="codicon codicon-debug-alt"></span></a>
+				<a href="../workbench/extensions.html" title="Extensions (Ctrl+Shift+X)"><span class="codicon codicon-extensions"></span></a>
+			</nav>
+
+			<div class="k-sidebar-title">
+				Explorer
+				<div class="k-actions"><span class="k-icon-btn"><span class="codicon codicon-ellipsis"></span></span></div>
+			</div>
+
+			<div class="k-section-header" style="border-top:0">
+				<span class="codicon codicon-chevron-down is-sm"></span>KLAWLY-DEMO
+				<div class="k-actions">
+					<span class="k-icon-btn" title="New File"><span class="codicon codicon-new-file is-sm"></span></span>
+					<span class="k-icon-btn" title="New Folder"><span class="codicon codicon-new-folder is-sm"></span></span>
+					<span class="k-icon-btn" title="Refresh"><span class="codicon codicon-refresh is-sm"></span></span>
+					<span class="k-icon-btn" title="Collapse"><span class="codicon codicon-collapse-all is-sm"></span></span>
+				</div>
+			</div>
+
+			<div class="flex-1 overflow-y-auto" role="tree">
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-right is-sm"></span><span>.claude</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-right is-sm"></span><span>node_modules</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-down is-sm"></span><span>src</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-down is-sm"></span><span>cart</span></div>
+				<div class="k-tree-row is-selected is-modified" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="k-git">M</span></div>
+				<div class="k-tree-row" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartTypes.ts</span></div>
+				<div class="k-tree-row is-added" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>discounts.ts</span><span class="k-git">U</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-right is-sm"></span><span>checkout</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-right is-sm"></span><span>ui</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon ts" aria-hidden="true"></span><span>index.ts</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-down is-sm"></span><span>test</span></div>
+				<div class="k-tree-row is-modified" style="padding-left:32px"><span class="k-fileicon ts-test" aria-hidden="true"></span><span>cartService.test.ts</span><span class="k-git">M</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon md" aria-hidden="true"></span><span>CLAUDE.md</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon json" aria-hidden="true"></span><span>package.json</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon readme" aria-hidden="true"></span><span>README.md</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon tsconfig" aria-hidden="true"></span><span>tsconfig.json</span></div>
+			</div>
+
+			<div class="k-section-header"><span class="codicon codicon-chevron-right is-sm"></span>Outline</div>
+			<div class="k-section-header"><span class="codicon codicon-chevron-right is-sm"></span>Timeline</div>
+		</aside>
+
+		<!-- ===== Editor: classic Settings ===== -->
+		<main class="k-editor-area" aria-label="Editor" data-origin="vscode" data-label="Editor area" data-source="src/vs/workbench/browser/parts/editor/editorPart.ts">
+			<div class="k-tabs" role="tablist" data-origin="vscode" data-label="Editor tabs" data-source="src/vs/workbench/browser/parts/editor/multiEditorTabsControl.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+				<a class="k-tab" href="../workbench/editor.html"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="k-dirty" title="Unsaved"></span></a>
+				<a class="k-tab" href="general.html"><span class="codicon codicon-settings is-sm"></span><span>Klawly Settings</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<a class="k-tab is-active" href="classic-settings.html"><span class="codicon codicon-settings is-sm"></span><span>Settings</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<div class="k-tabs-actions">
+					<span class="k-icon-btn" title="Open Settings (JSON)"><span class="codicon codicon-go-to-file"></span></span>
+					<span class="k-icon-btn" title="Split Editor Right"><span class="codicon codicon-split-horizontal"></span></span>
+					<span class="k-icon-btn" title="More Actions"><span class="codicon codicon-ellipsis"></span></span>
+				</div>
+			</div>
+			<div class="k-classic" data-origin="vscode" data-label="Settings editor" data-source="src/vs/workbench/contrib/preferences/browser/settingsEditor2.ts src/vs/workbench/contrib/preferences/browser/settingsLayout.ts src/vs/workbench/contrib/claude/browser/media/claudeChrome.css">
+				<!-- ===== Search and scope ===== -->
+				<header class="k-classic-header">
+					<div class="k-classic-search">
+						<input type="search" placeholder="Search settings" aria-label="Search Settings">
+						<span class="k-icon-btn" title="Clear Settings Search Input"><span class="codicon codicon-clear-all"></span></span>
+						<span class="k-icon-btn" title="Filter Settings"><span class="codicon codicon-filter"></span></span>
+					</div>
+					<div class="k-classic-targets" role="tablist">
+						<a class="k-classic-target is-active" href="#" role="tab" aria-selected="true">User</a>
+						<a class="k-classic-target" href="#" role="tab" aria-selected="false">Workspace</a>
+					</div>
+				</header>
+
+				<div class="k-classic-body">
+					<!-- ===== Table of contents ===== (upstream's Chat entry, after Window, is listed only while upstream chat is on: chat.disableAIFeatures off; it is on by default, so Chat is not drawn) -->
+					<nav class="k-classic-toc" aria-label="Settings Table of Contents">
+						<a href="#" class="is-active">Commonly Used</a>
+						<a href="#">Text Editor</a>
+						<a href="#" style="--k-depth:1">Cursor</a>
+						<a href="#" style="--k-depth:1">Find</a>
+						<a href="#" style="--k-depth:1">Font</a>
+						<a href="#" style="--k-depth:1">Formatting</a>
+						<a href="#">Workbench</a>
+						<a href="#">Window</a>
+						<a href="#">Features</a>
+						<a href="#">Application</a>
+						<a href="#">Security</a>
+						<a href="#">AI / Claude</a>
+						<a href="#">Extensions</a>
+					</nav>
+
+					<!-- ===== Settings list ===== -->
+					<div class="k-classic-list">
+						<h2 class="k-classic-group">Commonly Used</h2>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Files: </span>Auto Save</div>
+							<div class="k-classic-desc">Controls auto save of editors that have unsaved changes.</div>
+							<div class="k-classic-control">
+								<button type="button" class="k-settings-select"><span>off</span><span class="codicon codicon-chevron-down"></span></button>
+							</div>
+						</div>
+						<div class="k-classic-item is-modified">
+							<div class="k-classic-title"><span class="k-classic-category">Editor: </span>Font Size<span class="k-classic-modified">(Modified in: Workspace)</span></div>
+							<div class="k-classic-desc">Controls the font size in pixels.</div>
+							<div class="k-classic-control">
+								<input type="number" class="k-settings-field" value="13">
+							</div>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Editor: </span>Font Family</div>
+							<div class="k-classic-desc">Controls the font family.</div>
+							<div class="k-classic-control">
+								<input type="text" class="k-settings-field" value="Consolas, 'Courier New', monospace">
+							</div>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Editor: </span>Tab Size</div>
+							<div class="k-classic-desc">The number of spaces a tab is equal to. This setting is overridden based on the file contents when <code>Editor: Detect Indentation</code> is on.</div>
+							<div class="k-classic-control">
+								<input type="number" class="k-settings-field" value="4">
+							</div>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Editor: </span>Render Whitespace</div>
+							<div class="k-classic-desc">Controls how the editor should render whitespace characters.</div>
+							<div class="k-classic-control">
+								<button type="button" class="k-settings-select"><span>selection</span><span class="codicon codicon-chevron-down"></span></button>
+							</div>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Editor: </span>Cursor Style</div>
+							<div class="k-classic-desc">Controls the cursor style in insert input mode.</div>
+							<div class="k-classic-control">
+								<button type="button" class="k-settings-select"><span>line</span><span class="codicon codicon-chevron-down"></span></button>
+							</div>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Editor: </span>Insert Spaces</div>
+							<label class="k-classic-check">
+								<span class="k-checkbox is-checked" data-toggle-class="is-checked" role="checkbox" aria-checked="true"></span>
+								<span>Insert spaces when pressing <code>Tab</code>. This setting is overridden based on the file contents when <code>Editor: Detect Indentation</code> is on.</span>
+							</label>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Editor: </span>Word Wrap</div>
+							<div class="k-classic-desc">Controls how lines should wrap.</div>
+							<div class="k-classic-control">
+								<button type="button" class="k-settings-select"><span>off</span><span class="codicon codicon-chevron-down"></span></button>
+							</div>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Files: </span>Exclude</div>
+							<div class="k-classic-desc">Configure glob patterns for excluding files and folders. For example, the file explorer decides which files and folders to show or hide based on this setting.</div>
+							<div class="k-classic-patterns" role="list" aria-label="Files: Exclude">
+								<div class="k-classic-pattern">**/.git</div>
+								<div class="k-classic-pattern">**/.svn</div>
+								<div class="k-classic-pattern">**/.hg</div>
+								<div class="k-classic-pattern">**/.DS_Store</div>
+								<div class="k-classic-pattern">**/Thumbs.db</div>
+							</div>
+							<button type="button" class="k-btn is-primary k-classic-add">Add Pattern</button>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Workbench › Editor: </span>Enable Preview</div>
+							<label class="k-classic-check">
+								<span class="k-checkbox is-checked" data-toggle-class="is-checked" role="checkbox" aria-checked="true"></span>
+								<span>Controls whether opened editors show as preview editors. Preview editors do not stay open, are reused until explicitly set to be kept open (via double-click or editing), and show file names in italics.</span>
+							</label>
+						</div>
+
+						<!-- Klawly settings (configuration title "AI / Claude") -->
+						<h2 class="k-classic-group">AI / Claude</h2>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Claude › Agent: </span>Enabled</div>
+							<label class="k-classic-check">
+								<span class="k-checkbox is-checked" data-toggle-class="is-checked" role="checkbox" aria-checked="true"></span>
+								<span>Turn on the Agent: its views, commands, inline edit, and agent turns. When off, they are hidden or refuse to start, and the editor works as usual. Tab suggestions have their own setting.</span>
+							</label>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Claude › Agent: </span>Default Mode</div>
+							<div class="k-classic-desc">The mode a new agent starts in.</div>
+							<div class="k-classic-control">
+								<button type="button" class="k-settings-select"><span>agent</span><span class="codicon codicon-chevron-down"></span></button>
+							</div>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Claude › Agent: </span>Runtime Path</div>
+							<div class="k-classic-desc">Absolute path to the Claude Code executable. Leave empty to use the executable on PATH. Used when the runtime is live.</div>
+							<div class="k-classic-control">
+								<input type="text" class="k-settings-field" value="">
+							</div>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Claude › Autocomplete: </span>Enabled</div>
+							<label class="k-classic-check">
+								<span class="k-checkbox is-checked" data-toggle-class="is-checked" role="checkbox" aria-checked="true"></span>
+								<span>Offer Claude Tab suggestions in the editor. When off, no suggestion is requested or applied.</span>
+							</label>
+						</div>
+						<div class="k-classic-item">
+							<div class="k-classic-title"><span class="k-classic-category">Claude › Checkpoints: </span>Enabled</div>
+							<label class="k-classic-check">
+								<span class="k-checkbox is-checked" data-toggle-class="is-checked" role="checkbox" aria-checked="true"></span>
+								<span>Record a checkpoint at the start of each agent turn so those edits can be restored.</span>
+							</label>
+						</div>
+						<div class="k-classic-item is-modified">
+							<div class="k-classic-title"><span class="k-classic-category">Claude › Editor: </span>Selection Toolbar<span class="k-classic-modified">(Modified in: Workspace)</span></div>
+							<label class="k-classic-check">
+								<span class="k-checkbox" data-toggle-class="is-checked" role="checkbox" aria-checked="false"></span>
+								<span>Show Add to Agent and Edit above text you select in an editor, and Add to Agent over text you select in a terminal.</span>
+							</label>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<!-- ===== Agent pane (right) ===== -->
+		<aside class="k-chatpane" aria-label="Agent" data-origin="klawly" data-label="Agent pane" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+			<div class="k-chatpane-title" data-origin="vscode"><span class="k-chatpane-title-label">Agent</span><span class="k-icon-btn" title="Views and More Actions"><span class="codicon codicon-ellipsis"></span></span><span class="k-icon-btn" title="Maximize Agent" data-origin="vscode" data-label="Maximize button" data-source="src/vs/workbench/browser/parts/auxiliarybar/auxiliaryBarActions.ts"><span class="codicon codicon-screen-full"></span></span></div>
+			<div class="k-chatpane-viewhead" data-origin="vscode"><span class="codicon codicon-chevron-down is-sm"></span><span>Agent</span></div>
+			<div class="k-chatpane-header">
+				<div class="k-chat-tabs" role="tablist" aria-label="Agent sessions" data-origin="klawly" data-label="Chat tabs" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeSessionTabs.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<a class="k-chat-tab is-active" href="../chat/turn-finished.html"><span>Discount codes in cart</span><span class="codicon codicon-close is-xs"></span></a>
+					<a class="k-chat-tab" href="../chat/turn-running.html"><span class="k-spinner" style="width:10px;height:10px"></span><span>Fix flaky checkout test</span></a>
+				</div>
+				<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts"><span class="codicon codicon-add"></span></a>
+				<a data-app="differs" data-app-note="In the app: Agent History drops down an Agent history popover under the button at any width (search, pinned chats, day groups, Pin and Archive on hover, a Cloud row that brings back a session from claude.ai, archived chats folded at the end); the agents list here is the agents sidebar, which has its own button (off by default)." class="k-icon-btn" href="../chat/agents-list.html" title="Agent History"><span class="codicon codicon-history"></span></a>
+				<a class="k-icon-btn" href="../chat/agents-list.html" title="Show Agents Sidebar" data-origin="klawly" data-label="Agents Sidebar button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/claudeAgentsSidebar.ts"><span class="codicon codicon-layout-sidebar-right"></span></a>
+				<a class="k-icon-btn" href="../chat/more-menu.html" title="More actions"><span class="codicon codicon-ellipsis"></span></a>
+				<span class="k-chatpane-header-sep" aria-hidden="true"></span>
+			</div>
+
+			<div class="k-chat-scroll" data-origin="klawly" data-label="Conversation" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeTimelineRenderer.ts src/vs/workbench/contrib/claude/browser/chat/claudeToolCardView.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-prompt">Add a discount code to the cart. Codes come from <code class="text-sm">discounts.ts</code>, matching should ignore case.</div>
+
+				<div class="mt-4 k-worked"><span class="codicon codicon-chevron-right is-sm"></span>Worked for 48s</div>
+
+				<div class="k-chat-body mt-3">
+					<p>Added discount codes to the cart:</p>
+					<ul>
+						<li><code>applyDiscount(code)</code> trims and upper-cases the code before it looks it up.</li>
+						<li><code>totals()</code> now returns the discount and the total after it.</li>
+						<li>New <code>discounts.ts</code> holds the codes, and two tests cover a valid and an unknown code.</li>
+					</ul>
+				</div>
+
+				<div class="k-card mt-3">
+					<div class="k-card-header">
+						<span class="codicon codicon-file"></span><span class="text-ink">cartService.ts</span>
+						<span class="k-diffstat-add">+14</span><span class="k-diffstat-del">−2</span>
+						<span class="ml-auto"></span>
+						<a data-app="differs" data-app-note="In the app: Open Diff opens a single-file &quot;(review)&quot; diff of cartService.ts against the turn's snapshot, with the change navigator; the target page shows the cartService.ts (Working Tree) diff instead." class="k-icon-btn" href="../workbench/diff-editor.html" title="Open Diff"><span class="codicon codicon-go-to-file"></span></a>
+					</div>
+				</div>
+
+				<div class="k-answer-actions">
+					<span class="k-icon-btn" title="Copy"><span class="codicon codicon-copy is-sm"></span></span>
+					<span class="k-icon-btn" title="Fork from here"><span class="codicon codicon-repo-forked is-sm"></span></span>
+					<span class="ml-1">2:41 PM</span>
+				</div>
+			</div>
+
+			<!-- Composer docked at the bottom once the chat has turns -->
+			<div class="px-3 pb-3">
+				<div class="k-changes-bar" data-origin="klawly" data-label="Changes bar" data-source="src/vs/workbench/contrib/claude/browser/review/claudeChangesBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<span class="codicon codicon-chevron-right is-sm"></span>
+					<span>3 Files</span><span class="k-diffstat-add">+41</span><span class="k-diffstat-del">−2</span>
+					<span class="ml-auto"></span>
+					<button class="k-btn is-ghost is-sm">Undo</button>
+					<button class="k-btn is-ghost is-sm">Keep</button>
+					<span class="k-icon-btn" title="Ask Claude to review every change in this turn"><span class="codicon codicon-comment-discussion is-sm"></span></span>
+					<a class="k-btn is-secondary is-sm" href="../review/review-editor.html">Review</a>
+				</div>
+				<div class="k-composer is-docked" data-origin="klawly" data-label="Composer" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<div class="k-composer-input is-placeholder">Add a follow-up</div>
+					<div class="k-composer-toolbar">
+						<a class="k-pill" href="../chat/mode-menu.html"><span class="codicon codicon-sparkle"></span>Agent<span class="codicon codicon-chevron-down is-xs"></span></a>
+						<a class="k-composer-model" href="../chat/model-menu.html">Opus 5.5 <span class="k-effort">High</span></a>
+						<span class="k-composer-model is-locked" title="Claude Code runs in Local for this agent. Start a new agent to run it somewhere else." aria-disabled="true" data-origin="klawly" data-label="Run in pill" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeRunInPicker.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-device-desktop is-sm"></span>Local</span>
+						<span class="ml-auto"></span>
+						<a class="k-icon-btn" href="../chat/context-menu.html" title="Add context"><span class="codicon codicon-mention is-sm"></span></a>
+						<span class="k-icon-btn" title="Attach image"><span class="codicon codicon-device-camera is-sm"></span></span>
+						<span class="k-icon-btn" title="Voice Input (Ctrl+Alt+V)"><span class="codicon codicon-mic is-sm"></span></span>
+						<span class="k-send" title="Send (Enter)"><span class="codicon codicon-arrow-up"></span></span>
+					</div>
+				</div>
+				<a class="k-usage-row" href="../settings/plan-usage.html" data-origin="klawly" data-label="Usage row" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeUsageIndicator.ts src/vs/workbench/contrib/claude/common/claudeUsageRow.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="k-usage-part"><span>Session</span><span class="k-usage-value">42%</span><span class="k-usage-reset">resets in 2 hrs</span></span><span class="k-usage-part"><span>Week</span><span class="k-usage-value">18%</span></span></a>
+			</div>
+		</aside>
+	</div>
+
+	<!-- ===== Status bar ===== -->
+	<footer class="k-statusbar" data-origin="vscode" data-label="Status bar" data-source="src/vs/workbench/browser/parts/statusbar/statusbarPart.ts">
+		<a data-app="differs" data-app-note="In the app: The branch item opens the git checkout branch picker, not the Source Control view." class="k-status-item" href="../workbench/source-control.html"><span class="codicon codicon-git-branch"></span>main*</a>
+		<span class="k-status-item"><span class="codicon codicon-sync"></span></span>
+		<a data-app="differs" data-app-note="In the app: The errors and warnings item opens the Problems panel, not the Terminal." class="k-status-item" href="../workbench/panel.html"><span class="codicon codicon-error"></span>0<span class="codicon codicon-warning"></span>1</a>
+		<span class="k-status-spacer"></span>
+		<span class="k-status-item" title="An agent turn is running. Session usage: 42%." data-origin="klawly" data-label="Claude status" data-source="src/vs/workbench/contrib/claude/browser/claudeStatus.ts src/vs/workbench/contrib/claude/common/claudeRuntimeStatus.ts"><span class="codicon codicon-loading codicon-modifier-spin"></span>Claude: Working · 42%</span>
+		<a data-app="differs" data-app-note="In the app: The Tab status item opens the Tab suggestions popover, not the notification center." class="k-status-item" href="../workbench/notifications.html" title="Tab suggestions" data-origin="klawly" data-label="Tab status" data-source="src/vs/workbench/contrib/claude/browser/claudeTabStatus.ts"><span class="codicon codicon-arrow-right"></span>Tab</a>
+		<a class="k-status-item" href="../workbench/notifications.html" title="Notifications"><span class="codicon codicon-bell"></span></a>
+	</footer>
+</div>
+</body>
+</html>

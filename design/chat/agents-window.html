@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Agents Window · Klawly</title>
+	<meta name="description" content="The agent chat in its own window: a minimal title bar, one agent tab, the chat centered with the agents column beside it, and a short status bar.">
+
+	<!-- Shared assets: icons, the global stylesheet, the chat part, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+</head>
+<body>
+<div class="k-window">
+
+	<!-- ===== Title bar (auxiliary window) ===== -->
+	<header class="k-titlebar is-aux" data-origin="mixed" data-label="Title bar" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts">
+		<img src="../assets/klawly-mark.svg" alt="Klawly" class="k-mark ml-1 mr-2">
+		<div class="k-titlebar-title">Agent: Discount codes in cart</div>
+		<div class="k-window-controls" aria-hidden="true" data-origin="vscode" data-label="Window controls" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts">
+			<span><span class="codicon codicon-chrome-minimize"></span></span>
+			<span><span class="codicon codicon-chrome-maximize"></span></span>
+			<span class="is-close"><span class="codicon codicon-chrome-close"></span></span>
+		</div>
+	</header>
+
+	<div class="k-main">
+
+		<!-- ===== Editor: the one agent tab ===== -->
+		<main class="k-editor-area" aria-label="Agent" data-origin="vscode" data-label="Editor area" data-source="src/vs/workbench/browser/parts/editor/editorPart.ts">
+			<div class="k-tabs !overflow-visible" role="tablist" data-origin="vscode" data-label="Editor tabs" data-source="src/vs/workbench/browser/parts/editor/multiEditorTabsControl.ts">
+				<a class="k-tab is-active" href="agents-window.html" title="Agent: Discount codes in cart"><span class="codicon codicon-sparkle is-sm"></span><span>Discount codes in cart</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<div class="k-tabs-actions">
+					<a class="k-icon-btn" href="new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-add"></span></a>
+					<a data-app="differs" data-app-note="In the app: Agent History drops down an Agent history popover under the button at any width (search, pinned chats, day groups, Pin and Archive on hover, a Cloud row that brings back a session from claude.ai, archived chats folded at the end); the agents list here is the agents sidebar, which has its own button (off by default)." class="k-icon-btn" href="agents-list.html" title="Agent History"><span class="codicon codicon-history"></span></a>
+					<a class="k-icon-btn is-active" href="#agents-column" data-toggle-hidden="agents-column" title="Hide Agents Sidebar" data-origin="klawly" data-label="Agents Sidebar button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/claudeAgentsSidebar.ts"><span class="codicon codicon-layout-sidebar-right"></span></a>
+					<div class="k-anchor">
+						<a class="k-icon-btn" href="#agent-more-menu" data-popover-target="agent-more-menu" title="More actions"><span class="codicon codicon-ellipsis"></span></a>
+						<div class="k-menu is-below" id="agent-more-menu" role="menu" aria-label="More actions" data-popover data-origin="mixed" data-label="Agent editor menu (VS Code context menu)" data-source="src/vs/base/browser/ui/menu/menu.ts src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/chat/claudeAgentEditorActions.ts">
+							<div class="k-menu-item" role="menuitem"><span class="k-menu-check"></span><span class="k-menu-label">Export Transcript…</span></div>
+							<div class="k-menu-item" role="menuitem" title="Share Link… follows it when claude.share.links is on (issue 490)"><span class="k-menu-check"></span><span class="k-menu-label">Copy Chat as Markdown</span></div>
+							<div class="k-menu-item" role="menuitem"><span class="k-menu-check"></span><span class="k-menu-label">Copy Session ID</span></div>
+							<div class="k-menu-item" role="menuitem" title="Type claude --resume with this session's ID in a new terminal"><span class="k-menu-check"></span><span class="k-menu-label">Resume in Terminal</span></div>
+							<div class="k-menu-item" role="menuitem" title="Follow and answer this chat from the Claude app or claude.ai with Claude Code's Remote Control"><span class="k-menu-check"></span><span class="k-menu-label">Share to Phone…</span></div>
+							<div class="k-menu-sep" role="separator"></div>
+							<div class="k-menu-item" role="menuitem"><span class="k-menu-check"></span><span class="k-menu-label">Show What Will Be Sent</span></div>
+							<div class="k-menu-item" role="menuitem"><span class="k-menu-check"></span><span class="k-menu-label">Ask a Side Question</span></div>
+							<div class="k-menu-item" role="menuitem"><span class="k-menu-check"></span><span class="k-menu-label">Go to Turn…</span></div>
+							<div class="k-menu-item" role="menuitemcheckbox" aria-checked="false"><span class="k-menu-check"></span><span class="k-menu-label">Session Inspector</span></div>
+							<div class="k-menu-sep" role="separator"></div>
+							<a class="k-menu-item" role="menuitem" href="turn-finished.html"><span class="k-menu-check"></span><span class="k-menu-label">Move Chat to Side Bar</span></a>
+							<a class="k-menu-item" role="menuitem" href="agents-window.html"><span class="k-menu-check"></span><span class="k-menu-label">Open Chat in New Window</span></a>
+							<div class="k-menu-sep" role="separator"></div>
+							<a class="k-menu-item" role="menuitem" href="agents-list.html"><span class="k-menu-check"></span><span class="k-menu-label">Background Agents</span></a>
+							<a class="k-menu-item" role="menuitem" href="../settings/models.html"><span class="k-menu-check"></span><span class="k-menu-label">Manage Models</span></a>
+							<a class="k-menu-item" role="menuitem" href="../settings/agents.html"><span class="k-menu-check"></span><span class="k-menu-label">Klawly Settings</span></a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="k-chat-shell" data-origin="klawly" data-label="Agents window" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/chat/claudeAgentsColumn.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-chat-main is-centered">
+					<div class="k-chat-scroll" data-origin="klawly" data-label="Conversation" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeTimelineRenderer.ts src/vs/workbench/contrib/claude/browser/chat/claudeToolCardView.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+						<div class="k-timeline">
+							<div class="k-prompt">Add a discount code to the cart. Codes come from <code class="text-sm">discounts.ts</code>, matching should ignore case.</div>
+							<div class="k-worked"><span class="codicon codicon-chevron-right is-sm"></span>Worked for 48s</div>
+							<article class="k-chat-body">
+								<p>Discount codes now work in the cart.</p>
+								<h3>What changed</h3>
+								<ul>
+									<li><code>applyDiscount(code)</code> trims and upper-cases the code before it looks it up.</li>
+									<li><code>totals()</code> returns the discount and the total after it.</li>
+									<li>New <code>discounts.ts</code> holds the codes, and two tests cover a valid and an unknown code.</li>
+								</ul>
+								<p>Apply a code before you read the totals:</p>
+								<div class="k-codeblock">
+									<div class="k-codeblock-header">typescript<span class="ml-auto"></span><span class="k-icon-btn" title="Insert at cursor"><span class="codicon codicon-insert is-sm"></span></span><span class="k-icon-btn" title="Copy"><span class="codicon codicon-copy is-sm"></span></span></div>
+									<pre><code><span class="tok-kw">const</span> <span class="tok-var">cart</span> <span class="tok-pun">=</span> <span class="tok-kw">new</span> <span class="tok-type">CartService</span><span class="tok-pun">();</span>
+<span class="tok-var">cart</span><span class="tok-pun">.</span><span class="tok-fn">add</span><span class="tok-pun">({</span> <span class="tok-var">sku</span><span class="tok-pun">:</span> <span class="tok-str">'MUG-01'</span><span class="tok-pun">,</span> <span class="tok-var">price</span><span class="tok-pun">:</span> <span class="tok-num">12</span><span class="tok-pun">,</span> <span class="tok-var">quantity</span><span class="tok-pun">:</span> <span class="tok-num">2</span> <span class="tok-pun">});</span>
+<span class="tok-var">cart</span><span class="tok-pun">.</span><span class="tok-fn">applyDiscount</span><span class="tok-pun">(</span><span class="tok-str">' spring10 '</span><span class="tok-pun">);</span> <span class="tok-com">// true</span>
+<span class="tok-var">cart</span><span class="tok-pun">.</span><span class="tok-fn">totals</span><span class="tok-pun">();</span> <span class="tok-com">// { subtotal: 24, discount: 2.4, total: 21.6 }</span></code></pre>
+								</div>
+								<p><code>npm test -- cart</code> ran 14 tests and all of them passed.</p>
+							</article>
+							<div class="flex flex-col gap-2">
+								<div class="k-card">
+									<div class="k-card-header">
+										<span class="codicon codicon-file"></span><span class="text-ink">cartService.ts</span>
+										<span class="k-diffstat-add">+14</span><span class="k-diffstat-del">−2</span>
+										<span class="ml-auto"></span>
+										<a data-app="differs" data-app-note="In the app: Open Diff opens a single-file &quot;(review)&quot; diff of cartService.ts against the turn's snapshot, with the change navigator; the target page shows the cartService.ts (Working Tree) diff instead." class="k-icon-btn" href="../workbench/diff-editor.html" title="Open Diff"><span class="codicon codicon-go-to-file"></span></a>
+									</div>
+								</div>
+								<div class="k-card">
+									<div class="k-card-header">
+										<span class="codicon codicon-file"></span><span class="text-ink">discounts.ts</span><span class="k-new-pill">new</span>
+										<span class="k-diffstat-add">+23</span>
+										<span class="ml-auto"></span>
+										<a data-app="differs" data-app-note="In the app: Open Diff opens a single-file &quot;(review)&quot; diff of discounts.ts; the target page shows the cartService.ts diff instead." class="k-icon-btn" href="../workbench/diff-editor.html" title="Open Diff"><span class="codicon codicon-go-to-file"></span></a>
+									</div>
+								</div>
+								<div class="k-card">
+									<div class="k-card-header">
+										<span class="codicon codicon-file"></span><span class="text-ink">cartService.test.ts</span>
+										<span class="k-diffstat-add">+4</span>
+										<span class="ml-auto"></span>
+										<a data-app="differs" data-app-note="In the app: Open Diff opens a single-file &quot;(review)&quot; diff of cartService.test.ts; the target page shows the cartService.ts diff instead." class="k-icon-btn" href="../workbench/diff-editor.html" title="Open Diff"><span class="codicon codicon-go-to-file"></span></a>
+									</div>
+								</div>
+							</div>
+							<div class="k-answer-actions">
+								<span class="k-icon-btn" title="Copy Answer"><span class="codicon codicon-copy is-sm"></span></span>
+								<span class="k-icon-btn" title="Fork from Here"><span class="codicon codicon-repo-forked is-sm"></span></span>
+								<span class="ml-1">2:41 PM</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Composer docked at the bottom once the chat has turns -->
+					<div class="k-composer-dock">
+						<div class="k-changes-bar" data-origin="klawly" data-label="Changes bar" data-source="src/vs/workbench/contrib/claude/browser/review/claudeChangesBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+							<span class="codicon codicon-chevron-right is-sm"></span>
+							<span>3 Files</span><span class="k-diffstat-add">+41</span><span class="k-diffstat-del">−2</span>
+							<span class="ml-auto"></span>
+							<button class="k-btn is-ghost is-sm" title="Undo All">Undo</button>
+							<button class="k-btn is-ghost is-sm" title="Keep All">Keep</button>
+							<span class="k-icon-btn" title="Ask Claude to review every change in this turn"><span class="codicon codicon-comment-discussion is-sm"></span></span>
+							<a class="k-btn is-secondary is-sm" href="../review/review-editor.html">Review</a>
+						</div>
+						<div class="k-composer is-docked" data-origin="klawly" data-label="Composer" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+							<div class="k-composer-input is-placeholder">Add a follow-up</div>
+							<div class="k-composer-toolbar">
+								<a class="k-pill" href="mode-menu.html"><span class="codicon codicon-sparkle"></span>Agent<span class="codicon codicon-chevron-down is-xs"></span></a>
+								<a class="k-composer-model" href="model-menu.html">Opus 5.5 <span class="k-effort">High</span></a>
+								<span class="k-composer-model is-locked" title="Claude Code runs in Local for this agent. Start a new agent to run it somewhere else." aria-disabled="true" data-origin="klawly" data-label="Run in pill" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeRunInPicker.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-device-desktop is-sm"></span>Local</span>
+								<span class="ml-auto"></span>
+								<a class="k-icon-btn" href="context-menu.html" title="Add context"><span class="codicon codicon-mention is-sm"></span></a>
+								<span class="k-icon-btn" title="Attach image"><span class="codicon codicon-device-camera is-sm"></span></span>
+								<span class="k-icon-btn" title="Voice Input (Ctrl+Alt+V)"><span class="codicon codicon-mic is-sm"></span></span>
+								<span class="k-send" title="Send (Enter)"><span class="codicon codicon-arrow-up"></span></span>
+							</div>
+						</div>
+						<a class="k-usage-row" href="../settings/plan-usage.html" data-origin="klawly" data-label="Usage row" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeUsageIndicator.ts src/vs/workbench/contrib/claude/common/claudeUsageRow.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="k-usage-part"><span>Session</span><span class="k-usage-value">42%</span><span class="k-usage-reset">resets in 2 hrs</span></span><span class="k-usage-part"><span>Week</span><span class="k-usage-value">18%</span></span></a>
+					</div>
+				</div>
+
+				<!-- ===== Agents column ===== -->
+				<aside class="k-agents" id="agents-column" aria-label="Agents" data-origin="klawly" data-label="Agents list" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeAgentsColumn.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<div class="k-agents-head">
+						<div class="k-agents-search" role="search"><span class="codicon codicon-search"></span>Search agents…</div>
+						<a class="k-agents-head-row" href="new-chat.html"><span class="codicon codicon-add"></span>New Agent</a>
+						<a class="k-agents-head-row" href="../settings/customize.html"><span class="codicon codicon-settings-gear"></span>Customize</a>
+					</div>
+					<nav class="k-agents-list" aria-label="Agent sessions">
+						<section>
+							<h3 class="k-agents-section-title">Today<span class="codicon codicon-chevron-down"></span></h3>
+							<a class="k-agents-row is-hover" href="turn-running.html">
+								<span class="k-spinner"></span>
+								<span class="k-agents-text"><span class="k-agents-title">Fix flaky checkout test</span><span class="k-agents-subtitle">Running npm test</span></span>
+								<span class="k-agents-age">now</span>
+								<span class="k-agents-actions"><span class="k-icon-btn" title="Stop"><span class="codicon codicon-debug-stop is-sm"></span></span><span class="k-icon-btn" title="Rename"><span class="codicon codicon-edit is-sm"></span></span><span class="k-icon-btn" title="More Actions"><span class="codicon codicon-ellipsis is-sm"></span></span></span>
+							</a>
+							<a class="k-agents-row is-active" href="turn-finished.html">
+								<span class="codicon codicon-check"></span>
+								<span class="k-agents-text"><span class="k-agents-title">Discount codes in cart</span><span class="k-agents-subtitle">Edited 3 files</span></span>
+								<span class="k-agents-age">12m</span>
+							</a>
+							<a class="k-agents-row" href="permission.html">
+								<span class="codicon codicon-bell-dot"></span>
+								<span class="k-agents-text"><span class="k-agents-title">Add coupon expiry</span><span class="k-agents-subtitle">Waiting for your approval</span></span>
+								<span class="k-agents-age">25m</span>
+							</a>
+						</section>
+						<section>
+							<h3 class="k-agents-section-title">Yesterday<span class="codicon codicon-chevron-down"></span></h3>
+							<a class="k-agents-row" href="turn-finished.html">
+								<span class="codicon codicon-comment-discussion"></span>
+								<span class="k-agents-text"><span class="k-agents-title">Explain the checkout flow</span><span class="k-agents-subtitle">No changes</span></span>
+								<span class="k-agents-age">1d</span>
+							</a>
+							<!-- issue 448, DL-10: a session synced from another computer is read-only (no click, no actions): the machine badge, its age, and no subtitle; it is left out of Local Agents and shown only while Sync and history sync are on -->
+							<div class="k-agents-row is-imported" title="Synced from Laptop">
+								<span class="codicon codicon-comment-discussion"></span>
+								<span class="k-agents-text"><span class="k-agents-title">Trace the slow search query</span></span>
+								<span class="k-agents-machine" title="Synced from Laptop"><span class="codicon codicon-device-desktop"></span><span class="k-agents-machine-name">Laptop</span></span>
+								<span class="k-agents-age">1d</span>
+							</div>
+							<a class="k-agents-row" href="turn-finished.html">
+								<span class="codicon codicon-error"></span>
+								<span class="k-agents-text"><span class="k-agents-title">Upgrade Vitest</span><span class="k-agents-subtitle">Failed</span></span>
+								<span class="k-agents-age">1d</span>
+							</a>
+						</section>
+						<section>
+							<h3 class="k-agents-section-title">Previous 7 Days<span class="codicon codicon-chevron-down"></span></h3>
+							<a class="k-agents-row" href="turn-finished.html">
+								<span class="codicon codicon-git-branch"></span>
+								<span class="k-agents-text"><span class="k-agents-title">Rename cart events</span><span class="k-agents-subtitle">fix/cart-events</span></span>
+								<span class="k-agents-age">3d</span>
+							</a>
+							<a class="k-agents-row" href="turn-finished.html">
+								<span class="codicon codicon-circle-slash"></span>
+								<span class="k-agents-text"><span class="k-agents-title">Profile totals()</span><span class="k-agents-subtitle">Stopped</span></span>
+								<span class="k-agents-age">4d</span>
+							</a>
+							<a class="k-agents-row" href="turn-finished.html">
+								<span class="codicon codicon-warning"></span>
+								<span class="k-agents-text"><span class="k-agents-title">Move the cart store to Zustand</span><span class="k-agents-subtitle">Interrupted</span></span>
+								<span class="k-agents-age">6d</span>
+							</a>
+						</section>
+						<section>
+							<h3 class="k-agents-section-title">Older<span class="codicon codicon-chevron-right"></span></h3>
+						</section>
+					</nav>
+					<div class="k-agents-footer">
+						<a data-app="differs" data-app-note="In the app: The agents-list footer shows &quot;Claude Code &lt;version>&quot; and the sign-in kind (no name or plan); clicking it runs Show Claude Status (a quick pick of status and actions), not Plan &amp; Usage." class="k-agents-account" href="../settings/plan-usage.html"><span class="k-agents-avatar">A</span><span class="k-agents-who"><span class="k-agents-name">Alex</span><span class="k-agents-plan">Max</span></span></a>
+						<span class="k-icon-btn" title="All Agents"><span class="codicon codicon-filter"></span></span>
+					</div>
+				</aside>
+			</div>
+		</main>
+	</div>
+
+	<!-- ===== Status bar ===== -->
+	<footer class="k-statusbar" data-origin="vscode" data-label="Status bar" data-source="src/vs/workbench/browser/parts/statusbar/statusbarPart.ts">
+		<a data-app="differs" data-app-note="In the app: The branch item opens the git checkout branch picker, not the Source Control view." class="k-status-item" href="../workbench/source-control.html"><span class="codicon codicon-git-branch"></span>main*</a>
+		<span class="k-status-item"><span class="codicon codicon-sync"></span></span>
+		<a data-app="differs" data-app-note="In the app: The errors and warnings item opens the Problems panel, not the Terminal." class="k-status-item" href="../workbench/panel.html"><span class="codicon codicon-error"></span>0<span class="codicon codicon-warning"></span>1</a>
+		<span class="k-status-spacer"></span>
+		<a class="k-status-item" href="../workbench/notifications.html" title="Notifications"><span class="codicon codicon-bell"></span></a>
+	</footer>
+</div>
+</body>
+</html>

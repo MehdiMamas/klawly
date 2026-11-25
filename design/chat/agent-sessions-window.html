@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Agents Window (Agent Host) · Klawly</title>
+	<meta name="description" content="With claude.agentsWindow.enabled on, the Agents Window pill opens VS Code's own Agents window: the sessions list on the left and one session's chat, run by the Agent Host on the user's installed Claude Code.">
+
+	<!-- Shared assets: icons, the global stylesheet, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+</head>
+<body>
+<div class="k-window">
+
+	<!-- ===== Title bar (Agents window) ===== -->
+	<header class="k-titlebar is-aux" data-origin="vscode" data-label="Title bar" data-source="src/vs/sessions/browser/parts/titlebarPart.ts">
+		<img src="../assets/klawly-mark.svg" alt="Klawly" class="k-mark ml-1 mr-2">
+		<div class="k-titlebar-title">Agents · shop-cart</div>
+		<div class="k-window-controls" aria-hidden="true" data-origin="vscode" data-label="Window controls" data-source="src/vs/sessions/browser/parts/titlebarPart.ts">
+			<span><span class="codicon codicon-chrome-minimize"></span></span>
+			<span><span class="codicon codicon-chrome-maximize"></span></span>
+			<span class="is-close"><span class="codicon codicon-chrome-close"></span></span>
+		</div>
+	</header>
+
+	<div class="k-main">
+
+		<!-- ===== Sidebar: the sessions list ===== -->
+		<aside class="k-agents" aria-label="Sessions" data-origin="vscode" data-label="Sessions list" data-source="src/vs/sessions/browser/parts/sidebarPart.ts src/vs/sessions/contrib/sessions/browser/views/sessionsView.ts src/vs/sessions/contrib/sessions/browser/views/sessionsList.ts">
+			<div class="k-agents-head">
+				<div class="k-agents-search" role="search"><span class="codicon codicon-search"></span>Search sessions…</div>
+				<span class="k-agents-head-row"><span class="codicon codicon-add"></span>New Session</span>
+			</div>
+			<nav class="k-agents-list" aria-label="Sessions">
+				<section>
+					<h3 class="k-agents-section-title">Today<span class="codicon codicon-chevron-down"></span></h3>
+					<span class="k-agents-row">
+						<span class="k-spinner"></span>
+						<span class="k-agents-text"><span class="k-agents-title">Fix flaky checkout test</span><span class="k-agents-subtitle">Claude · Running npm test</span></span>
+						<span class="k-agents-age">now</span>
+					</span>
+					<span class="k-agents-row is-active">
+						<span class="codicon codicon-check"></span>
+						<span class="k-agents-text"><span class="k-agents-title">Discount codes in cart</span><span class="k-agents-subtitle">Claude · 3 files changed</span></span>
+						<span class="k-agents-age">12m</span>
+					</span>
+				</section>
+				<section>
+					<h3 class="k-agents-section-title">Yesterday<span class="codicon codicon-chevron-down"></span></h3>
+					<span class="k-agents-row">
+						<span class="codicon codicon-comment-discussion"></span>
+						<span class="k-agents-text"><span class="k-agents-title">Explain the checkout flow</span><span class="k-agents-subtitle">Claude · No changes</span></span>
+						<span class="k-agents-age">1d</span>
+					</span>
+				</section>
+			</nav>
+		</aside>
+
+		<!-- ===== Sessions part: the active session's chat ===== -->
+		<main class="k-chat-shell" aria-label="Session" data-origin="vscode" data-label="Sessions part" data-source="src/vs/sessions/browser/parts/sessionsPart.ts src/vs/sessions/browser/parts/sessionView.ts src/vs/sessions/browser/parts/chatView.ts">
+			<div class="k-chat-main is-centered">
+				<div class="k-chat-scroll" data-origin="vscode" data-label="Conversation" data-source="src/vs/sessions/browser/parts/chatView.ts">
+					<div class="k-timeline">
+						<div class="k-prompt">Add a discount code to the cart. Codes come from <code class="text-sm">discounts.ts</code>, matching should ignore case.</div>
+						<article class="k-chat-body">
+							<p>Discount codes now work in the cart. <code>applyDiscount(code)</code> trims and upper-cases the code before it looks it up, and two new tests cover a valid and an unknown code.</p>
+							<p><code>npm test -- cart</code> ran 14 tests and all of them passed.</p>
+						</article>
+					</div>
+				</div>
+				<div class="k-composer-dock">
+					<div class="k-composer is-docked" data-origin="vscode" data-label="Chat input" data-source="src/vs/sessions/browser/parts/chatView.ts">
+						<div class="k-composer-input is-placeholder">Add a follow-up</div>
+						<div class="k-composer-toolbar">
+							<span class="k-composer-model" title="Claude models from the user's own Claude Code">Opus 5.5</span>
+							<span class="ml-auto"></span>
+							<span class="k-send" title="Send (Enter)"><span class="codicon codicon-arrow-up"></span></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+</div>
+</body>
+</html>

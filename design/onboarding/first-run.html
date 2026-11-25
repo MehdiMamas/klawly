@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>First Run and Sign-In · Klawly</title>
+	<meta name="description" content="Klawly's first window: Home in the editor area and the agent pane's setup view, which finds Claude Code, installs it or signs in to Claude before the agent can run.">
+
+	<!-- Shared assets: icons, the global stylesheet, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+</head>
+<body>
+<!--
+	FIRST RUN
+	An empty window (no folder) the first time Klawly starts. The editor area shows Home;
+	the agent pane shows the setup view in place of the composer until Claude Code is
+	installed and signed in. The dashed switch at the top is prototype chrome: it flips
+	between the three setup states (Claude Code missing, signed out, waiting for sign-in).
+-->
+<div class="k-window" data-tabs>
+
+	<!-- ===== Title bar ===== -->
+	<header class="k-titlebar" data-origin="mixed" data-label="Title bar" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts">
+		<img src="../assets/klawly-mark.svg" alt="Klawly" class="k-mark ml-1 mr-2">
+		<nav class="k-titlebar-menus" aria-label="Menu bar" data-origin="vscode" data-label="Menu bar" data-source="src/vs/workbench/browser/parts/titlebar/menubarControl.ts">
+			<a class="k-titlebar-menu flex items-center" href="../workbench/menus.html">File</a>
+			<span class="k-titlebar-menu flex items-center">Edit</span>
+			<span class="k-titlebar-menu flex items-center">Selection</span>
+			<span class="k-titlebar-menu flex items-center">View</span>
+			<span class="k-titlebar-menu flex items-center">Go</span>
+			<span class="k-titlebar-menu flex items-center">Run</span>
+			<span class="k-titlebar-menu flex items-center">Terminal</span>
+			<span class="k-titlebar-menu flex items-center">Help</span>
+		</nav>
+		<div class="k-titlebar-title">Klawly</div>
+		<div class="k-titlebar-actions">
+			<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-add"></span></a>
+			<span class="k-icon-btn" title="Toggle Primary Side Bar"><span class="codicon codicon-layout-sidebar-left-off"></span></span>
+			<a class="k-icon-btn" href="../workbench/panel.html" title="Toggle Panel"><span class="codicon codicon-layout-panel-off"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Agent"><span class="codicon codicon-layout-sidebar-right"></span></span>
+			<a class="k-agents-pill ml-1" href="../chat/agents-window.html" title="Open the agent in its own window" data-origin="klawly" data-label="Agents Window button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-window is-sm"></span>Agents Window</a>
+			<span class="k-icon-btn ml-1" title="Accounts" data-origin="vscode" data-label="Accounts" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/browser/parts/titlebar/titlebarActions.ts"><span class="codicon codicon-account"></span></span>
+			<a class="k-icon-btn" href="../settings/general.html" title="Klawly Settings" data-origin="klawly" data-label="Settings gear" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-settings-gear"></span></a>
+		</div>
+		<div class="k-window-controls" aria-hidden="true" data-origin="vscode" data-label="Window controls" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts">
+			<span><span class="codicon codicon-chrome-minimize"></span></span>
+			<span><span class="codicon codicon-chrome-maximize"></span></span>
+			<span class="is-close"><span class="codicon codicon-chrome-close"></span></span>
+		</div>
+	</header>
+
+	<div class="k-main relative">
+
+		<!-- ===== Prototype state switch (not part of the design) ===== -->
+		<div class="proto-state" aria-label="Prototype state">
+			Setup state
+			<div class="k-segmented" role="tablist">
+				<span class="is-active" data-tab="missing" role="tab">Claude Code missing</span>
+				<span data-tab="installing" role="tab">Installing</span>
+				<span data-tab="signed-out" role="tab">Signed out</span>
+				<span data-tab="waiting" role="tab">Waiting for sign-in</span>
+			</div>
+		</div>
+
+		<!-- ===== Editor area: Home (no folder open, no recent projects yet) ===== -->
+		<main class="k-editor-area" aria-label="Home" data-origin="vscode" data-label="Editor area" data-source="src/vs/workbench/browser/parts/editor/editorPart.ts">
+			<section class="k-home" data-origin="klawly" data-label="Home" data-source="src/vs/workbench/contrib/claude/browser/home/claudeHome.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-home-brand">
+					<div class="k-home-lockup">
+						<img src="../assets/klawly-mark.svg" alt="">
+						<h1 class="k-home-name">Klawly</h1>
+					</div>
+					<div class="k-home-account" data-tab-panel="missing">
+						<span>Not installed</span><span class="k-dot" aria-hidden="true"></span><a class="k-link" href="../settings/general.html">Settings</a>
+					</div>
+					<div class="k-home-account" data-tab-panel="installing" hidden>
+						<span>Not installed</span><span class="k-dot" aria-hidden="true"></span><a class="k-link" href="../settings/general.html">Settings</a>
+					</div>
+					<div class="k-home-account" data-tab-panel="signed-out" hidden>
+						<span>Signed out</span><span class="k-dot" aria-hidden="true"></span><a class="k-link" href="../settings/general.html">Settings</a>
+					</div>
+					<div class="k-home-account" data-tab-panel="waiting" hidden>
+						<span>Signed out</span><span class="k-dot" aria-hidden="true"></span><a class="k-link" href="../settings/general.html">Settings</a>
+					</div>
+				</div>
+
+				<div class="k-home-starts" role="group" aria-label="Start">
+					<a class="k-home-start" href="../home/empty-editor.html"><span class="codicon codicon-folder-opened"></span><span>Open Project</span></a>
+					<span class="k-home-start"><span class="codicon codicon-repo-clone"></span><span>Clone Repository</span></span>
+					<a class="k-home-start" href="../chat/new-chat.html"><span class="codicon codicon-add"></span><span>New Agent</span></a>
+					<a class="k-home-start" href="../chat/agents-window.html"><span class="codicon codicon-window"></span><span>Agents Window</span></a>
+				</div>
+
+				<!-- The pill shows only when Claude Code is missing or signed out -->
+				<div class="k-home-hint-slot" data-tab-panel="missing">
+					<span class="k-home-hint"><span>Klawly runs your agents with Claude Code. Install it to start.</span><span class="k-action">Install</span><span class="codicon codicon-arrow-right"></span></span>
+				</div>
+				<div class="k-home-hint-slot" data-tab-panel="installing" hidden>
+					<span class="k-home-hint"><span>Klawly runs your agents with Claude Code. Install it to start.</span><span class="k-action">Install</span><span class="codicon codicon-arrow-right"></span></span>
+				</div>
+				<div class="k-home-hint-slot" data-tab-panel="signed-out" hidden>
+					<span class="k-home-hint"><span>Sign in to Claude Code to run agents.</span><span class="k-action">Sign In</span><span class="codicon codicon-arrow-right"></span></span>
+				</div>
+				<div class="k-home-hint-slot" data-tab-panel="waiting" hidden>
+					<span class="k-home-hint"><span>Sign in to Claude Code to run agents.</span><span class="k-action">Sign In</span><span class="codicon codicon-arrow-right"></span></span>
+				</div>
+			</section>
+		</main>
+
+		<!-- ===== Agent pane (right): the setup view replaces the composer ===== -->
+		<aside class="k-chatpane" aria-label="Agent" data-origin="klawly" data-label="Agent pane" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+			<div class="k-chatpane-title" data-origin="vscode"><span class="k-chatpane-title-label">Agent</span><span class="k-icon-btn" title="Views and More Actions"><span class="codicon codicon-ellipsis"></span></span><span class="k-icon-btn" title="Maximize Agent" data-origin="vscode" data-label="Maximize button" data-source="src/vs/workbench/browser/parts/auxiliarybar/auxiliaryBarActions.ts"><span class="codicon codicon-screen-full"></span></span></div>
+			<div class="k-chatpane-viewhead" data-origin="vscode"><span class="codicon codicon-chevron-down is-sm"></span><span>Agent</span></div>
+			<div class="k-chatpane-header">
+				<div class="k-chat-tabs" role="tablist" aria-label="Agent sessions" data-origin="klawly" data-label="Chat tabs" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeSessionTabs.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<span class="k-chat-tab is-active"><span>New Agent</span></span>
+				</div>
+				<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts"><span class="codicon codicon-add"></span></a>
+				<a data-app="differs" data-app-note="In the app: Agent History drops down an Agent history popover under the button at any width (search, pinned chats, day groups, Pin and Archive on hover, a Cloud row that brings back a session from claude.ai, archived chats folded at the end); the agents list here is the agents sidebar, which has its own button (off by default)." class="k-icon-btn" href="../chat/agents-list.html" title="Agent History"><span class="codicon codicon-history"></span></a>
+				<a class="k-icon-btn" href="../chat/agents-list.html" title="Show Agents Sidebar" data-origin="klawly" data-label="Agents Sidebar button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/claudeAgentsSidebar.ts"><span class="codicon codicon-layout-sidebar-right"></span></a>
+				<a class="k-icon-btn" href="../chat/more-menu.html" title="More actions"><span class="codicon codicon-ellipsis"></span></a>
+				<span class="k-chatpane-header-sep" aria-hidden="true"></span>
+			</div>
+
+			<!-- State 1: Claude Code is not on this computer -->
+			<section class="k-setup" data-tab-panel="missing" aria-labelledby="setup-missing-title" data-origin="klawly" data-label="Set up Claude" data-source="src/vs/workbench/contrib/claude/browser/claudeSetupCard.ts src/vs/workbench/contrib/claude/browser/claudeSetup.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<img src="../assets/klawly-mark.svg" alt="" class="k-setup-mark">
+				<h2 class="k-setup-title" id="setup-missing-title">Set up Claude to use the agent</h2>
+				<p class="k-setup-lede">The agent runs on Claude Code, installed on this computer.</p>
+				<div class="k-setup-body">
+					<ol class="k-setup-steps" aria-label="Setup steps">
+						<li class="k-setup-step is-error">
+							<span class="codicon codicon-error"></span>
+							<div>
+								<div class="k-setup-step-title">Claude Code not found</div>
+								<div class="k-setup-step-detail">Install it, or point Klawly to an existing install. Installed it already? Choose its location, or restart Klawly.</div>
+							</div>
+						</li>
+						<li class="k-setup-step">
+							<span class="codicon codicon-circle-large-outline"></span>
+							<div>
+								<div class="k-setup-step-title">Sign in</div>
+								<div class="k-setup-step-detail">Uses the official Claude sign-in. It opens in a terminal and your browser; come back here when done.</div>
+							</div>
+						</li>
+						<li class="k-setup-step">
+							<span class="codicon codicon-circle-large-outline"></span>
+							<div>
+								<div class="k-setup-step-title">Import from VS Code or Cursor (optional)</div>
+								<div class="k-setup-step-detail">Bring over your settings, keybindings, snippets and extensions. You see a preview before anything changes.</div>
+							</div>
+						</li>
+					</ol>
+					<div class="k-setup-actions">
+						<button class="k-btn is-primary is-block" type="button"><span class="codicon codicon-cloud-download"></span>Install Claude Code</button>
+						<button class="k-btn is-secondary is-block" type="button">Detect Again</button>
+					</div>
+					<div class="k-setup-links">
+						<a class="k-link" href="#">Choose Claude Code location...</a>
+						<a data-app="differs" data-app-note="In the app: Runs the import flow (pick VS Code or Cursor, pick parts, choose Keep Mine, Overwrite or New Profile, check single items, confirm) ending in a toast with Show Report and Undo Import (or Switch to the new profile); it does not open Klawly Settings." class="k-link" href="../settings/general.html">Import settings from VS Code or Cursor...</a>
+						<!-- Issue 446, DL-69: optional; skipping it changes nothing, everything works signed out. Hidden once a GitHub account is the profile. -->
+						<a data-app="differs" data-app-note="In the app: Starts the GitHub device-code sign-in (read:user only); the account becomes the Klawly profile in the Accounts menu. It does not open Klawly Settings." class="k-link" href="../settings/general.html">Sign in with GitHub (optional)</a>
+					</div>
+				</div>
+				<a data-app="differs" data-app-note="In the app: Sets claude.agent.enabled to false and shows a toast with Undo; the window stays on Home, no project opens." class="k-btn is-ghost is-sm k-setup-skip mt-2" href="../home/empty-editor.html">Continue without AI</a>
+			</section>
+
+			<!-- State 1b, issue 783, DL-79: the installer runs in a terminal and prints nothing for minutes, so the step
+			     spins and a live line counts the download and the time. Found while it runs: the card moves to Sign in. -->
+			<section class="k-setup" data-tab-panel="installing" hidden aria-labelledby="setup-installing-title" data-origin="klawly" data-label="Set up Claude" data-source="src/vs/workbench/contrib/claude/browser/claudeSetupCard.ts src/vs/workbench/contrib/claude/browser/claudeSetup.ts src/vs/workbench/contrib/claude/common/claudeRuntimeStatus.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<img src="../assets/klawly-mark.svg" alt="" class="k-setup-mark">
+				<h2 class="k-setup-title" id="setup-installing-title">Set up Claude to use the agent</h2>
+				<p class="k-setup-lede">The agent runs on Claude Code, installed on this computer.</p>
+				<div class="k-setup-body">
+					<ol class="k-setup-steps" aria-label="Setup steps">
+						<li class="k-setup-step is-busy">
+							<span class="codicon codicon-loading codicon-modifier-spin"></span>
+							<div>
+								<div class="k-setup-step-title">Installing Claude Code</div>
+								<div class="k-setup-step-detail">The installer downloads a few hundred MB and shows no progress of its own, so this can take several minutes on a slow connection. Klawly picks up Claude Code as soon as it is installed.</div>
+								<div data-app="differs" data-app-note="In the app: Rewritten every second with the download's size and the elapsed time. After 3 minutes without progress the step turns into 'The install is not making progress' with Retry Install first; an installer that ends without Claude Code shows 'Claude Code was not installed' with its exit code, Retry Install, Show Installer and Detect Again." class="k-setup-step-detail k-setup-step-live">Downloaded 84 MB · 1:12</div>
+							</div>
+						</li>
+						<li class="k-setup-step">
+							<span class="codicon codicon-circle-large-outline"></span>
+							<div>
+								<div class="k-setup-step-title">Sign in</div>
+								<div class="k-setup-step-detail">Uses the official Claude sign-in. It opens in a terminal and your browser; come back here when done.</div>
+							</div>
+						</li>
+					</ol>
+					<div class="k-setup-actions">
+						<button data-app="differs" data-app-note="In the app: Shows the Install Claude Code terminal with the installer's own output." class="k-btn is-primary is-block" type="button"><span class="codicon codicon-terminal"></span>Show Installer</button>
+						<button data-app="differs" data-app-note="In the app: Stops the installer, closes its terminal and returns to Install Claude Code." class="k-btn is-secondary is-block" type="button">Cancel Install</button>
+					</div>
+				</div>
+			</section>
+
+			<!-- State 2: Claude Code found, not signed in -->
+			<section class="k-setup" data-tab-panel="signed-out" hidden aria-labelledby="setup-signin-title" data-origin="klawly" data-label="Set up Claude" data-source="src/vs/workbench/contrib/claude/browser/claudeSetupCard.ts src/vs/workbench/contrib/claude/browser/claudeSetup.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<img src="../assets/klawly-mark.svg" alt="" class="k-setup-mark">
+				<h2 class="k-setup-title" id="setup-signin-title">Sign in to Claude</h2>
+				<p class="k-setup-lede">Your Claude account powers the agent and sets its usage limits.</p>
+				<div class="k-setup-body">
+					<ol class="k-setup-steps" aria-label="Setup steps">
+						<li class="k-setup-step is-done">
+							<span class="codicon codicon-pass-filled"></span>
+							<div>
+								<div class="k-setup-step-title">Claude Code 2.1.40 found</div>
+								<div class="k-setup-step-detail"><code>C:\Users\you\.local\bin\claude.exe</code></div>
+							</div>
+						</li>
+						<li class="k-setup-step">
+							<span class="codicon codicon-circle-large-outline"></span>
+							<div>
+								<div class="k-setup-step-title">Sign in</div>
+								<div class="k-setup-step-detail">Uses the official Claude sign-in. It opens in a terminal and your browser; come back here when done.</div>
+							</div>
+						</li>
+						<li class="k-setup-step">
+							<span class="codicon codicon-circle-large-outline"></span>
+							<div>
+								<div class="k-setup-step-title">Import from VS Code or Cursor (optional)</div>
+								<div class="k-setup-step-detail">Bring over your settings, keybindings, snippets and extensions. You see a preview before anything changes.</div>
+							</div>
+						</li>
+					</ol>
+					<div class="k-setup-actions">
+						<button class="k-btn is-primary is-block" type="button"><span class="codicon codicon-sign-in"></span>Sign in to Claude</button>
+						<button class="k-btn is-secondary is-block" type="button">Detect Again</button>
+					</div>
+					<div class="k-setup-links">
+						<a data-app="differs" data-app-note="In the app: Runs the import flow (pick VS Code or Cursor, pick parts, choose Keep Mine, Overwrite or New Profile, check single items, confirm) ending in a toast with Show Report and Undo Import (or Switch to the new profile); it does not open Klawly Settings." class="k-link" href="../settings/general.html">Import settings from VS Code or Cursor...</a>
+						<!-- Issue 446, DL-69: optional; skipping it changes nothing, everything works signed out. Hidden once a GitHub account is the profile. -->
+						<a data-app="differs" data-app-note="In the app: Starts the GitHub device-code sign-in (read:user only); the account becomes the Klawly profile in the Accounts menu. It does not open Klawly Settings." class="k-link" href="../settings/general.html">Sign in with GitHub (optional)</a>
+					</div>
+				</div>
+				<a data-app="differs" data-app-note="In the app: Sets claude.agent.enabled to false and shows a toast with Undo; the window stays on Home, no project opens." class="k-btn is-ghost is-sm k-setup-skip mt-2" href="../home/empty-editor.html">Continue without AI</a>
+			</section>
+
+			<!-- State 3: sign-in started in a terminal and the browser -->
+			<section class="k-setup justify-center" data-tab-panel="waiting" hidden aria-labelledby="setup-waiting-title" data-origin="klawly" data-label="Set up Claude" data-source="src/vs/workbench/contrib/claude/browser/claudeSetupCard.ts src/vs/workbench/contrib/claude/browser/claudeSetup.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<span class="codicon codicon-loading codicon-modifier-spin text-muted" style="font-size: var(--k-icon-display)" aria-hidden="true"></span>
+				<h2 class="k-setup-title mt-1" id="setup-waiting-title">Finish signing in to Claude</h2>
+				<p class="k-setup-lede">Complete the sign-in in the terminal and your browser. Klawly checks again when the sign-in ends or when you come back to this window.</p>
+				<div class="flex gap-2 mt-3">
+					<a class="k-btn is-secondary" href="../chat/new-chat.html">Check Again</a>
+					<button class="k-btn is-ghost" type="button">Cancel</button>
+				</div>
+			</section>
+		</aside>
+	</div>
+
+	<!-- ===== Status bar (no folder: no branch, no cursor position) ===== -->
+	<footer class="k-statusbar" data-origin="vscode" data-label="Status bar" data-source="src/vs/workbench/browser/parts/statusbar/statusbarPart.ts">
+		<span class="k-status-item"><span class="codicon codicon-error"></span>0<span class="codicon codicon-warning"></span>0</span>
+		<span class="k-status-spacer"></span>
+		<span class="k-status-item" data-tab-panel="missing" style="background:var(--k-red);color:#fff" title="Claude Code was not found." data-origin="klawly" data-label="Claude status" data-source="src/vs/workbench/contrib/claude/browser/claudeStatus.ts"><span class="codicon codicon-circle-slash"></span>Claude: Runtime missing</span>
+		<span class="k-status-item" data-tab-panel="installing" hidden style="background:var(--k-red);color:#fff" title="Claude Code was not found." data-origin="klawly" data-label="Claude status" data-source="src/vs/workbench/contrib/claude/browser/claudeStatus.ts"><span class="codicon codicon-circle-slash"></span>Claude: Runtime missing</span>
+		<span class="k-status-item" data-tab-panel="signed-out" hidden style="background:var(--k-amber);color:#1a1a1a" title="Claude Code is not signed in." data-origin="klawly" data-label="Claude status" data-source="src/vs/workbench/contrib/claude/browser/claudeStatus.ts"><span class="codicon codicon-sign-in"></span>Claude: Sign in</span>
+		<span class="k-status-item" data-tab-panel="waiting" hidden style="background:var(--k-amber);color:#1a1a1a" title="Claude Code is not signed in." data-origin="klawly" data-label="Claude status" data-source="src/vs/workbench/contrib/claude/browser/claudeStatus.ts"><span class="codicon codicon-sign-in"></span>Claude: Sign in</span>
+		<a class="k-status-item" href="../workbench/notifications.html" title="Notifications"><span class="codicon codicon-bell"></span></a>
+	</footer>
+</div>
+</body>
+</html>

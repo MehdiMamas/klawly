@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Split into Pull Requests · Klawly</title>
+	<meta name="description" content="The group editor behind Split into Pull Requests: one column per pull request, changes you drag between them, and Create Branches (or Continue with Claude) once the groups are valid.">
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+	<style>
+		/* Mirrors src/vs/workbench/contrib/claude/browser/media/claudeSplit.css (DL-106, DL-112). */
+		body { background: var(--k-pane); color: var(--k-ink); }
+		.split { display: flex; flex-direction: column; height: 100vh; padding: 16px 20px; gap: 12px; }
+		.split h2 { margin: 0; font-size: 15px; font-weight: 600; }
+		.split p { margin: 4px 0 0; color: var(--k-muted); font-size: 12px; }
+		.split-board { flex: 1; display: flex; gap: 12px; min-height: 0; overflow-x: auto; }
+		.split-group { flex: 0 0 280px; display: flex; flex-direction: column; gap: 8px; padding: 10px; background: var(--k-surface); border: 1px solid var(--k-line-solid); border-radius: 8px; }
+		.split-group input { background: var(--k-input); color: var(--k-ink); border: 1px solid var(--k-line-solid); border-radius: 4px; padding: 4px 6px; font: inherit; font-size: 12px; }
+		.split-group input:focus { outline: 1px solid var(--k-focus); }
+		.split-hunks { flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 6px; border-radius: 6px; border: 1px dashed var(--k-line-solid); overflow-y: auto; }
+		.split-hunks.drop { border-color: var(--k-focus); background: var(--k-hover-highlight); }
+		.split-hunk { padding: 6px 8px; background: var(--k-pane); border-radius: 6px; cursor: grab; font-size: 12px; }
+		.split-hunk:hover { background: var(--k-hover); }
+		.split-hunk small { display: block; color: var(--k-muted); }
+		.split-hunk .add { color: var(--k-git-added); }
+		.split-hunk .del { color: var(--k-git-deleted); }
+		.split-empty { color: var(--k-faint); font-size: 12px; text-align: center; padding: 16px 0; }
+		.split-footer { display: flex; align-items: center; gap: 8px; }
+		.split-problems { flex: 1; color: var(--k-muted); font-size: 12px; }
+	</style>
+</head>
+<body>
+<!--
+	SPLIT INTO PULL REQUESTS
+	An editor tab, opened by Source Control "Split into Pull Requests". Three groups from the first plan (one per top-level
+	folder). The first group's folder is the source here; the third is empty, so Create Branches and Continue with Claude are off and say why.
+	In a local repository Create Branches is primary (issue 971): a confirmation lists each branch and its files, Klawly makes
+	one branch and worktree per group under .worktrees and commits there; a notification then offers Push and Open Draft
+	Pull Requests as a second click (DL-65, DL-106).
+-->
+<main class="split" data-origin="klawly" data-label="Split into Pull Requests editor" data-source="src/vs/workbench/contrib/claude/browser/claudeSplitEditor.ts src/vs/workbench/contrib/claude/browser/media/claudeSplit.css">
+	<header>
+		<h2>Split into Pull Requests</h2>
+		<p>Drag a change into the group it belongs to. Each group becomes one branch and one draft pull request. Nothing is created until you continue.</p>
+	</header>
+	<div class="split-board">
+		<section class="split-group" role="group">
+			<input value="src" aria-label="Pull request title">
+			<input value="split/src" aria-label="Branch name">
+			<button class="k-btn is-ghost" type="button">Remove Group</button>
+			<div class="split-hunks">
+				<div class="split-hunk" draggable="true" tabindex="0">src/cart.ts<small>@@ -12,6 +12,9 @@ <span class="add">+3</span> <span class="del">-0</span></small></div>
+				<div class="split-hunk" draggable="true" tabindex="0">src/cart.ts<small>@@ -40,4 +43,4 @@ <span class="add">+1</span> <span class="del">-1</span></small></div>
+			</div>
+		</section>
+		<section class="split-group" role="group">
+			<input value="docs" aria-label="Pull request title">
+			<input value="split/docs" aria-label="Branch name">
+			<button class="k-btn is-ghost" type="button">Remove Group</button>
+			<div class="split-hunks">
+				<div class="split-hunk" draggable="true" tabindex="0">docs/readme.md<small>Whole file <span class="add">+2</span> <span class="del">-0</span></small></div>
+			</div>
+		</section>
+		<section class="split-group" role="group">
+			<input value="Group 3" aria-label="Pull request title">
+			<input value="split/group-3" aria-label="Branch name">
+			<button class="k-btn is-ghost" type="button">Remove Group</button>
+			<div class="split-hunks drop"><div class="split-empty">Drop changes here</div></div>
+		</section>
+	</div>
+	<footer class="split-footer">
+		<div class="split-problems" role="status">"Group 3" has no changes. Drop some in or remove the group.</div>
+		<button class="k-btn is-secondary" type="button">Add Group</button>
+		<button class="k-btn is-secondary" type="button" disabled>Continue with Claude</button>
+		<label class="split-stack" title="Each branch starts from the one before it, so each pull request shows only its own group."><input type="checkbox"> <span>Stack the branches</span></label>
+		<button class="k-btn is-primary" type="button" disabled title="Make one branch and worktree per group under .worktrees and commit its changes there. Nothing is pushed.">Create Branches</button>
+	</footer>
+</main>
+</body>
+</html>

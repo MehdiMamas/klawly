@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Customize · Klawly</title>
+	<meta name="description" content="Klawly Settings, Customize page: the MCP servers, skills, subagents, commands, hooks, network domains, permission rules and CLAUDE.md memory files Claude Code loads (with the organization's managed CLAUDE.md and managed settings, marked managed), with the Add Server form open.">
+
+	<!-- Shared assets: icons, the global stylesheet, the settings parts, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+</head>
+<body>
+<!--
+	Window frame copied from workbench/editor.html. The settings editor fills the editor area;
+	the side bar and agent pane stay open, as they do when Klawly opens settings in a tab.
+-->
+<div class="k-window">
+
+	<!-- ===== Title bar ===== -->
+	<header class="k-titlebar" data-origin="mixed" data-label="Title bar" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts">
+		<img src="../assets/klawly-mark.svg" alt="Klawly" class="k-mark ml-1 mr-2">
+		<nav class="k-titlebar-menus" aria-label="Menu bar" data-origin="vscode" data-label="Menu bar" data-source="src/vs/workbench/browser/parts/titlebar/menubarControl.ts">
+			<a class="k-titlebar-menu flex items-center" href="../workbench/menus.html">File</a>
+			<span class="k-titlebar-menu flex items-center">Edit</span>
+			<span class="k-titlebar-menu flex items-center">Selection</span>
+			<span class="k-titlebar-menu flex items-center">View</span>
+			<span class="k-titlebar-menu flex items-center">Go</span>
+			<span class="k-titlebar-menu flex items-center">Run</span>
+			<span class="k-titlebar-menu flex items-center">Terminal</span>
+			<span class="k-titlebar-menu flex items-center">Help</span>
+		</nav>
+		<div class="k-titlebar-title">klawly-demo</div>
+		<div class="k-titlebar-actions">
+			<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-add"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Primary Side Bar"><span class="codicon codicon-layout-sidebar-left"></span></span>
+			<a class="k-icon-btn" href="../workbench/panel.html" title="Toggle Panel"><span class="codicon codicon-layout-panel-off"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Agent"><span class="codicon codicon-layout-sidebar-right"></span></span>
+			<a class="k-agents-pill ml-1" href="../chat/agents-window.html" title="Open the agent in its own window" data-origin="klawly" data-label="Agents Window button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-window is-sm"></span>Agents Window</a>
+			<span class="k-icon-btn ml-1" title="Accounts" data-origin="vscode" data-label="Accounts" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/browser/parts/titlebar/titlebarActions.ts"><span class="codicon codicon-account"></span></span>
+			<a class="k-icon-btn is-active ml-1" href="general.html" title="Klawly Settings" data-origin="klawly" data-label="Settings gear" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-settings-gear"></span></a>
+		</div>
+		<div class="k-window-controls" aria-hidden="true" data-origin="vscode" data-label="Window controls" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts">
+			<span><span class="codicon codicon-chrome-minimize"></span></span>
+			<span><span class="codicon codicon-chrome-maximize"></span></span>
+			<span class="is-close"><span class="codicon codicon-chrome-close"></span></span>
+		</div>
+	</header>
+
+	<div class="k-main">
+
+		<!-- ===== Side bar: view switcher + Explorer ===== -->
+		<aside class="k-sidebar" aria-label="Explorer" data-origin="vscode" data-label="Explorer" data-source="src/vs/workbench/contrib/files/browser/views/explorerView.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+			<nav class="k-viewswitcher" aria-label="Views" data-origin="vscode" data-label="View switcher" data-source="src/vs/workbench/browser/parts/paneCompositeBar.ts">
+				<a class="is-active" href="../workbench/editor.html" title="Explorer (Ctrl+Shift+E)"><span class="codicon codicon-files"></span></a>
+				<a href="../workbench/search.html" title="Search (Ctrl+Shift+F)"><span class="codicon codicon-search"></span></a>
+				<a href="../workbench/source-control.html" title="Source Control (Ctrl+Shift+G)"><span class="codicon codicon-source-control"></span><span class="k-count">3</span></a>
+				<a href="../workbench/run-debug.html" title="Run and Debug (Ctrl+Shift+D)"><span class="codicon codicon-debug-alt"></span></a>
+				<a href="../workbench/extensions.html" title="Extensions (Ctrl+Shift+X)"><span class="codicon codicon-extensions"></span></a>
+			</nav>
+
+			<div class="k-sidebar-title">
+				Explorer
+				<div class="k-actions"><span class="k-icon-btn"><span class="codicon codicon-ellipsis"></span></span></div>
+			</div>
+
+			<div class="k-section-header" style="border-top:0">
+				<span class="codicon codicon-chevron-down is-sm"></span>KLAWLY-DEMO
+				<div class="k-actions">
+					<span class="k-icon-btn" title="New File"><span class="codicon codicon-new-file is-sm"></span></span>
+					<span class="k-icon-btn" title="New Folder"><span class="codicon codicon-new-folder is-sm"></span></span>
+					<span class="k-icon-btn" title="Refresh"><span class="codicon codicon-refresh is-sm"></span></span>
+					<span class="k-icon-btn" title="Collapse"><span class="codicon codicon-collapse-all is-sm"></span></span>
+				</div>
+			</div>
+
+			<div class="flex-1 overflow-y-auto" role="tree">
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-right is-sm"></span><span>.claude</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-right is-sm"></span><span>node_modules</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-down is-sm"></span><span>src</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-down is-sm"></span><span>cart</span></div>
+				<div class="k-tree-row is-selected is-modified" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="k-git">M</span></div>
+				<div class="k-tree-row" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartTypes.ts</span></div>
+				<div class="k-tree-row is-added" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>discounts.ts</span><span class="k-git">U</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-right is-sm"></span><span>checkout</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-right is-sm"></span><span>ui</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon ts" aria-hidden="true"></span><span>index.ts</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-down is-sm"></span><span>test</span></div>
+				<div class="k-tree-row is-modified" style="padding-left:32px"><span class="k-fileicon ts-test" aria-hidden="true"></span><span>cartService.test.ts</span><span class="k-git">M</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon md" aria-hidden="true"></span><span>CLAUDE.md</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon json" aria-hidden="true"></span><span>package.json</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon readme" aria-hidden="true"></span><span>README.md</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon tsconfig" aria-hidden="true"></span><span>tsconfig.json</span></div>
+			</div>
+
+			<div class="k-section-header"><span class="codicon codicon-chevron-right is-sm"></span>Outline</div>
+			<div class="k-section-header"><span class="codicon codicon-chevron-right is-sm"></span>Timeline</div>
+		</aside>
+
+		<!-- ===== Editor: Klawly Settings, Customize ===== -->
+		<main class="k-editor-area" aria-label="Editor" data-origin="vscode" data-label="Editor area" data-source="src/vs/workbench/browser/parts/editor/editorPart.ts">
+			<div class="k-tabs" role="tablist" data-origin="vscode" data-label="Editor tabs" data-source="src/vs/workbench/browser/parts/editor/multiEditorTabsControl.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+				<a class="k-tab" href="../workbench/editor.html"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="k-dirty" title="Unsaved"></span></a>
+				<a class="k-tab is-active" href="customize.html"><span class="codicon codicon-settings is-sm"></span><span>Klawly Settings</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<div class="k-tabs-actions">
+					<span class="k-icon-btn" title="More Actions"><span class="codicon codicon-ellipsis"></span></span>
+				</div>
+			</div>
+			<div class="k-settings flex-1 min-h-0" data-origin="klawly" data-label="Klawly Settings" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<!-- ===== Settings nav: account, search, pages ===== -->
+				<nav class="k-settings-nav" aria-label="Settings Pages">
+					<!-- Issue 446, DL-69: the GitHub account is the Klawly profile; Claude is the smaller row under it. Signed out, this row reads "Not Signed In" with a small Sign In button. -->
+					<div class="k-settings-profile" aria-label="@you, GitHub" data-origin="klawly" data-label="Klawly Profile" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/services/claude/common/klawlyAccount.ts">
+						<span class="k-settings-avatar"><span class="codicon codicon-github"></span></span>
+						<div class="k-settings-account-text">
+							<span class="k-settings-account-name">@you</span>
+							<span class="k-settings-account-plan">GitHub</span>
+						</div>
+						<button type="button" class="k-settings-head-btn k-settings-account-menu" title="Profile Actions" aria-label="Profile Actions" aria-haspopup="menu" data-popover-target="menu-profile"><span class="codicon codicon-ellipsis"></span></button>
+						<div class="k-menu k-settings-menu" id="menu-profile" data-popover role="menu" data-origin="klawly" data-label="Profile Actions" data-source="src/vs/workbench/contrib/claude/browser/widgets/claudePopoverMenu.ts src/vs/workbench/contrib/claude/browser/klawlyProfile.ts">
+							<div class="k-menu-item" role="menuitem"><span class="codicon codicon-sign-out"></span><span class="k-menu-label">Sign Out of GitHub</span></div>
+						</div>
+					</div>
+					<div class="k-settings-account" aria-label="you@example.com, Max Plan">
+						<span class="k-settings-avatar"><span class="codicon codicon-account"></span></span>
+						<div class="k-settings-account-text">
+							<span class="k-settings-account-name">you@example.com</span>
+							<span class="k-settings-account-plan">Max Plan</span>
+						</div>
+					</div>
+					<input type="search" class="k-settings-search" placeholder="Search settings" aria-label="Search Settings">
+					<div class="k-settings-nav-list">
+						<a href="general.html"><span class="codicon codicon-settings-gear"></span><span>General</span></a>
+						<div class="k-settings-nav-divider" role="separator"></div>
+						<a href="plan-usage.html"><span class="codicon codicon-credit-card"></span><span>Plan &amp; Usage</span></a>
+						<a href="agents.html"><span class="codicon codicon-sparkle"></span><span>Agents</span></a>
+						<a href="privacy.html"><span class="codicon codicon-lock"></span><span>Privacy</span></a>
+						<div class="k-settings-nav-divider" role="separator"></div>
+						<a href="models.html"><span class="codicon codicon-symbol-class"></span><span>Models</span></a>
+						<a href="git.html"><span class="codicon codicon-git-pull-request"></span><span>Git and Pull Requests</span></a>
+						<a href="customize.html" class="is-active" aria-current="page"><span class="codicon codicon-extensions"></span><span>Customize</span></a>
+						<a href="tab.html"><span class="codicon codicon-arrow-right"></span><span>Tab</span></a>
+						<a href="beta.html"><span class="codicon codicon-beaker"></span><span>Beta</span></a>
+						<div class="k-settings-nav-divider" role="separator"></div>
+						<a href="classic-settings.html" aria-label="Open Editor Settings"><span class="codicon codicon-settings"></span><span>Editor Settings</span><span class="codicon codicon-link-external k-external"></span></a>
+					</div>
+				</nav>
+
+				<!-- ===== Settings content ===== -->
+				<div class="k-settings-content">
+					<div class="k-settings-search-top"><input type="search" class="k-settings-search" placeholder="Search settings" aria-label="Search Settings"></div>
+					<header class="k-settings-header">
+						<h1>Customize</h1>
+						<p>The MCP servers, skills, subagents, commands, hooks, memory files and rules Claude Code loads</p>
+					</header>
+					<!-- ===== Also Use My Claude Code Setup (issue 455) =====
+					     Its own section above the block. On by default: Klawly reads ~/.claude next to its own user layer in ~/.klawly/claude and never writes it. Off, the "from Claude Code" rows below go away (DL-82, DL-12). -->
+					<section class="k-settings-section" data-origin="klawly" data-label="Also use my Claude Code setup" data-source="src/vs/workbench/contrib/claude/common/claudeSettingsPages.ts src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/platform/claude/common/claudeUserLayer.ts">
+						<div class="k-settings-card">
+							<div class="k-settings-row">
+								<div>
+									<div class="k-title">Also Use My Claude Code Setup</div>
+									<div class="k-desc">Load your CLAUDE.md, settings, skills, subagents, commands and MCP servers from ~/.claude too. Klawly only reads them; yours for Klawly are in ~/.klawly/claude</div>
+								</div>
+								<div class="k-settings-ctl"><button type="button" class="k-switch is-md is-on" data-toggle-class="is-on" role="switch" aria-checked="true" aria-label="Also Use My Claude Code Setup"></button></div>
+							</div>
+						</div>
+					</section>
+					<section class="k-settings-section is-block">
+						<!-- ===== Installed and Discover tabs ===== -->
+						<div class="k-customize-tabs" role="tablist" aria-label="Customize" data-origin="klawly" data-label="Customize tabs" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/contrib/claude/browser/settings/media/claudeCustomizeDiscover.css">
+							<a class="k-customize-tab is-selected" role="tab" aria-selected="true" href="customize.html">Installed</a>
+							<a class="k-customize-tab" role="tab" aria-selected="false" href="customize-discover.html">Discover</a>
+						</div>
+
+						<!-- ===== Filter and Refresh ===== -->
+						<div class="k-customize-bar">
+							<input type="search" class="k-customize-search" placeholder="Filter MCP servers, skills, subagents, commands and hooks" aria-label="Filter Customizations">
+							<button type="button" class="k-btn is-icon k-customize-refresh" title="Refresh" aria-label="Refresh"><span class="codicon codicon-refresh"></span></button>
+						</div>
+
+						<!-- ===== Kind chips ===== -->
+						<div class="k-customize-chips" role="group" aria-label="Show">
+							<button type="button" class="k-chip is-toggle k-customize-chip" aria-pressed="true">All</button>
+							<button type="button" class="k-chip is-toggle k-customize-chip" aria-pressed="false">MCP Servers</button>
+							<button type="button" class="k-chip is-toggle k-customize-chip" aria-pressed="false">Skills</button>
+							<button type="button" class="k-chip is-toggle k-customize-chip" aria-pressed="false">Subagents</button>
+							<button type="button" class="k-chip is-toggle k-customize-chip" aria-pressed="false">Commands</button>
+							<button type="button" class="k-chip is-toggle k-customize-chip" aria-pressed="false">Hooks</button>
+							<button type="button" class="k-chip is-toggle k-customize-chip" aria-pressed="false">Network Domains</button>
+							<button type="button" class="k-chip is-toggle k-customize-chip" aria-pressed="false">Permission Rules</button>
+							<button type="button" class="k-chip is-toggle k-customize-chip" aria-pressed="false">Memory</button>
+							<button type="button" class="k-chip is-toggle k-customize-chip" aria-pressed="false">Rules</button>
+						</div>
+
+						<!-- ===== Lists, one per kind ===== -->
+						<div class="k-customize-list">
+							<!-- MCP servers. The Add Server form is open: Add Server toggles it. -->
+							<div class="k-customize-group">
+								<div class="k-settings-head">
+									<h2 class="k-settings-label">MCP Servers<span class="k-count">4</span></h2>
+									<button type="button" class="k-settings-head-btn is-secondary is-expanded" data-popover-target="form-add-server" aria-expanded="true"><span class="codicon codicon-add"></span><span>Add Server</span></button>
+								</div>
+								<!-- Add Server form (state 2 of the group: open) -->
+								<div class="k-settings-card k-customize-form is-open" id="form-add-server" data-popover data-popover-static data-origin="klawly" data-label="Add MCP server form" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts">
+									<div class="k-settings-row">
+										<div>
+											<div class="k-title">Name</div>
+											<div class="k-desc">How Claude Code names it and its tools</div>
+										</div>
+										<div class="k-settings-ctl">
+											<input type="text" class="k-settings-field" value="linear" placeholder="github">
+										</div>
+									</div>
+									<div class="k-settings-row">
+										<div>
+											<div class="k-title">Scope</div>
+											<div class="k-desc">Who the server is for</div>
+										</div>
+										<div class="k-settings-ctl">
+											<button type="button" class="k-settings-select" data-popover-target="menu-mcp-scope" aria-haspopup="listbox"><span>For Me, in Every Project</span><span class="codicon codicon-chevron-down"></span></button>
+											<div class="k-menu k-settings-menu" id="menu-mcp-scope" data-popover role="listbox" data-origin="klawly" data-label="Menu" data-source="src/vs/workbench/contrib/claude/browser/widgets/claudePopoverMenu.ts">
+												<div class="k-menu-item is-two-line is-focused" role="option"><span class="k-menu-check codicon codicon-check"></span><span class="k-menu-label">For Me, in Every Project<span class="k-menu-desc">~/.klawly/claude/.mcp.json</span></span></div>
+												<div class="k-menu-item is-two-line" role="option"><span class="k-menu-check codicon "></span><span class="k-menu-label">For This Project, Shared with the Team<span class="k-menu-desc">.mcp.json</span></span></div>
+											</div>
+										</div>
+									</div>
+									<div class="k-settings-row">
+										<div>
+											<div class="k-title">Transport</div>
+											<div class="k-desc">How Claude Code reaches the server</div>
+										</div>
+										<div class="k-settings-ctl">
+											<button type="button" class="k-settings-select" data-popover-target="menu-mcp-transport" aria-haspopup="listbox"><span>HTTP</span><span class="codicon codicon-chevron-down"></span></button>
+											<div class="k-menu k-settings-menu" id="menu-mcp-transport" data-popover role="listbox" data-origin="klawly" data-label="Menu" data-source="src/vs/workbench/contrib/claude/browser/widgets/claudePopoverMenu.ts">
+												<div class="k-menu-item is-two-line" role="option"><span class="k-menu-check codicon "></span><span class="k-menu-label">Command<span class="k-menu-desc">Claude Code starts it and talks over stdio</span></span></div>
+												<div class="k-menu-item is-two-line is-focused" role="option"><span class="k-menu-check codicon codicon-check"></span><span class="k-menu-label">HTTP<span class="k-menu-desc">A server at a URL</span></span></div>
+												<div class="k-menu-item is-two-line" role="option"><span class="k-menu-check codicon "></span><span class="k-menu-label">SSE<span class="k-menu-desc">A server at a URL, with server-sent events</span></span></div>
+											</div>
+										</div>
+									</div>
+									<div class="k-settings-row">
+										<div>
+											<div class="k-title">URL</div>
+											<div class="k-desc">Where the server listens</div>
+										</div>
+										<div class="k-settings-ctl">
+											<input type="text" class="k-settings-field" value="" placeholder="https://example.com/mcp">
+										</div>
+									</div>
+									<div class="k-customize-form-foot">
+										<span class="k-customize-form-note">Sessions started after this pick it up.</span>
+										<button type="button" class="k-btn is-ghost" data-popover-target="form-add-server">Cancel</button>
+										<button type="button" class="k-btn is-primary">Add Server</button>
+									</div>
+								</div>
+								<div class="k-settings-card">
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-server"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">github</div>
+											<div class="k-customize-detail">26 tools · user</div>
+										</div>
+										<span class="k-state is-success">Connected</span>
+										<span class="k-icon-btn k-customize-action" title="Reconnect" data-origin="klawly" data-label="MCP server controls" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/platform/claude/common/claudeMcpControl.ts"><span class="codicon codicon-refresh"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Turn Off for This Session"><span class="codicon codicon-circle-slash"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Show Logs: the server's newest log in the Claude MCP Logs output (issue 512)"><span class="codicon codicon-output"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Remove Server"><span class="codicon codicon-trash"></span></span>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-server"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">playwright</div>
+											<div class="k-customize-detail">21 tools · project</div>
+										</div>
+										<span class="k-state is-running">Starting</span>
+										<span class="k-icon-btn k-customize-action" title="Reconnect" data-origin="klawly" data-label="MCP server controls" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/platform/claude/common/claudeMcpControl.ts"><span class="codicon codicon-refresh"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Turn Off for This Session"><span class="codicon codicon-circle-slash"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Show Logs: the server's newest log in the Claude MCP Logs output (issue 512)"><span class="codicon codicon-output"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Edit in .mcp.json: opens the workspace .mcp.json (project servers only, issue 1005)"><span class="codicon codicon-go-to-file"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Remove Server"><span class="codicon codicon-trash"></span></span>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-server"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">sentry</div>
+											<div class="k-customize-detail">0 tools · user</div>
+										</div>
+										<span class="k-state is-warning">Needs Sign-In</span>
+										<span class="k-icon-btn k-customize-action" title="Reconnect" data-origin="klawly" data-label="MCP server controls" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/platform/claude/common/claudeMcpControl.ts"><span class="codicon codicon-refresh"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Turn Off for This Session"><span class="codicon codicon-circle-slash"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Show Logs: the server's newest log in the Claude MCP Logs output (issue 512)"><span class="codicon codicon-output"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Remove Server"><span class="codicon codicon-trash"></span></span>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-server"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">postgres</div>
+											<div class="k-customize-detail">Connection closed: spawn psql ENOENT</div>
+										</div>
+										<span class="k-state is-error">Failed</span>
+										<span class="k-icon-btn k-customize-action" title="Reconnect" data-origin="klawly" data-label="MCP server controls" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/platform/claude/common/claudeMcpControl.ts"><span class="codicon codicon-refresh"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Turn Off for This Session"><span class="codicon codicon-circle-slash"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Show Logs: the server's newest log in the Claude MCP Logs output (issue 512)"><span class="codicon codicon-output"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Remove Server"><span class="codicon codicon-trash"></span></span>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-server"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">docs</div>
+											<div class="k-customize-detail">npx -y @scope/docs-server · local</div>
+										</div>
+										<span class="k-state" title="Saved. Sessions started from now on load it.">Next Session</span>
+										<span class="k-icon-btn k-customize-action" title="Remove Server"><span class="codicon codicon-trash"></span></span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Skills. One from the workspace .agents/skills folder loads as the agents plugin and its second line says so (issue 499; DL-06 same row ramp, DL-11 words). -->
+							<div class="k-customize-group">
+								<div class="k-settings-head">
+									<h2 class="k-settings-label">Skills<span class="k-count">4</span></h2>
+									<button type="button" class="k-settings-head-btn is-secondary" aria-expanded="false"><span class="codicon codicon-add"></span><span>Add Skill</span></button>
+								</div>
+								<div class="k-settings-card">
+									<div class="k-customize-item" data-origin="klawly" data-label=".agents skill row" data-source="src/vs/workbench/contrib/claude/common/claudeSettingsPages.ts src/vs/platform/claude/node/claudeAgentsFiles.ts">
+										<span class="k-customize-icon"><span class="codicon codicon-lightbulb"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">agents:foo</div>
+											<div class="k-customize-detail">Does foo · from .agents</div>
+										</div>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-lightbulb"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">commit-commands:release-notes</div>
+											<div class="k-customize-detail">Write release notes from the merged pull requests · from commit-commands</div>
+										</div>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-lightbulb"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">db-migration</div>
+											<div class="k-customize-detail">Plan and write a reversible database migration</div>
+										</div>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-lightbulb"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">ui-capture</div>
+											<div class="k-customize-detail">Screenshot a page in dark and light and compare</div>
+										</div>
+									</div>
+									<!-- A skill Add Skill wrote: the row opens its SKILL.md and says Next Session until a session reports it. -->
+									<a class="k-customize-item is-link" href="../workbench/editor.html" title="Open .claude/skills/release-notes/SKILL.md" data-origin="klawly" data-label="Created skill row" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/contrib/claude/browser/settings/claudeCustomizeFiles.ts src/vs/workbench/contrib/claude/common/claudeCustomizeCreate.ts src/vs/workbench/contrib/claude/common/claudeSettingsPages.ts">
+										<span class="k-customize-icon"><span class="codicon codicon-lightbulb"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">release-notes</div>
+											<div class="k-customize-detail">Project · Drafts release notes from the merged pull requests</div>
+										</div>
+										<span class="k-state" title="Saved. Sessions started from now on load it.">Next Session</span>
+									</a>
+								</div>
+							</div>
+
+							<!-- Subagents -->
+							<div class="k-customize-group">
+								<div class="k-settings-head">
+									<h2 class="k-settings-label">Subagents<span class="k-count">3</span></h2>
+									<button type="button" class="k-settings-head-btn is-secondary is-expanded" data-popover-target="form-add-subagent" aria-expanded="true"><span class="codicon codicon-add"></span><span>Add Subagent</span></button>
+								</div>
+								<!-- Add Subagent form (open): the frontmatter of Claude Code's agents/*.md. Each kind shows only the fields its file uses, and Saved In only with a folder open (DL-12). Create with Claude starts a chat with Klawly's prompt and what the form holds. -->
+								<div class="k-settings-card k-customize-form is-open" id="form-add-subagent" data-popover data-popover-static data-origin="klawly" data-label="Add subagent form" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/contrib/claude/browser/settings/claudeCustomizeFiles.ts src/vs/workbench/contrib/claude/common/claudeCustomizeCreate.ts">
+									<div class="k-settings-row">
+										<div>
+											<div class="k-title">Name</div>
+											<div class="k-desc">Lowercase letters, digits and dashes. Saved in .claude/agents/</div>
+										</div>
+										<div class="k-settings-ctl">
+											<input type="text" class="k-settings-field" value="security-reviewer" placeholder="code-reviewer">
+										</div>
+									</div>
+									<div class="k-settings-row">
+										<div>
+											<div class="k-title">Description</div>
+											<div class="k-desc">When Claude should hand work to it. Claude Code picks subagents by this line</div>
+										</div>
+										<div class="k-settings-ctl">
+											<input type="text" class="k-settings-field" value="Checks a diff for injection, secrets and unsafe defaults" placeholder="">
+										</div>
+									</div>
+									<div class="k-settings-row">
+										<div>
+											<div class="k-title">Model</div>
+											<div class="k-desc">The Claude model it runs on</div>
+										</div>
+										<div class="k-settings-ctl">
+											<button type="button" class="k-settings-select" data-popover-target="menu-subagent-model" aria-haspopup="listbox"><span>Same as the Chat</span><span class="codicon codicon-chevron-down"></span></button>
+											<div class="k-menu k-settings-menu" id="menu-subagent-model" data-popover role="listbox" data-origin="klawly" data-label="Menu" data-source="src/vs/workbench/contrib/claude/browser/widgets/claudePopoverMenu.ts">
+												<div class="k-menu-item is-two-line is-focused" role="option"><span class="k-menu-check codicon codicon-check"></span><span class="k-menu-label">Same as the Chat<span class="k-menu-desc">The model of the conversation that starts it</span></span></div>
+												<div class="k-menu-item is-two-line" role="option"><span class="k-menu-check codicon "></span><span class="k-menu-label">Opus<span class="k-menu-desc">Most capable for complex work</span></span></div>
+												<div class="k-menu-item is-two-line" role="option"><span class="k-menu-check codicon "></span><span class="k-menu-label">Sonnet<span class="k-menu-desc">Best for everyday tasks</span></span></div>
+												<div class="k-menu-item is-two-line" role="option"><span class="k-menu-check codicon "></span><span class="k-menu-label">Haiku<span class="k-menu-desc">Fastest for quick answers</span></span></div>
+											</div>
+										</div>
+									</div>
+									<div class="k-settings-row">
+										<div>
+											<div class="k-title">Tools</div>
+											<div class="k-desc">Tool names, comma separated, such as Read, Grep, Bash. Empty gives it every tool</div>
+										</div>
+										<div class="k-settings-ctl">
+											<input type="text" class="k-settings-field" value="Read, Grep, Glob" placeholder="Read, Grep, Glob">
+										</div>
+									</div>
+									<div class="k-settings-row">
+										<div>
+											<div class="k-title">Saved In</div>
+											<div class="k-desc">The project's .claude folder, or yours in every project</div>
+										</div>
+										<div class="k-settings-ctl">
+											<button type="button" class="k-settings-select" data-popover-target="menu-subagent-scope" aria-haspopup="listbox"><span>For This Project, Shared with the Team</span><span class="codicon codicon-chevron-down"></span></button>
+											<div class="k-menu k-settings-menu" id="menu-subagent-scope" data-popover role="listbox" data-origin="klawly" data-label="Menu" data-source="src/vs/workbench/contrib/claude/browser/widgets/claudePopoverMenu.ts">
+												<div class="k-menu-item is-two-line is-focused" role="option"><span class="k-menu-check codicon codicon-check"></span><span class="k-menu-label">For This Project, Shared with the Team<span class="k-menu-desc">.claude/agents/</span></span></div>
+												<div class="k-menu-item is-two-line" role="option"><span class="k-menu-check codicon "></span><span class="k-menu-label">For Me, in Every Project<span class="k-menu-desc">~/.klawly/claude/agents/</span></span></div>
+											</div>
+										</div>
+									</div>
+									<div class="k-customize-form-foot">
+										<span class="k-customize-form-note">Sessions started after this pick it up.</span>
+										<button type="button" class="k-btn is-ghost" title="Start a chat in which Claude asks what it should do, then writes the file">Create with Claude</button>
+										<button type="button" class="k-btn is-ghost" data-popover-target="form-add-subagent">Cancel</button>
+										<button type="button" class="k-btn is-primary">Add Subagent</button>
+									</div>
+								</div>
+								<div class="k-settings-card">
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-robot"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">klawly-reviewer</div>
+											<div class="k-customize-detail">Reviews a diff and reports problems, read-only · sonnet</div>
+										</div>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-robot"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">klawly-explorer</div>
+											<div class="k-customize-detail">Finds where things are in the codebase, read-only · haiku</div>
+										</div>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-robot"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">test-writer</div>
+											<div class="k-customize-detail">Writes unit tests for a changed file</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Commands -->
+							<div class="k-customize-group">
+								<div class="k-settings-head">
+									<h2 class="k-settings-label">Commands<span class="k-count">4</span></h2>
+									<button type="button" class="k-settings-head-btn is-secondary" aria-expanded="false"><span class="codicon codicon-add"></span><span>Add Command</span></button>
+								</div>
+								<div class="k-settings-card">
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-terminal"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">/ship</div>
+											<div class="k-customize-detail">Project · Commit, push and open a pull request</div>
+										</div>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-terminal"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">/triage</div>
+											<div class="k-customize-detail">User · Sort new issues by area and priority</div>
+										</div>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-terminal"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">/compact</div>
+											<div class="k-customize-detail">Built in · Clear history but keep a summary in context</div>
+										</div>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-terminal"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">/review</div>
+											<div class="k-customize-detail">Built in · Review a pull request</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Hooks. Open and remove show on hover. A plugin's hooks say which plugin and have no actions (DL-06: same row, second line carries the origin). -->
+							<div class="k-customize-group">
+								<div class="k-settings-head">
+									<h2 class="k-settings-label">Hooks<span class="k-count">4</span></h2>
+									<button type="button" class="k-settings-head-btn is-secondary" aria-expanded="false"><span class="codicon codicon-add"></span><span>Add Hook</span></button>
+								</div>
+								<div class="k-settings-card">
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-zap"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">PostToolUse · Edit|Write</div>
+											<div class="k-customize-detail">Project · npm run lint -- --fix</div>
+										</div>
+										<span class="k-icon-btn k-customize-action" title="Open .claude/settings.json"><span class="codicon codicon-go-to-file"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Remove Hook"><span class="codicon codicon-trash"></span></span>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-zap"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">Stop</div>
+											<div class="k-customize-detail">User · notify-send "Claude finished"</div>
+										</div>
+										<span class="k-icon-btn k-customize-action" title="Open ~/.klawly/claude/settings.json"><span class="codicon codicon-go-to-file"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Remove Hook"><span class="codicon codicon-trash"></span></span>
+									</div>
+									<!-- From ~/.claude (issue 455, DL-82): listed while Also Use My Claude Code Setup is on, read only: one Copy to Klawly action (DL-102), no Remove or edit. -->
+									<div class="k-customize-item" data-origin="klawly" data-label="Hook from Claude Code" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/contrib/claude/common/claudeSettingsPages.ts">
+										<span class="k-customize-icon"><span class="codicon codicon-zap"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">Stop</div>
+											<div class="k-customize-detail">say "done" · from Claude Code</div>
+										</div>
+										<span class="k-icon-btn k-customize-action" title="Copy to Klawly"><span class="codicon codicon-copy"></span></span>
+									</div>
+									<!-- A hook on one of Klawly's own events (issue 514): Klawly runs it before Tab sends a file, in a trusted workspace. Same row as Claude Code's events (DL-06); the event name is the Claude Code-style name (DL-11). -->
+									<div class="k-customize-item" data-origin="klawly" data-label="Klawly event hook row" data-source="src/vs/platform/claude/common/claudeKlawlyHooks.ts src/vs/platform/claude/node/claudeKlawlyHookRunner.ts">
+										<span class="k-customize-icon"><span class="codicon codicon-zap"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">KlawlyTabRead</div>
+											<div class="k-customize-detail">Project · node .claude/hooks/no-env.js</div>
+										</div>
+										<span class="k-icon-btn k-customize-action" title="Open .claude/settings.json"><span class="codicon codicon-go-to-file"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Remove Hook"><span class="codicon codicon-trash"></span></span>
+									</div>
+									<div class="k-customize-item" data-origin="klawly" data-label="Plugin hook row" data-source="src/vs/workbench/contrib/claude/common/claudeSettingsPages.ts src/vs/platform/claude/node/claudePluginCatalog.ts">
+										<span class="k-customize-icon"><span class="codicon codicon-zap"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">PreToolUse · Bash</div>
+											<div class="k-customize-detail">${CLAUDE_PLUGIN_ROOT}/check.sh · from safe-shell</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Network domains: each is a WebFetch rule and a sandbox network entry in a Claude Code settings file. Open and remove show on hover. -->
+							<div class="k-customize-group">
+								<div class="k-settings-head">
+									<h2 class="k-settings-label">Network Domains<span class="k-count">2</span></h2>
+									<button type="button" class="k-settings-head-btn is-secondary" aria-expanded="false"><span class="codicon codicon-add"></span><span>Add Domain</span></button>
+								</div>
+								<div class="k-settings-card">
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-globe"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">github.com</div>
+											<div class="k-customize-detail">Allowed · Project · WebFetch and sandbox</div>
+										</div>
+										<span class="k-icon-btn k-customize-action" title="Open .claude/settings.json"><span class="codicon codicon-go-to-file"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Remove Domain"><span class="codicon codicon-trash"></span></span>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-globe"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">paste.example</div>
+											<div class="k-customize-detail">Denied · User · WebFetch only</div>
+										</div>
+										<span class="k-icon-btn k-customize-action" title="Open ~/.klawly/claude/settings.json"><span class="codicon codicon-go-to-file"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Remove Domain"><span class="codicon codicon-trash"></span></span>
+									</div>
+									<!-- From ~/.claude (issue 455, DL-82): read only, no actions. -->
+									<div class="k-customize-item" data-origin="klawly" data-label="Domain from Claude Code" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/contrib/claude/common/claudeSettingsPages.ts">
+										<span class="k-customize-icon"><span class="codicon codicon-globe"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">example.com</div>
+											<div class="k-customize-detail">Allowed · from Claude Code</div>
+										</div>
+										<span class="k-icon-btn k-customize-action" title="Copy to Klawly"><span class="codicon codicon-copy"></span></span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Permission rules (issue 868, DL-82): each is one entry in permissions.allow or permissions.deny of a Claude Code settings file; a rule a file denies is never allowed from here. Open and remove show on hover. -->
+							<div class="k-customize-group">
+								<div class="k-settings-head">
+									<h2 class="k-settings-label">Permission Rules<span class="k-count">3</span></h2>
+									<button type="button" class="k-settings-head-btn is-secondary" aria-expanded="false"><span class="codicon codicon-add"></span><span>Add Rule</span></button>
+								</div>
+								<div class="k-settings-card">
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-shield"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">Bash(npm run test:*)</div>
+											<div class="k-customize-detail">Allowed · Project</div>
+										</div>
+										<span class="k-icon-btn k-customize-action" title="Open .claude/settings.json"><span class="codicon codicon-go-to-file"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Remove Rule"><span class="codicon codicon-trash"></span></span>
+									</div>
+									<div class="k-customize-item">
+										<span class="k-customize-icon"><span class="codicon codicon-shield"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">Read(./.env)</div>
+											<div class="k-customize-detail">Denied · Project</div>
+										</div>
+										<span class="k-icon-btn k-customize-action" title="Open .claude/settings.json"><span class="codicon codicon-go-to-file"></span></span>
+										<span class="k-icon-btn k-customize-action" title="Remove Rule"><span class="codicon codicon-trash"></span></span>
+									</div>
+									<div class="k-customize-item" data-origin="klawly" data-label="Permission rule from Claude Code" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/contrib/claude/common/claudeSettingsPages.ts">
+										<span class="k-customize-icon"><span class="codicon codicon-shield"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">Bash(rm:*)</div>
+											<div class="k-customize-detail">Denied · from Claude Code</div>
+										</div>
+										<span class="k-icon-btn k-customize-action" title="Copy to Klawly"><span class="codicon codicon-copy"></span></span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Memory. Each row opens its file. The workspace AGENTS.md is listed while claude.instructions.agentsMd is on (issue 499; DL-12 hide what does not apply). The organization's managed CLAUDE.md and managed settings carry the DL-26 briefcase line (issue 523). -->
+							<div class="k-customize-group">
+								<div class="k-settings-head">
+									<h2 class="k-settings-label">Memory<span class="k-count">6</span></h2>
+								</div>
+								<div class="k-settings-card">
+									<a class="k-customize-item is-link" href="../workbench/editor.html" title="Open CLAUDE.md">
+										<span class="k-customize-icon"><span class="codicon codicon-book"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">Project Memory</div>
+											<div class="k-customize-detail">CLAUDE.md</div>
+										</div>
+										<span class="codicon codicon-go-to-file k-customize-open"></span>
+									</a>
+									<a class="k-customize-item is-link" href="../workbench/editor.html" title="Open AGENTS.md" data-origin="klawly" data-label="AGENTS.md memory row" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/contrib/claude/common/claudeSettingsPages.ts">
+										<span class="k-customize-icon"><span class="codicon codicon-book"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">AGENTS.md</div>
+											<div class="k-customize-detail">AGENTS.md</div>
+										</div>
+										<span class="codicon codicon-go-to-file k-customize-open"></span>
+									</a>
+									<!-- Your Rules (issue 455): always listed; opening it creates ~/.klawly/claude/CLAUDE.md when it is missing. Every Claude account shares it. -->
+									<a class="k-customize-item is-link" href="../workbench/editor.html" title="Open ~/.klawly/claude/CLAUDE.md" data-origin="klawly" data-label="Your Rules memory row" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/contrib/claude/common/claudeSettingsPages.ts">
+										<span class="k-customize-icon"><span class="codicon codicon-book"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">Your Rules</div>
+											<div class="k-customize-detail">~/.klawly/claude/CLAUDE.md</div>
+										</div>
+										<span class="codicon codicon-go-to-file k-customize-open"></span>
+									</a>
+									<!-- From ~/.claude (DL-82): listed while Also Use My Claude Code Setup is on. Opens read only; Copy to Klawly puts a copy in ~/.klawly/claude and never changes the original (DL-102). Its rules in ~/.claude/rules list the same way. -->
+									<a class="k-customize-item is-link" href="../workbench/editor.html" title="Open ~/.claude/CLAUDE.md" data-origin="klawly" data-label="Claude Code memory row" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/contrib/claude/common/claudeSettingsPages.ts">
+										<span class="k-customize-icon"><span class="codicon codicon-book"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">Claude Code Memory</div>
+											<div class="k-customize-detail">~/.claude/CLAUDE.md · from Claude Code</div>
+										</div>
+										<span class="codicon codicon-go-to-file k-customize-open"></span>
+										<span class="k-icon-btn k-customize-action" title="Copy to Klawly"><span class="codicon codicon-copy"></span></span>
+									</a>
+									<a class="k-customize-item is-link" href="../workbench/editor.html" title="Open C:\Program Files\ClaudeCode\CLAUDE.md" data-app="differs" data-app-note="In the app: the folder is Claude Code's managed folder for the OS (C:\Program Files\ClaudeCode, /Library/Application Support/ClaudeCode or /etc/claude-code). The row shows only when the file exists.">
+										<span class="k-customize-icon"><span class="codicon codicon-book"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">Organization Memory</div>
+											<div class="k-customize-detail">C:\Program Files\ClaudeCode\CLAUDE.md</div>
+											<div class="k-settings-managed"><span class="codicon codicon-briefcase is-sm"></span><span>Managed by your organization</span></div>
+										</div>
+										<span class="codicon codicon-go-to-file k-customize-open"></span>
+									</a>
+									<a class="k-customize-item is-link" href="../workbench/editor.html" title="Open C:\Program Files\ClaudeCode\managed-settings.json">
+										<span class="k-customize-icon"><span class="codicon codicon-book"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">Organization Settings</div>
+											<div class="k-customize-detail">C:\Program Files\ClaudeCode\managed-settings.json</div>
+											<div class="k-settings-managed"><span class="codicon codicon-briefcase is-sm"></span><span>Managed by your organization</span></div>
+										</div>
+										<span class="codicon codicon-go-to-file k-customize-open"></span>
+									</a>
+								</div>
+							</div>
+
+							<!-- Rules: the .claude/rules files, each with the globs its paths: frontmatter scopes it to, or Every session. Each row opens its file. -->
+							<div class="k-customize-group" data-origin="klawly" data-label="Rules group" data-source="src/vs/workbench/contrib/claude/browser/settings/claudeSettingsEditor.ts src/vs/workbench/contrib/claude/browser/settings/claudeCustomizeFiles.ts src/vs/workbench/contrib/claude/common/claudeCustomizeCreate.ts src/vs/workbench/contrib/claude/common/claudeSettingsPages.ts">
+								<div class="k-settings-head">
+									<h2 class="k-settings-label">Rules<span class="k-count">3</span></h2>
+									<button type="button" class="k-settings-head-btn is-secondary" aria-expanded="false"><span class="codicon codicon-add"></span><span>Add Rule</span></button>
+								</div>
+								<div class="k-settings-card">
+									<a class="k-customize-item is-link" href="../workbench/editor.html" title="Open .claude/rules/api.md">
+										<span class="k-customize-icon"><span class="codicon codicon-checklist"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">api</div>
+											<div class="k-customize-detail">Project · src/api/**/*.ts</div>
+										</div>
+										<span class="codicon codicon-go-to-file k-customize-open"></span>
+									</a>
+									<a class="k-customize-item is-link" href="../workbench/editor.html" title="Open .claude/rules/frontend/react.md">
+										<span class="k-customize-icon"><span class="codicon codicon-checklist"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">frontend/react</div>
+											<div class="k-customize-detail">Project · src/**/*.{ts,tsx}, test/**</div>
+										</div>
+										<span class="codicon codicon-go-to-file k-customize-open"></span>
+									</a>
+									<a class="k-customize-item is-link" href="../workbench/editor.html" title="Open ~/.klawly/claude/rules/tone.md">
+										<span class="k-customize-icon"><span class="codicon codicon-checklist"></span></span>
+										<div class="k-customize-text">
+											<div class="k-customize-name">tone</div>
+											<div class="k-customize-detail">User · Every session</div>
+										</div>
+										<span class="codicon codicon-go-to-file k-customize-open"></span>
+									</a>
+								</div>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+		</main>
+
+		<!-- ===== Agent pane (right) ===== -->
+		<aside class="k-chatpane" aria-label="Agent" data-origin="klawly" data-label="Agent pane" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+			<div class="k-chatpane-title" data-origin="vscode"><span class="k-chatpane-title-label">Agent</span><span class="k-icon-btn" title="Views and More Actions"><span class="codicon codicon-ellipsis"></span></span><span class="k-icon-btn" title="Maximize Agent" data-origin="vscode" data-label="Maximize button" data-source="src/vs/workbench/browser/parts/auxiliarybar/auxiliaryBarActions.ts"><span class="codicon codicon-screen-full"></span></span></div>
+			<div class="k-chatpane-viewhead" data-origin="vscode"><span class="codicon codicon-chevron-down is-sm"></span><span>Agent</span></div>
+			<div class="k-chatpane-header">
+				<div class="k-chat-tabs" role="tablist" aria-label="Agent sessions" data-origin="klawly" data-label="Chat tabs" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeSessionTabs.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<a class="k-chat-tab is-active" href="../chat/turn-finished.html"><span>Discount codes in cart</span><span class="codicon codicon-close is-xs"></span></a>
+					<a class="k-chat-tab" href="../chat/turn-running.html"><span class="k-spinner" style="width:10px;height:10px"></span><span>Fix flaky checkout test</span></a>
+				</div>
+				<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts"><span class="codicon codicon-add"></span></a>
+				<a data-app="differs" data-app-note="In the app: Agent History drops down an Agent history popover under the button at any width (search, pinned chats, day groups, Pin and Archive on hover, a Cloud row that brings back a session from claude.ai, archived chats folded at the end); the agents list here is the agents sidebar, which has its own button (off by default)." class="k-icon-btn" href="../chat/agents-list.html" title="Agent History"><span class="codicon codicon-history"></span></a>
+				<a class="k-icon-btn" href="../chat/agents-list.html" title="Show Agents Sidebar" data-origin="klawly" data-label="Agents Sidebar button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/claudeAgentsSidebar.ts"><span class="codicon codicon-layout-sidebar-right"></span></a>
+				<a class="k-icon-btn" href="../chat/more-menu.html" title="More actions"><span class="codicon codicon-ellipsis"></span></a>
+				<span class="k-chatpane-header-sep" aria-hidden="true"></span>
+			</div>
+
+			<div class="k-chat-scroll" data-origin="klawly" data-label="Conversation" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeTimelineRenderer.ts src/vs/workbench/contrib/claude/browser/chat/claudeToolCardView.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-prompt">Add a discount code to the cart. Codes come from <code class="text-sm">discounts.ts</code>, matching should ignore case.</div>
+
+				<div class="mt-4 k-worked"><span class="codicon codicon-chevron-right is-sm"></span>Worked for 48s</div>
+
+				<div class="k-chat-body mt-3">
+					<p>Added discount codes to the cart:</p>
+					<ul>
+						<li><code>applyDiscount(code)</code> trims and upper-cases the code before it looks it up.</li>
+						<li><code>totals()</code> now returns the discount and the total after it.</li>
+						<li>New <code>discounts.ts</code> holds the codes, and two tests cover a valid and an unknown code.</li>
+					</ul>
+				</div>
+
+				<div class="k-card mt-3">
+					<div class="k-card-header">
+						<span class="codicon codicon-file"></span><span class="text-ink">cartService.ts</span>
+						<span class="k-diffstat-add">+14</span><span class="k-diffstat-del">−2</span>
+						<span class="ml-auto"></span>
+						<a data-app="differs" data-app-note="In the app: Open Diff opens a single-file &quot;(review)&quot; diff of cartService.ts against the turn's snapshot, with the change navigator; the target page shows the cartService.ts (Working Tree) diff instead." class="k-icon-btn" href="../workbench/diff-editor.html" title="Open Diff"><span class="codicon codicon-go-to-file"></span></a>
+					</div>
+				</div>
+
+				<div class="k-answer-actions">
+					<span class="k-icon-btn" title="Copy"><span class="codicon codicon-copy is-sm"></span></span>
+					<span class="k-icon-btn" title="Fork from here"><span class="codicon codicon-repo-forked is-sm"></span></span>
+					<span class="ml-1">2:41 PM</span>
+				</div>
+			</div>
+
+			<!-- Composer docked at the bottom once the chat has turns -->
+			<div class="px-3 pb-3">
+				<div class="k-changes-bar" data-origin="klawly" data-label="Changes bar" data-source="src/vs/workbench/contrib/claude/browser/review/claudeChangesBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<span class="codicon codicon-chevron-right is-sm"></span>
+					<span>3 Files</span><span class="k-diffstat-add">+41</span><span class="k-diffstat-del">−2</span>
+					<span class="ml-auto"></span>
+					<button class="k-btn is-ghost is-sm">Undo</button>
+					<button class="k-btn is-ghost is-sm">Keep</button>
+					<span class="k-icon-btn" title="Ask Claude to review every change in this turn"><span class="codicon codicon-comment-discussion is-sm"></span></span>
+					<a class="k-btn is-secondary is-sm" href="../review/review-editor.html">Review</a>
+				</div>
+				<div class="k-composer is-docked" data-origin="klawly" data-label="Composer" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<div class="k-composer-input is-placeholder">Add a follow-up</div>
+					<div class="k-composer-toolbar">
+						<a class="k-pill" href="../chat/mode-menu.html"><span class="codicon codicon-sparkle"></span>Agent<span class="codicon codicon-chevron-down is-xs"></span></a>
+						<a class="k-composer-model" href="../chat/model-menu.html">Opus 5.5 <span class="k-effort">High</span></a>
+						<span class="k-composer-model is-locked" title="Claude Code runs in Local for this agent. Start a new agent to run it somewhere else." aria-disabled="true" data-origin="klawly" data-label="Run in pill" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeRunInPicker.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-device-desktop is-sm"></span>Local</span>
+						<span class="ml-auto"></span>
+						<a class="k-icon-btn" href="../chat/context-menu.html" title="Add context"><span class="codicon codicon-mention is-sm"></span></a>
+						<span class="k-icon-btn" title="Attach image"><span class="codicon codicon-device-camera is-sm"></span></span>
+						<span class="k-icon-btn" title="Voice Input (Ctrl+Alt+V)"><span class="codicon codicon-mic is-sm"></span></span>
+						<span class="k-send" title="Send (Enter)"><span class="codicon codicon-arrow-up"></span></span>
+					</div>
+				</div>
+				<a class="k-usage-row" href="../settings/plan-usage.html" data-origin="klawly" data-label="Usage row" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeUsageIndicator.ts src/vs/workbench/contrib/claude/common/claudeUsageRow.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="k-usage-part"><span>Session</span><span class="k-usage-value">42%</span><span class="k-usage-reset">resets in 2 hrs</span></span><span class="k-usage-part"><span>Week</span><span class="k-usage-value">18%</span></span></a>
+			</div>
+		</aside>
+	</div>
+
+	<!-- ===== Status bar ===== -->
+	<footer class="k-statusbar" data-origin="vscode" data-label="Status bar" data-source="src/vs/workbench/browser/parts/statusbar/statusbarPart.ts">
+		<a data-app="differs" data-app-note="In the app: The branch item opens the git checkout branch picker, not the Source Control view." class="k-status-item" href="../workbench/source-control.html"><span class="codicon codicon-git-branch"></span>main*</a>
+		<span class="k-status-item"><span class="codicon codicon-sync"></span></span>
+		<a data-app="differs" data-app-note="In the app: The errors and warnings item opens the Problems panel, not the Terminal." class="k-status-item" href="../workbench/panel.html"><span class="codicon codicon-error"></span>0<span class="codicon codicon-warning"></span>1</a>
+		<span class="k-status-spacer"></span>
+		<span class="k-status-item" title="An agent turn is running. Session usage: 42%." data-origin="klawly" data-label="Claude status" data-source="src/vs/workbench/contrib/claude/browser/claudeStatus.ts src/vs/workbench/contrib/claude/common/claudeRuntimeStatus.ts"><span class="codicon codicon-loading codicon-modifier-spin"></span>Claude: Working · 42%</span>
+		<a data-app="differs" data-app-note="In the app: The Tab status item opens the Tab suggestions popover, not the notification center." class="k-status-item" href="../workbench/notifications.html" title="Tab suggestions" data-origin="klawly" data-label="Tab status" data-source="src/vs/workbench/contrib/claude/browser/claudeTabStatus.ts"><span class="codicon codicon-arrow-right"></span>Tab</a>
+		<a class="k-status-item" href="../workbench/notifications.html" title="Notifications"><span class="codicon codicon-bell"></span></a>
+	</footer>
+</div>
+</body>
+</html>

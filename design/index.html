@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>All Screens · Klawly</title>
+	<meta name="description" content="Every screen of the Klawly design prototype, grouped by area. Each one is a standalone HTML page you can open, edit and send back.">
+
+	<!-- Shared assets: icons, the global stylesheet, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="assets/global.css">
+	<script src="assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="assets/tailwind.config.js"></script>
+	<script src="assets/app.js"></script>
+</head>
+<body class="bg-surface text-ink overflow-auto" style="height: auto; min-height: 100vh;">
+
+<!-- ===== Header ===== -->
+<header class="border-b border-line bg-chrome">
+	<div class="max-w-5xl mx-auto px-6 py-6 flex items-center gap-4">
+		<img src="assets/klawly-mark.svg" alt="" class="w-8 h-8">
+		<div class="flex-1">
+			<h1 class="text-2xl font-semibold m-0">Klawly design prototype</h1>
+			<p class="text-md text-muted m-0 mt-1">Every screen as its own HTML page. Open one, change it, send it back. See <a href="README.md">README.md</a> for how it works, <a href="PRACTICES.md">PRACTICES.md</a> for how to work on it and <a href="DECISIONS.md">DECISIONS.md</a> for why.</p>
+		</div>
+		<button type="button" class="k-btn is-secondary" data-action="toggle-theme"><span class="codicon codicon-color-mode"></span>Light / Dark</button>
+	</div>
+</header>
+
+<main class="max-w-5xl mx-auto px-6 py-6 flex flex-col gap-8">
+
+	<!-- ===== Start ===== -->
+	<section aria-labelledby="g-start">
+		<h2 id="g-start" class="k-settings-h2">Start</h2>
+		<ul class="grid grid-cols-1 md:grid-cols-2 gap-2 list-none p-0 m-0">
+			<li><a class="k-sitemap-card" href="onboarding/first-run.html"><span class="codicon codicon-account"></span><span><strong>First run and sign-in</strong><small>Welcome, Claude Code sign-in, theme and import steps.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="home/home.html"><span class="codicon codicon-home"></span><span><strong>Home (empty window)</strong><small>No folder open: open project, clone, recent projects, recent agents.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="home/empty-editor.html"><span class="codicon codicon-window"></span><span><strong>Project with no open editor</strong><small>Editor area watermark with the agent shortcuts.</small></span></a></li>
+		</ul>
+	</section>
+
+	<!-- ===== Workbench ===== -->
+	<section aria-labelledby="g-workbench">
+		<h2 id="g-workbench" class="k-settings-h2">Workbench</h2>
+		<ul class="grid grid-cols-1 md:grid-cols-2 gap-2 list-none p-0 m-0">
+			<li><a class="k-sitemap-card" href="workbench/editor.html"><span class="codicon codicon-code"></span><span><strong>Editor with agent pane</strong><small>The canonical window frame every other page copies.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/search.html"><span class="codicon codicon-search"></span><span><strong>Search view</strong><small>Search and replace across files with grouped results.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/source-control.html"><span class="codicon codicon-source-control"></span><span><strong>Source control</strong><small>Commit box, staged and unstaged changes, Klawly git actions.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/run-debug.html"><span class="codicon codicon-debug-alt"></span><span><strong>Run and debug</strong><small>Debug side view with variables, watch and call stack.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/extensions.html"><span class="codicon codicon-extensions"></span><span><strong>Extensions</strong><small>Installed and recommended extensions list.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/quick-open.html"><span class="codicon codicon-go-to-file"></span><span><strong>Quick Open</strong><small>Ctrl+P file picker with highlighted matches.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/command-palette.html"><span class="codicon codicon-terminal-cmd"></span><span><strong>Command palette</strong><small>Ctrl+Shift+P with Klawly agent commands and keybindings.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/menus.html"><span class="codicon codicon-menu"></span><span><strong>Title bar and context menus</strong><small>File menu and the explorer context menu with agent items.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/controls.html"><span class="codicon codicon-symbol-misc"></span><span><strong>Shared controls</strong><small>Every button, field, chip and segmented control in every state, dark and light.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/editor-widgets.html"><span class="codicon codicon-symbol-method"></span><span><strong>Find, suggest and hover</strong><small>The editor's find widget, suggest list and hover card.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/diff-editor.html"><span class="codicon codicon-diff"></span><span><strong>Diff editor</strong><small>Side-by-side diff with a collapsed unchanged region.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/panel.html"><span class="codicon codicon-terminal"></span><span><strong>Terminal and problems panel</strong><small>Bottom panel with a shell session.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/notifications.html"><span class="codicon codicon-bell"></span><span><strong>Notifications and status bar</strong><small>Notification center and the Tab status popover.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/feedback.html"><span class="codicon codicon-feedback"></span><span><strong>Send Feedback</strong><small>The feedback form from the status bar: images, logs and a private GitHub issue.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="workbench/palette.html"><span class="codicon codicon-symbol-color"></span><span><strong>Palette v2 Swatches</strong><small>The Sprint 10 palette on real components, with the contrast table (issue 571).</small></span></a></li>
+		</ul>
+	</section>
+
+	<!-- ===== Agent chat ===== -->
+	<section aria-labelledby="g-chat">
+		<h2 id="g-chat" class="k-settings-h2">Agent chat</h2>
+		<ul class="grid grid-cols-1 md:grid-cols-2 gap-2 list-none p-0 m-0">
+			<li><a class="k-sitemap-card" href="chat/new-chat.html"><span class="codicon codicon-add"></span><span><strong>New chat</strong><small>Empty state: composer, Plan hint and shortcut rows.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/composer-typed.html"><span class="codicon codicon-edit"></span><span><strong>Composer with a typed prompt</strong><small>Prompt text with context chips, ready to send.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/composer-voice.html"><span class="codicon codicon-mic"></span><span><strong>Composer voice input</strong><small>Dictation with a level meter and live text, transcribed on this machine.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/turn-running.html"><span class="codicon codicon-loading"></span><span><strong>Turn running</strong><small>Sticky prompt, thinking, tool steps, shell card, queued follow-up.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/multitask.html"><span class="codicon codicon-layers"></span><span><strong>Multitask</strong><small>Prompts running in parallel as background agents, Run Queued in Parallel.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/auto-mode.html"><span class="codicon codicon-rocket"></span><span><strong>Auto mode</strong><small>The Auto switch and every state of the composer strip, with the plan and run cards.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/delegate.html"><span class="codicon codicon-sparkle"></span><span><strong>Auto Delegation</strong><small>Auto hands each message to a read-only chat on the model it picked; Stop asks to switch from Auto.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/terminal-wait.html"><span class="codicon codicon-terminal"></span><span><strong>Waiting in the terminal</strong><small>An interactive command Claude handed to the user: Open Terminal and Cancel on its card.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/notebook-edit.html"><span class="codicon codicon-notebook"></span><span><strong>Notebook edit</strong><small>Claude edits a Jupyter notebook: cell cards that show the cell, and a notebook diff in review.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/debug-reproduce.html"><span class="codicon codicon-bug"></span><span><strong>Debug mode: reproduce the bug</strong><small>Claude logged its hypotheses and asks the user to reproduce: Start Capturing, then I Reproduced It.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/side-question.html"><span class="codicon codicon-comment-discussion"></span><span><strong>Side question</strong><small>Ask about the chat, idle or while a turn runs; the answer is never added to it.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/goal-loop.html"><span class="codicon codicon-target"></span><span><strong>Goal and loop</strong><small>/goal keeps working until a check passes; /loop repeats a prompt on a timer.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/go-to-turn.html"><span class="codicon codicon-list-tree"></span><span><strong>Go to Turn</strong><small>The chat outline: prompts, plans, to-dos, edits and subagents; pick one to scroll to it.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/find-in-chat.html"><span class="codicon codicon-search"></span><span><strong>Find in Chat</strong><small>Ctrl or Cmd+F in a chat: find text in its prompts and replies; pick a match to scroll to it.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/turn-finished.html"><span class="codicon codicon-check"></span><span><strong>Turn finished with edits</strong><small>Answer, code block, edit cards and the changes bar.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/edit-message.html"><span class="codicon codicon-edit"></span><span><strong>Edit an earlier message</strong><small>Edit on a sent message: the chat goes back to it and sends the edit.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/turn-limit.html"><span class="codicon codicon-debug-pause"></span><span><strong>Turn stopped at its step limit</strong><small>A capped run ends on a quiet line with Continue, not an error.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/usage-limit.html"><span class="codicon codicon-warning"></span><span><strong>Turn stopped at a usage limit</strong><small>Which limit, when it resets, Switch Account and what the plan offers.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/pull-request.html"><span class="codicon codicon-git-pull-request"></span><span><strong>Pull request opened</strong><small>Pull request and issue cards, and the pull request pill on the tab.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/model-switch.html"><span class="codicon codicon-warning"></span><span><strong>Model switch notice</strong><small>Another model picked mid-chat reads it again without the cache.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/plugin-restart.html"><span class="codicon codicon-extensions"></span><span><strong>Plugin restart notice</strong><small>A plugin changed while the chat's session runs; Restart Session.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/handoff-card.html"><span class="codicon codicon-terminal"></span><span><strong>Terminal handoff card</strong><small>A chat continuing a /klawly terminal session lists its goals and open items.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/permission.html"><span class="codicon codicon-shield"></span><span><strong>Permission request</strong><small>A tool call waiting for Allow / Deny.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/question.html"><span class="codicon codicon-question"></span><span><strong>Question from Claude</strong><small>Claude asks questions with options, Other and multi-select.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/diagram-reply.html"><span class="codicon codicon-graph"></span><span><strong>Diagram and chart reply</strong><small>Mermaid and small charts drawn in the answer, with Show Source and Open in Editor.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/mcp-form.html"><span class="codicon codicon-plug"></span><span><strong>MCP form</strong><small>An MCP server asks for input inside the response.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/mcp-app.html"><span class="codicon codicon-plug"></span><span><strong>MCP App</strong><small>An MCP tool draws its server's app under its card.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/canvas.html"><span class="codicon codicon-graph"></span><span><strong>Canvas</strong><small>Claude writes a live HTML page (a table, a chart) that opens in its own sealed tab.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/mcp-sign-in.html"><span class="codicon codicon-plug"></span><span><strong>MCP sign-in</strong><small>An MCP server asks you to open a sign-in link.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/allow-everything.html"><span class="codicon codicon-unlock"></span><span><strong>Allow Everything on</strong><small>The Allow Everything level: calls run without asking; the badge opens Settings.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/mode-menu.html"><span class="codicon codicon-list-selection"></span><span><strong>Mode menu</strong><small>Agent, Plan, Ask and Debug.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/plan-mode.html"><span class="codicon codicon-checklist"></span><span><strong>Plan mode selected</strong><small>The same chat after choosing Plan: only the pill changes.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/model-menu.html"><span class="codicon codicon-symbol-class"></span><span><strong>Model menu</strong><small>Claude models, effort, hover card and extra options.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/project.html"><span class="codicon codicon-project"></span><span><strong>New project</strong><small>A goal, a project file and a coordinator chat in Plan mode that plans to-dos for background agents.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/compare-models.html"><span class="codicon codicon-diff-multiple"></span><span><strong>Compare models</strong><small>One prompt on 2 to 4 models and efforts, a judge, then Keep.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/compare-editor.html"><span class="codicon codicon-diff-multiple"></span><span><strong>Compare editor</strong><small>One card per run, ranked by the judge; Keep one or Discard All.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/context-menu.html"><span class="codicon codicon-mention"></span><span><strong>@ context menu</strong><small>Files, folders, symbols and other context.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/slash-menu.html"><span class="codicon codicon-symbol-key"></span><span><strong>/ command menu</strong><small>Slash commands, skills and custom commands.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/context-window.html"><span class="codicon codicon-pie-chart"></span><span><strong>Context window popover</strong><small>The context ring, clicked: usage, what fills the window, Compact and /context.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/more-menu.html"><span class="codicon codicon-ellipsis"></span><span><strong>Chat header menu</strong><small>Export, session tools, layout and agent settings.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/agents-list.html"><span class="codicon codicon-history"></span><span><strong>Agents list</strong><small>Agents column beside a wide chat pane.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/agent-editor.html"><span class="codicon codicon-window"></span><span><strong>Agent in an editor tab</strong><small>A chat opened as an editor.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/agent-pane-placeholder.html"><span class="codicon codicon-layout-sidebar-right"></span><span><strong>Agent pane while the chat is in a tab</strong><small>Toggle Agent with the chat in an editor: a placeholder with Show Chat and Move Chat Here.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/agents-window.html"><span class="codicon codicon-multiple-windows"></span><span><strong>Agents window</strong><small>Chats in their own window.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="chat/agent-sessions-window.html"><span class="codicon codicon-multiple-windows"></span><span><strong>Agents window (Agent Host)</strong><small>VS Code's Agents window, when claude.agentsWindow.enabled is on.</small></span></a></li>
+		</ul>
+	</section>
+
+	<!-- ===== Review and plan ===== -->
+	<section aria-labelledby="g-review">
+		<h2 id="g-review" class="k-settings-h2">Review and plan</h2>
+		<ul class="grid grid-cols-1 md:grid-cols-2 gap-2 list-none p-0 m-0">
+			<li><a class="k-sitemap-card" href="review/review-editor.html"><span class="codicon codicon-diff-multiple"></span><span><strong>Review editor</strong><small>Every file the agent changed, stacked, with Keep / Undo.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="review/inline-changes.html"><span class="codicon codicon-diff-single"></span><span><strong>Pending changes in the editor</strong><small>Tinted edits with Undo / Keep chips.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="review/split-pull-requests.html"><span class="codicon codicon-git-pull-request-create"></span><span><strong>Split into Pull Requests</strong><small>Groups of changes, one pull request each.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="review/security-findings.html"><span class="codicon codicon-shield"></span><span><strong>Security Findings</strong><small>Findings from security runs, with Fix and Dismiss.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="plan/plan-card.html"><span class="codicon codicon-checklist"></span><span><strong>Plan card in chat</strong><small>A finished plan with Build.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="plan/plan-editor.html"><span class="codicon codicon-notebook"></span><span><strong>Plan editor</strong><small>The plan as a document with to-dos.</small></span></a></li>
+		</ul>
+	</section>
+
+	<!-- ===== Editor AI ===== -->
+	<section aria-labelledby="g-editor">
+		<h2 id="g-editor" class="k-settings-h2">Editor AI</h2>
+		<ul class="grid grid-cols-1 md:grid-cols-2 gap-2 list-none p-0 m-0">
+			<li><a class="k-sitemap-card" href="editor/selection-toolbar.html"><span class="codicon codicon-selection"></span><span><strong>Selection toolbar</strong><small>Add to Agent and Edit above a selection.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="editor/browser-preview.html"><span class="codicon codicon-globe"></span><span><strong>Browser preview</strong><small>Design mode: pick elements and send them to the agent.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="editor/inline-edit.html"><span class="codicon codicon-sparkle"></span><span><strong>Inline edit (Ctrl+K)</strong><small>Instruction card above the selection.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="editor/inline-ask.html"><span class="codicon codicon-question"></span><span><strong>Inline ask (Alt+Enter)</strong><small>An answer about the selection; the file is unchanged.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="editor/inline-edit-result.html"><span class="codicon codicon-diff"></span><span><strong>Inline edit result and follow-up</strong><small>Inline diff with Accept / Reject.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="editor/tab-completion.html"><span class="codicon codicon-arrow-right"></span><span><strong>Tab completion</strong><small>Ghost text, next-edit hint and the Tab popover.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="editor/line-attribution.html"><span class="codicon codicon-arrow-right"></span><span><strong>Line attribution</strong><small>Gutter marks for lines Claude wrote, and the turn hover.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="editor/terminal-prompt.html"><span class="codicon codicon-terminal"></span><span><strong>Terminal Ctrl+K</strong><small>Ask for a command inside the terminal.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="editor/terminal-selection-bar.html"><span class="codicon codicon-comment-discussion"></span><span><strong>Terminal Selection Bar</strong><small>Add selected terminal text to the agent.</small></span></a></li>
+		</ul>
+	</section>
+
+	<!-- ===== Settings ===== -->
+	<section aria-labelledby="g-settings">
+		<h2 id="g-settings" class="k-settings-h2">Settings</h2>
+		<ul class="grid grid-cols-1 md:grid-cols-2 gap-2 list-none p-0 m-0">
+			<li><a class="k-sitemap-card" href="settings/general.html"><span class="codicon codicon-settings-gear"></span><span><strong>General</strong><small>Account, preferences, agent, runtime.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/plan-usage.html"><span class="codicon codicon-credit-card"></span><span><strong>Plan and usage</strong><small>Plan, usage meters and limits.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/agents.html"><span class="codicon codicon-sparkle"></span><span><strong>Agents</strong><small>Agent behavior, permissions and review.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/automations.html"><span class="codicon codicon-watch"></span><span><strong>Automations</strong><small>Agents that start on a schedule, a save or a failure.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/automation-editor.html"><span class="codicon codicon-edit"></span><span><strong>Automation editor</strong><small>New Automation form, fields per trigger.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/agents-security.html"><span class="codicon codicon-shield"></span><span><strong>Agents: sandbox and policy</strong><small>Sandbox on, rows an organization manages, telemetry export.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/privacy.html"><span class="codicon codicon-lock"></span><span><strong>Privacy</strong><small>What leaves the machine, where it goes, the account's data terms.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/models.html"><span class="codicon codicon-symbol-class"></span><span><strong>Models</strong><small>Default model, effort and model list.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/auto.html"><span class="codicon codicon-rocket"></span><span><strong>Auto</strong><small>The Auto switch, permissions and the advanced delegation knobs.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/git.html"><span class="codicon codicon-git-pull-request"></span><span><strong>Git and pull requests</strong><small>Commit messages, branches and PRs.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/customize.html"><span class="codicon codicon-extensions"></span><span><strong>Customize</strong><small>MCP servers, skills, subagents, commands, hooks, memory.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/customize-discover.html"><span class="codicon codicon-package"></span><span><strong>Customize: Discover</strong><small>Plugins from Claude Code marketplaces, Install, details.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/tab.html"><span class="codicon codicon-arrow-right"></span><span><strong>Tab</strong><small>Tab completion settings.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/beta.html"><span class="codicon codicon-beaker"></span><span><strong>Beta</strong><small>Features in preview.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/classic-settings.html"><span class="codicon codicon-settings"></span><span><strong>Editor settings (classic)</strong><small>The upstream settings editor, themed.</small></span></a></li>
+			<li><a class="k-sitemap-card" href="settings/keyboard-shortcuts.html"><span class="codicon codicon-keyboard"></span><span><strong>Keyboard shortcuts</strong><small>The keybindings editor.</small></span></a></li>
+		</ul>
+	</section>
+
+	<!-- ===== Shared files ===== -->
+	<section aria-labelledby="g-files" class="pb-10">
+		<h2 id="g-files" class="k-settings-h2">Shared files</h2>
+		<ul class="text-md text-ink-2 m-0 pl-5 leading-7">
+			<li><code>assets/global.css</code>: every color, size and component class. Start here.</li>
+			<li><code>assets/tailwind.config.js</code>: Tailwind names mapped to the same tokens.</li>
+			<li><code>assets/app.js</code>: theme switch, menus, tabs, the Pages drawer.</li>
+		</ul>
+	</section>
+</main>
+
+</body>
+</html>

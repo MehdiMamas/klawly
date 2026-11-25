@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Home · Klawly</title>
+	<meta name="description" content="Home in an empty Klawly window: the Klawly mark and name, the Claude plan with a Settings link, four ways to start and the five most recent projects.">
+
+	<!-- Shared assets: icons, the global stylesheet, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+</head>
+<body>
+<!--
+	HOME
+	A window with no folder open, signed in and ready. There is no side bar and no
+	agent pane: the editor area fills the window and shows Home. The install or
+	sign-in pill at the bottom only appears when one is needed (see first-run.html).
+-->
+<div class="k-window">
+
+	<!-- ===== Title bar ===== -->
+	<header class="k-titlebar" data-origin="mixed" data-label="Title bar" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts">
+		<img src="../assets/klawly-mark.svg" alt="Klawly" class="k-mark ml-1 mr-2">
+		<nav class="k-titlebar-menus" aria-label="Menu bar" data-origin="vscode" data-label="Menu bar" data-source="src/vs/workbench/browser/parts/titlebar/menubarControl.ts">
+			<a class="k-titlebar-menu flex items-center" href="../workbench/menus.html">File</a>
+			<span class="k-titlebar-menu flex items-center">Edit</span>
+			<span class="k-titlebar-menu flex items-center">Selection</span>
+			<span class="k-titlebar-menu flex items-center">View</span>
+			<span class="k-titlebar-menu flex items-center">Go</span>
+			<span class="k-titlebar-menu flex items-center">Run</span>
+			<span class="k-titlebar-menu flex items-center">Terminal</span>
+			<span class="k-titlebar-menu flex items-center">Help</span>
+		</nav>
+		<div class="k-titlebar-title">Klawly</div>
+		<div class="k-titlebar-actions">
+			<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-add"></span></a>
+			<span class="k-icon-btn" title="Toggle Primary Side Bar"><span class="codicon codicon-layout-sidebar-left-off"></span></span>
+			<a class="k-icon-btn" href="../workbench/panel.html" title="Toggle Panel"><span class="codicon codicon-layout-panel-off"></span></a>
+			<a class="k-icon-btn" href="../chat/new-chat.html" title="Toggle Agent"><span class="codicon codicon-layout-sidebar-right-off"></span></a>
+			<a class="k-agents-pill ml-1" href="../chat/agents-window.html" title="Open the agent in its own window" data-origin="klawly" data-label="Agents Window button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-window is-sm"></span>Agents Window</a>
+			<span class="k-icon-btn ml-1" title="Accounts" data-origin="vscode" data-label="Accounts" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/browser/parts/titlebar/titlebarActions.ts"><span class="codicon codicon-account"></span></span>
+			<a class="k-icon-btn" href="../settings/general.html" title="Klawly Settings" data-origin="klawly" data-label="Settings gear" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-settings-gear"></span></a>
+		</div>
+		<div class="k-window-controls" aria-hidden="true" data-origin="vscode" data-label="Window controls" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts">
+			<span><span class="codicon codicon-chrome-minimize"></span></span>
+			<span><span class="codicon codicon-chrome-maximize"></span></span>
+			<span class="is-close"><span class="codicon codicon-chrome-close"></span></span>
+		</div>
+	</header>
+
+	<div class="k-main">
+
+		<!-- ===== Editor area: Home ===== -->
+		<main class="k-editor-area" aria-label="Home" data-origin="vscode" data-label="Editor area" data-source="src/vs/workbench/browser/parts/editor/editorPart.ts">
+			<section class="k-home" data-origin="klawly" data-label="Home" data-source="src/vs/workbench/contrib/claude/browser/home/claudeHome.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+
+				<!-- Brand: mark, name, then the plan and a Settings link under the name -->
+				<div class="k-home-brand">
+					<div class="k-home-lockup">
+						<img src="../assets/klawly-mark.svg" alt="">
+						<h1 class="k-home-name">Klawly</h1>
+					</div>
+					<div class="k-home-account">
+						<span>Max Plan</span><span class="k-dot" aria-hidden="true"></span><a class="k-link" href="../settings/general.html">Settings</a>
+					</div>
+				</div>
+
+				<!-- Four ways to start, two by two -->
+				<div class="k-home-starts" role="group" aria-label="Start">
+					<a class="k-home-start" href="empty-editor.html"><span class="codicon codicon-folder-opened"></span><span>Open Project</span></a>
+					<a class="k-home-start" href="#clone-pick" data-popover-target="clone-pick"><span class="codicon codicon-repo-clone"></span><span>Clone Repository</span></a>
+					<a class="k-home-start" href="../chat/new-chat.html"><span class="codicon codicon-add"></span><span>New Agent</span></a>
+					<a class="k-home-start" href="../chat/agents-window.html"><span class="codicon codicon-window"></span><span>Agents Window</span></a>
+				</div>
+
+				<!-- The five most recent projects; Show All appears when there are more -->
+				<div class="k-home-recent">
+					<div class="k-home-recent-head">
+						<span class="k-title">Recent Projects</span>
+						<a class="k-link" href="#recent-pick" data-popover-target="recent-pick">Show All</a>
+					</div>
+					<div class="k-home-recent-list">
+						<a class="k-home-recent-item" href="empty-editor.html" title="C:\Users\you\Projects\klawly-demo"><span class="k-name">klawly-demo</span><span class="k-path"><span>C:\Users\you\Projects</span></span></a>
+						<a class="k-home-recent-item" href="empty-editor.html" title="C:\Users\you\Projects\storefront-api"><span class="k-name">storefront-api</span><span class="k-path"><span>C:\Users\you\Projects</span></span></a>
+						<a class="k-home-recent-item" href="empty-editor.html" title="C:\Users\you\Projects\design-tokens"><span class="k-name">design-tokens</span><span class="k-path"><span>C:\Users\you\Projects</span></span></a>
+						<a class="k-home-recent-item" href="empty-editor.html" title="C:\Users\you\Work\clients\northwind\mobile-app"><span class="k-name">mobile-app</span><span class="k-path"><span>C:\Users\you\Work\clients\northwind</span></span></a>
+						<a class="k-home-recent-item" href="empty-editor.html" title="C:\Users\you\dotfiles"><span class="k-name">dotfiles</span><span class="k-path"><span>C:\Users\you</span></span></a>
+					</div>
+				</div>
+			</section>
+		</main>
+	</div>
+
+	<!-- ===== Status bar (no folder: no branch, no cursor position) ===== -->
+	<footer class="k-statusbar" data-origin="vscode" data-label="Status bar" data-source="src/vs/workbench/browser/parts/statusbar/statusbarPart.ts">
+		<span class="k-status-item"><span class="codicon codicon-error"></span>0<span class="codicon codicon-warning"></span>0</span>
+		<span class="k-status-spacer"></span>
+		<span class="k-status-item" title="Claude Code is installed and signed in. Session usage: 42%." data-origin="klawly" data-label="Claude status" data-source="src/vs/workbench/contrib/claude/browser/claudeStatus.ts"><span class="codicon codicon-sparkle"></span>Claude: Ready · 42%</span>
+		<a class="k-status-item" href="../workbench/notifications.html" title="Notifications"><span class="codicon codicon-bell"></span></a>
+	</footer>
+
+	<!-- ===== Clone Repository: the git.clone quick pick (then a folder dialog) ===== -->
+	<div class="k-quickinput k-quickinput-anchor" id="clone-pick" data-popover role="dialog" aria-label="Clone Repository" data-origin="mixed" data-label="Clone quick pick" data-source="extensions/git/src/cloneManager.ts extensions/git-base/src/remoteSource.ts src/vs/platform/quickinput/browser/quickInputController.ts src/vs/workbench/contrib/claude/browser/media/claudeChrome.css">
+		<div class="k-quickinput-filter">
+			<input type="text" placeholder="Provide repository URL or pick a repository source." aria-label="Provide repository URL or pick a repository source.">
+		</div>
+		<div class="k-quickinput-list" role="listbox">
+			<div class="k-quickinput-sep">remote sources</div>
+			<div class="k-quickinput-row is-focused" role="option" aria-selected="true"><span class="codicon codicon-github"></span><span>Clone from GitHub</span></div>
+		</div>
+	</div>
+
+	<!-- ===== Show All: the Open Recent quick pick (workbench.action.openRecent) ===== -->
+	<div class="k-quickinput k-quickinput-anchor" id="recent-pick" data-popover role="dialog" aria-label="Open Recent" data-origin="mixed" data-label="Open Recent quick pick" data-source="src/vs/workbench/browser/actions/windowActions.ts src/vs/platform/quickinput/browser/quickInputController.ts src/vs/workbench/contrib/claude/browser/media/claudeChrome.css">
+		<div class="k-quickinput-filter">
+			<input type="text" placeholder="Select to open (hold Ctrl-key to force new window or Alt-key for same window)" aria-label="Select to open (hold Ctrl-key to force new window or Alt-key for same window)">
+		</div>
+		<div class="k-quickinput-list" role="listbox">
+			<div class="k-quickinput-sep">folders</div>
+			<a class="k-quickinput-row is-focused" href="empty-editor.html" role="option" aria-selected="true"><span>klawly-demo</span><span class="k-desc">C:\Users\you\Projects</span></a>
+			<a class="k-quickinput-row" href="empty-editor.html" role="option"><span>storefront-api</span><span class="k-desc">C:\Users\you\Projects</span></a>
+			<a class="k-quickinput-row" href="empty-editor.html" role="option"><span>design-tokens</span><span class="k-desc">C:\Users\you\Projects</span></a>
+			<a class="k-quickinput-row" href="empty-editor.html" role="option"><span>mobile-app</span><span class="k-desc">C:\Users\you\Work\clients\northwind</span></a>
+			<a class="k-quickinput-row" href="empty-editor.html" role="option"><span>dotfiles</span><span class="k-desc">C:\Users\you</span></a>
+			<a class="k-quickinput-row" href="empty-editor.html" role="option"><span>billing-service</span><span class="k-desc">C:\Users\you\Work\clients\northwind</span></a>
+			<a class="k-quickinput-row" href="empty-editor.html" role="option"><span>scratch</span><span class="k-desc">C:\Users\you\Projects</span></a>
+			<div class="k-quickinput-sep">files</div>
+			<div class="k-quickinput-row" role="option"><span>notes.md</span><span class="k-desc">C:\Users\you\Documents</span></div>
+			<div class="k-quickinput-row" role="option"><span>settings.json</span><span class="k-desc">C:\Users\you\AppData\Roaming\Klawly\User</span></div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

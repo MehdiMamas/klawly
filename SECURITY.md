@@ -1,14 +1,17 @@
-<!-- BEGIN MICROSOFT SECURITY.MD V1.0.0 BLOCK -->
+# Security Policy
 
-## Security
+## Reporting a vulnerability
 
-Microsoft takes the security of our software products and services seriously, which
-includes all source code repositories in our GitHub organizations.
+Please do not report security vulnerabilities in public issues.
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+Use GitHub private vulnerability reporting: open the repository's **Security** tab and choose **Report a vulnerability** (https://github.com/MehdiMamas/klawly-ide/security/advisories/new).
 
-For security reporting information, locations, contact information, and policies,
-please review the latest guidance for Microsoft repositories at
-[https://aka.ms/SECURITY.md](https://aka.ms/SECURITY.md).
+Include what you found, how to reproduce it, and the Klawly version and OS. You will get an answer as soon as a maintainer can look at it.
 
-<!-- END MICROSOFT SECURITY.MD BLOCK -->
+## Supported versions
+
+Only the latest release receives security fixes.
+
+## Scope
+
+Klawly is a fork of Code - OSS. Problems that exist in upstream Code - OSS and are not specific to Klawly are best reported to the upstream project as well. Klawly drives your own Claude Code installation; problems in Claude Code itself belong with Anthropic.

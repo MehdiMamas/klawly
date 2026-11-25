@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Source Control · Klawly</title>
+	<meta name="description" content="The Source Control view with a commit message, the Commit button and three changed files, Klawly's Review with Claude section under Changes, Split into Pull Requests, Generate Commit Message and Explain Diff actions, Resolve with Claude on the Merge Changes group, and the working tree diff of cartService.ts.">
+
+	<!-- Shared assets: icons, the global stylesheet, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+</head>
+<body>
+<div class="k-window">
+
+	<!-- ===== Title bar ===== -->
+	<header class="k-titlebar" data-origin="mixed" data-label="Title bar" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts">
+		<img src="../assets/klawly-mark.svg" alt="Klawly" class="k-mark ml-1 mr-2">
+		<nav class="k-titlebar-menus" aria-label="Menu bar" data-origin="vscode" data-label="Menu bar" data-source="src/vs/workbench/browser/parts/titlebar/menubarControl.ts">
+			<a class="k-titlebar-menu flex items-center" href="menus.html">File</a>
+			<span class="k-titlebar-menu flex items-center">Edit</span>
+			<span class="k-titlebar-menu flex items-center">Selection</span>
+			<span class="k-titlebar-menu flex items-center">View</span>
+			<span class="k-titlebar-menu flex items-center">Go</span>
+			<span class="k-titlebar-menu flex items-center">Run</span>
+			<span class="k-titlebar-menu flex items-center">Terminal</span>
+			<span class="k-titlebar-menu flex items-center">Help</span>
+		</nav>
+		<div class="k-titlebar-title">klawly-demo</div>
+		<div class="k-titlebar-actions">
+			<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-add"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Primary Side Bar"><span class="codicon codicon-layout-sidebar-left"></span></span>
+			<a class="k-icon-btn" href="panel.html" title="Toggle Panel"><span class="codicon codicon-layout-panel-off"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Agent"><span class="codicon codicon-layout-sidebar-right"></span></span>
+			<a class="k-agents-pill ml-1" href="../chat/agents-window.html" title="Open the agent in its own window" data-origin="klawly" data-label="Agents Window button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-window is-sm"></span>Agents Window</a>
+			<span class="k-icon-btn ml-1" title="Accounts" data-origin="vscode" data-label="Accounts" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/browser/parts/titlebar/titlebarActions.ts"><span class="codicon codicon-account"></span></span>
+			<a class="k-icon-btn" href="../settings/general.html" title="Klawly Settings" data-origin="klawly" data-label="Settings gear" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-settings-gear"></span></a>
+		</div>
+		<div class="k-window-controls" aria-hidden="true" data-origin="vscode" data-label="Window controls" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts">
+			<span><span class="codicon codicon-chrome-minimize"></span></span>
+			<span><span class="codicon codicon-chrome-maximize"></span></span>
+			<span class="is-close"><span class="codicon codicon-chrome-close"></span></span>
+		</div>
+	</header>
+
+	<div class="k-main">
+
+		<!-- ===== Side bar: view switcher + Source Control ===== -->
+		<aside class="k-sidebar" aria-label="Source Control" data-origin="vscode" data-label="Source control view" data-source="src/vs/workbench/contrib/scm/browser/scmViewPane.ts">
+			<nav class="k-viewswitcher" aria-label="Views" data-origin="vscode" data-label="View switcher" data-source="src/vs/workbench/browser/parts/paneCompositeBar.ts">
+				<a href="editor.html" title="Explorer (Ctrl+Shift+E)"><span class="codicon codicon-files"></span></a>
+				<a href="search.html" title="Search (Ctrl+Shift+F)"><span class="codicon codicon-search"></span></a>
+				<a class="is-active" href="source-control.html" title="Source Control (Ctrl+Shift+G)"><span class="codicon codicon-source-control"></span><span class="k-count">3</span></a>
+				<a href="run-debug.html" title="Run and Debug (Ctrl+Shift+D)"><span class="codicon codicon-debug-alt"></span></a>
+				<a href="extensions.html" title="Extensions (Ctrl+Shift+X)"><span class="codicon codicon-extensions"></span></a>
+			</nav>
+
+			<div class="k-sidebar-title">
+				Source Control
+				<div class="k-actions"><span class="k-icon-btn" title="Views and More Actions"><span class="codicon codicon-ellipsis"></span></span></div>
+			</div>
+
+			<!-- ===== Changes section: Klawly adds Split into Pull Requests to its More Actions menu ===== -->
+			<div class="k-section-header" style="border-top:0">
+				<span class="codicon codicon-chevron-down is-sm"></span>Changes
+				<div class="k-actions">
+					<span class="k-icon-btn" title="Commit (Ctrl+Enter)"><span class="codicon codicon-check is-sm"></span></span>
+					<span class="k-icon-btn" title="Refresh"><span class="codicon codicon-refresh is-sm"></span></span>
+					<span class="k-icon-btn" data-app="differs" data-app-note="In the app: this menu also holds Klawly's Split into Pull Requests. It opens the chat and runs your /split-to-prs command or skill, or a built-in prompt: Claude groups the changes without editing, asks you to confirm the groups, commits each group on its own branch in a separate worktree, and asks again before it pushes and opens draft pull requests." title="More Actions..."><span class="codicon codicon-ellipsis is-sm"></span></span>
+				</div>
+			</div>
+
+			<!-- ===== Commit message and Commit button ===== -->
+			<div class="flex flex-col gap-1.5 px-5 pt-1 pb-2">
+				<div class="k-scm-input" role="textbox" aria-label="Commit message">
+					Add discount codes to the cart
+					<span class="k-icon-btn" title="Generate Commit Message"><span class="codicon codicon-git-commit is-sm"></span></span>
+				</div>
+				<div class="k-split is-primary is-block">
+					<button type="button"><span class="codicon codicon-check is-sm"></span>Commit</button>
+					<button type="button" title="More Actions..."><span class="codicon codicon-chevron-down is-sm"></span></button>
+				</div>
+			</div>
+
+			<!-- ===== Changed files, with the resource context menu open ===== -->
+			<div class="relative flex-1 overflow-y-auto" role="tree" aria-label="Changes">
+				<!-- Merge Changes: Klawly adds Resolve with Claude to the group (issue 501) -->
+				<div class="k-tree-row" style="padding-left:8px" role="treeitem" aria-expanded="true">
+					<span class="codicon codicon-chevron-down is-sm"></span><span class="text-ink">Merge Changes</span>
+					<span class="flex-1"></span>
+					<span class="k-row-actions" style="display:flex">
+						<a data-app="differs" data-app-note="In the app: opens the Agent and sends one turn with a summary of both sides and their last 5 commits, and each conflicted file's merge base, ours and theirs as attachments; a /resolve command or skill runs instead when the user has one." class="k-icon-btn" href="../chat/turn-running.html" title="Resolve with Claude" data-origin="klawly" data-label="Resolve with Claude button" data-source="src/vs/workbench/contrib/claude/browser/claudeMergeConflictActions.ts"><span class="codicon codicon-sparkle is-sm"></span></a>
+						<span class="k-icon-btn" title="Stage All Merge Changes"><span class="codicon codicon-add is-sm"></span></span>
+					</span>
+					<span class="k-count-badge">1</span>
+				</div>
+				<div class="k-tree-row" style="padding-left:26px">
+					<span class="k-fileicon ts" aria-hidden="true"></span><span>prices.ts</span><span class="k-row-detail">src/cart</span>
+					<span class="flex-1"></span>
+					<span class="k-git-letter">!</span>
+				</div>
+				<div class="k-tree-row" style="padding-left:8px" role="treeitem" aria-expanded="true">
+					<span class="codicon codicon-chevron-down is-sm"></span><span class="text-ink">Changes</span>
+					<span class="flex-1"></span>
+					<span class="k-row-actions">
+						<span class="k-icon-btn" title="Discard All Changes"><span class="codicon codicon-discard is-sm"></span></span>
+						<span class="k-icon-btn" title="Stage All Changes"><span class="codicon codicon-add is-sm"></span></span>
+					</span>
+					<span class="k-count-badge">3</span>
+				</div>
+				<div class="k-tree-row is-selected is-modified" style="padding-left:26px">
+					<span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="k-row-detail">src/cart</span>
+					<span class="flex-1"></span>
+					<span class="k-row-actions">
+						<span class="k-icon-btn" title="Open File"><span class="codicon codicon-go-to-file is-sm"></span></span>
+						<span class="k-icon-btn" title="Discard Changes"><span class="codicon codicon-discard is-sm"></span></span>
+						<span class="k-icon-btn" title="Stage Changes"><span class="codicon codicon-add is-sm"></span></span>
+					</span>
+					<span class="k-git-letter">M</span>
+				</div>
+				<div class="k-tree-row is-added" style="padding-left:26px">
+					<span class="k-fileicon ts" aria-hidden="true"></span><span>discounts.ts</span><span class="k-row-detail">src/cart</span>
+					<span class="flex-1"></span>
+					<span class="k-git-letter">U</span>
+				</div>
+				<div class="k-tree-row is-modified" style="padding-left:26px">
+					<span class="k-fileicon ts-test" aria-hidden="true"></span><span>cartService.test.ts</span><span class="k-row-detail">test</span>
+					<span class="flex-1"></span>
+					<span class="k-git-letter">M</span>
+				</div>
+
+				<!-- Right-click menu on cartService.ts: Explain Diff is Klawly's -->
+				<div class="k-menu absolute is-open" style="top:40px;left:44px;width:208px" data-popover data-popover-static role="menu" aria-label="cartService.ts" data-origin="vscode" data-label="Context menu" data-source="src/vs/base/browser/ui/menu/menu.ts src/vs/workbench/contrib/claude/browser/media/claudeChrome.css">
+					<a class="k-menu-item" href="diff-editor.html" role="menuitem"><span class="k-menu-label">Open Changes</span></a>
+					<a class="k-menu-item" href="editor.html" role="menuitem"><span class="k-menu-label">Open File</span></a>
+					<div class="k-menu-item" role="menuitem"><span class="k-menu-label">Open File (HEAD)</span></div>
+					<div class="k-menu-sep" role="separator"></div>
+					<a class="k-menu-item is-focused" href="../chat/turn-running.html" role="menuitem"><span class="k-menu-label">Explain Diff</span></a>
+					<div class="k-menu-sep" role="separator"></div>
+					<div class="k-menu-item" role="menuitem"><span class="k-menu-label">Discard Changes</span></div>
+					<div class="k-menu-item" role="menuitem"><span class="k-menu-label">Stage Changes</span></div>
+					<div class="k-menu-sep" role="separator"></div>
+					<div class="k-menu-item" role="menuitem"><span class="k-menu-label">Add to .gitignore</span></div>
+					<div class="k-menu-item" role="menuitem"><span class="k-menu-label">Reveal in Explorer View</span></div>
+					<div class="k-menu-item" role="menuitem"><span class="k-menu-label">Copy Relative Path</span></div>
+				</div>
+			</div>
+
+			<!-- ===== Review with Claude: Klawly's own section under Changes, above Graph (issue 749, DL-73) ===== -->
+			<div class="k-section-header" data-origin="klawly" data-label="Review with Claude section" data-source="src/vs/workbench/contrib/claude/browser/claudeScmReviewSection.ts">
+				<span class="codicon codicon-chevron-down is-sm"></span>Review with Claude
+			</div>
+			<div class="flex flex-col gap-2 px-5 pt-1 pb-3">
+				<p class="text-ink-2">Claude reads every uncommitted change and points out bugs and risks in the Agent pane.</p>
+				<p class="text-ink-2">Review Depth picks Quick or Deep for each review and says why; big diffs and auth, payments, migrations or CI changes get Deep.</p>
+				<p class="text-ink-2" data-origin="klawly" data-label="Merge readiness hint" data-source="src/vs/workbench/contrib/claude/browser/claudeScmReviewSection.ts">Each review ends with a merge-readiness score from 0 to 5 and a one-line reason. It is advice only and never approves a change.</p>
+				<a data-app="differs" data-app-note="In the app: opens the Agent view and sends a review turn with the git diff attached; it does not open the review editor. The section can be collapsed, hidden or moved like Graph." class="k-btn is-primary is-block" href="../review/review-editor.html">Review Changes with Claude</a>
+				<a data-app="differs" data-app-note="In the app: the command Review Branch Against Base opens a picker (the default branch first, then other branches, then Staged Changes Only), sends the diff since the merge base to the review, and shows findings in Problems and the status bar. A diff over 200 000 characters is cut with a notice." class="k-btn is-block" href="../review/review-editor.html">Review Branch Against Base</a>
+			</div>
+
+			<!-- ===== Graph: right-click a commit for Explain Commit ===== -->
+			<div class="k-section-header">
+				<span class="codicon codicon-chevron-down is-sm"></span>Graph
+				<div class="k-actions">
+					<span class="k-icon-btn" title="Go to Current History Item"><span class="codicon codicon-target is-sm"></span></span>
+					<span class="k-icon-btn" title="Fetch From All Remotes"><span class="codicon codicon-repo-fetch is-sm"></span></span>
+					<span class="k-icon-btn" title="Refresh"><span class="codicon codicon-refresh is-sm"></span></span>
+				</div>
+			</div>
+			<div class="pb-1" role="tree" aria-label="Graph">
+				<div class="k-tree-row" style="padding-left:12px"><span class="k-graph-node is-head is-first"></span><span class="truncate text-ink">Round checkout totals to cents</span><span class="flex-1"></span><span class="k-graph-ref"><span class="codicon codicon-target"></span>main</span></div>
+				<div class="k-tree-row" style="padding-left:12px"><span class="k-graph-node"></span><span class="truncate">Merge item quantities in the cart</span></div>
+				<div class="k-tree-row" style="padding-left:12px"><span class="k-graph-node"></span><span class="truncate">Set up Vitest</span></div>
+				<div class="k-tree-row" style="padding-left:12px"><span class="k-graph-node"></span><span class="truncate">Create the cart service</span></div>
+				<div class="k-tree-row" style="padding-left:12px"><span class="k-graph-node is-last"></span><span class="truncate">Initial commit</span></div>
+			</div>
+		</aside>
+
+		<!-- ===== Editor: working tree changes of cartService.ts (inline) ===== -->
+		<main class="k-editor-area" aria-label="Editor" data-origin="vscode" data-label="Editor area" data-source="src/vs/workbench/browser/parts/editor/editorPart.ts">
+			<div class="k-tabs" role="tablist" data-origin="vscode" data-label="Editor tabs" data-source="src/vs/workbench/browser/parts/editor/multiEditorTabsControl.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+				<a class="k-tab is-active" href="source-control.html"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts (Working Tree)</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<a class="k-tab" href="editor.html"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="k-dirty" title="Unsaved"></span></a>
+				<a data-app="differs" data-app-note="In the app: Clicking the discounts.ts tab shows discounts.ts; the target page shows the cartService.ts diff instead." class="k-tab" href="diff-editor.html"><span class="k-fileicon ts" aria-hidden="true"></span><span>discounts.ts</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<div class="k-tabs-actions">
+					<a class="k-icon-btn" href="editor.html" title="Open File"><span class="codicon codicon-go-to-file"></span></a>
+					<span class="k-icon-btn" title="Previous Change (Shift+Alt+F5)"><span class="codicon codicon-arrow-up"></span></span>
+					<span class="k-icon-btn" title="Next Change (Alt+F5)"><span class="codicon codicon-arrow-down"></span></span>
+					<a data-app="differs" data-app-note="In the app: No Side by Side icon on a text diff tab: it is More Actions > Diff View > Side by Side and only re-renders the diff in place." class="k-icon-btn" href="diff-editor.html" title="Side by Side View"><span class="codicon codicon-diff"></span></a>
+					<span class="k-icon-btn" title="More Actions"><span class="codicon codicon-ellipsis"></span></span>
+				</div>
+			</div>
+			<nav class="k-breadcrumbs" aria-label="Breadcrumbs" data-origin="vscode" data-label="Breadcrumbs" data-source="src/vs/workbench/browser/parts/editor/breadcrumbsControl.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+				<span>src</span><span class="codicon codicon-chevron-right"></span>
+				<span>cart</span><span class="codicon codicon-chevron-right"></span>
+				<span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span>
+			</nav>
+
+			<div class="k-code flex-1 overflow-auto pt-1" role="textbox" aria-label="cartService.ts, working tree changes" aria-readonly="true">
+				<div class="k-code-line"><span class="k-ln">1</span><span class="k-src"><span class="tok-kw">import</span> <span class="tok-pun">{</span> <span class="tok-var">CartItem</span><span class="tok-pun">,</span> <span class="tok-var">CartTotals</span> <span class="tok-pun">}</span> <span class="tok-kw">from</span> <span class="tok-str">'./cartTypes'</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">2</span><span class="k-src"><span class="tok-kw">import</span> <span class="tok-pun">{</span> <span class="tok-var">findDiscount</span> <span class="tok-pun">}</span> <span class="tok-kw">from</span> <span class="tok-str">'./discounts'</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">3</span><span class="k-src"> </span></div>
+				<div class="k-hidden-lines">
+					<span class="k-icon-btn" title="Show Unchanged Region"><span class="codicon codicon-unfold is-sm"></span></span>
+					<span>2 hidden lines</span>
+				</div>
+				<div class="k-code-line"><span class="k-ln">6</span><span class="k-src">	<span class="tok-kw">private readonly</span> <span class="tok-var">items</span> <span class="tok-pun">=</span> <span class="tok-kw">new</span> <span class="tok-type">Map</span><span class="tok-pun">&lt;</span><span class="tok-type">string</span><span class="tok-pun">,</span> <span class="tok-type">CartItem</span><span class="tok-pun">&gt;();</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">7</span><span class="k-src">	<span class="tok-kw">private</span> <span class="tok-var">discountCode</span><span class="tok-pun">:</span> <span class="tok-type">string</span> <span class="tok-pun">|</span> <span class="tok-type">undefined</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">8</span><span class="k-src"> </span></div>
+				<div class="k-hidden-lines">
+					<span class="k-icon-btn" title="Show Unchanged Region"><span class="codicon codicon-unfold is-sm"></span></span>
+					<span>4 hidden lines</span>
+				</div>
+				<div class="k-code-line"><span class="k-ln">13</span><span class="k-src"> </span></div>
+				<div class="k-code-line is-added"><span class="k-ln">14</span><span class="k-src">	<span class="tok-fn">applyDiscount</span><span class="tok-pun">(</span><span class="tok-var">code</span><span class="tok-pun">:</span> <span class="tok-type">string</span><span class="tok-pun">):</span> <span class="tok-type">boolean</span> <span class="tok-pun">{</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">15</span><span class="k-src">		<span class="tok-kw">const</span> <span class="tok-var">discount</span> <span class="tok-pun">=</span> <span class="tok-fn">findDiscount</span><span class="tok-pun">(</span><span class="tok-var">code</span><span class="tok-pun">.</span><span class="tok-fn">trim</span><span class="tok-pun">().</span><span class="tok-fn">toUpperCase</span><span class="tok-pun">());</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">16</span><span class="k-src">		<span class="tok-ctl">if</span> <span class="tok-pun">(!</span><span class="tok-var">discount</span><span class="tok-pun">)</span> <span class="tok-pun">{</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">17</span><span class="k-src">			<span class="tok-ctl">return</span> <span class="tok-kw">false</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">18</span><span class="k-src">		<span class="tok-pun">}</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">19</span><span class="k-src">		<span class="tok-kw">this</span><span class="tok-pun">.</span><span class="tok-var">discountCode</span> <span class="tok-pun">=</span> <span class="tok-var">discount</span><span class="tok-pun">.</span><span class="tok-var">code</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">20</span><span class="k-src">		<span class="tok-ctl">return</span> <span class="tok-kw">true</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">21</span><span class="k-src">	<span class="tok-pun">}</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">22</span><span class="k-src"> </span></div>
+				<div class="k-code-line"><span class="k-ln">23</span><span class="k-src">	<span class="tok-fn">totals</span><span class="tok-pun">():</span> <span class="tok-type">CartTotals</span> <span class="tok-pun">{</span></span></div>
+				<div class="k-hidden-lines">
+					<span class="k-icon-btn" title="Show Unchanged Region"><span class="codicon codicon-unfold is-sm"></span></span>
+					<span>3 hidden lines</span>
+				</div>
+				<div class="k-code-line"><span class="k-ln">27</span><span class="k-src">		<span class="tok-pun">}</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">28</span><span class="k-src">		<span class="tok-kw">const</span> <span class="tok-var">discount</span> <span class="tok-pun">=</span> <span class="tok-kw">this</span><span class="tok-pun">.</span><span class="tok-var">discountCode</span> <span class="tok-pun">?</span> <span class="tok-fn">findDiscount</span><span class="tok-pun">(</span><span class="tok-kw">this</span><span class="tok-pun">.</span><span class="tok-var">discountCode</span><span class="tok-pun">)</span> <span class="tok-pun">:</span> <span class="tok-type">undefined</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">29</span><span class="k-src">		<span class="tok-kw">const</span> <span class="tok-var">off</span> <span class="tok-pun">=</span> <span class="tok-var">discount</span> <span class="tok-pun">?</span> <span class="tok-type">Math</span><span class="tok-pun">.</span><span class="tok-fn">round</span><span class="tok-pun">(</span><span class="tok-var">subtotal</span> <span class="tok-pun">*</span> <span class="tok-var">discount</span><span class="tok-pun">.</span><span class="tok-var">percent</span><span class="tok-pun">)</span> <span class="tok-pun">/</span> <span class="tok-num">100</span> <span class="tok-pun">:</span> <span class="tok-num">0</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line is-removed"><span class="k-ln"></span><span class="k-src">		<span class="tok-ctl">return</span> <span class="tok-pun">{</span> <span class="tok-var">subtotal</span><span class="tok-pun">,</span> <span class="tok-var">total</span><span class="tok-pun">:</span> <span class="tok-var">subtotal</span> <span class="tok-pun">};</span></span></div>
+				<div class="k-code-line is-added"><span class="k-ln">30</span><span class="k-src">		<span class="tok-ctl">return</span> <span class="tok-pun">{</span> <span class="tok-var">subtotal</span><span class="tok-pun">,</span> <span class="k-added-text"><span class="tok-var">discount</span><span class="tok-pun">:</span> <span class="tok-var">off</span><span class="tok-pun">,</span> </span><span class="tok-var">total</span><span class="tok-pun">:</span> <span class="tok-var">subtotal</span><span class="k-added-text"> <span class="tok-pun">-</span> <span class="tok-var">off</span></span> <span class="tok-pun">};</span></span></div>
+				<div class="k-code-line"><span class="k-ln">31</span><span class="k-src">	<span class="tok-pun">}</span></span></div>
+				<div class="k-code-line"><span class="k-ln">32</span><span class="k-src"><span class="tok-pun">}</span></span></div>
+			</div>
+		</main>
+
+		<!-- ===== Agent pane (right) ===== -->
+		<aside class="k-chatpane" aria-label="Agent" data-origin="klawly" data-label="Agent pane" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+			<div class="k-chatpane-title" data-origin="vscode"><span class="k-chatpane-title-label">Agent</span><span class="k-icon-btn" title="Views and More Actions"><span class="codicon codicon-ellipsis"></span></span><span class="k-icon-btn" title="Maximize Agent" data-origin="vscode" data-label="Maximize button" data-source="src/vs/workbench/browser/parts/auxiliarybar/auxiliaryBarActions.ts"><span class="codicon codicon-screen-full"></span></span></div>
+			<div class="k-chatpane-viewhead" data-origin="vscode"><span class="codicon codicon-chevron-down is-sm"></span><span>Agent</span></div>
+			<div class="k-chatpane-header">
+				<div class="k-chat-tabs" role="tablist" aria-label="Agent sessions" data-origin="klawly" data-label="Chat tabs" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeSessionTabs.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<a class="k-chat-tab is-active" href="../chat/turn-finished.html"><span>Discount codes in cart</span><span class="codicon codicon-close is-xs"></span></a>
+					<a class="k-chat-tab" href="../chat/turn-running.html"><span class="k-spinner" style="width:10px;height:10px"></span><span>Fix flaky checkout test</span></a>
+				</div>
+				<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts"><span class="codicon codicon-add"></span></a>
+				<a data-app="differs" data-app-note="In the app: Agent History drops down an Agent history popover under the button at any width (search, pinned chats, day groups, Pin and Archive on hover, a Cloud row that brings back a session from claude.ai, archived chats folded at the end); the agents list here is the agents sidebar, which has its own button (off by default)." class="k-icon-btn" href="../chat/agents-list.html" title="Agent History"><span class="codicon codicon-history"></span></a>
+				<a class="k-icon-btn" href="../chat/agents-list.html" title="Show Agents Sidebar" data-origin="klawly" data-label="Agents Sidebar button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/claudeAgentsSidebar.ts"><span class="codicon codicon-layout-sidebar-right"></span></a>
+				<a class="k-icon-btn" href="../chat/more-menu.html" title="More actions"><span class="codicon codicon-ellipsis"></span></a>
+				<span class="k-chatpane-header-sep" aria-hidden="true"></span>
+			</div>
+
+			<div class="k-chat-scroll" data-origin="klawly" data-label="Conversation" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeTimelineRenderer.ts src/vs/workbench/contrib/claude/browser/chat/claudeToolCardView.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-prompt">Add a discount code to the cart. Codes come from <code class="text-sm">discounts.ts</code>, matching should ignore case.</div>
+
+				<div class="mt-4 k-worked"><span class="codicon codicon-chevron-right is-sm"></span>Worked for 48s</div>
+
+				<div class="k-chat-body mt-3">
+					<p>Added discount codes to the cart:</p>
+					<ul>
+						<li><code>applyDiscount(code)</code> trims and upper-cases the code before it looks it up.</li>
+						<li><code>totals()</code> now returns the discount and the total after it.</li>
+						<li>New <code>discounts.ts</code> holds the codes, and two tests cover a valid and an unknown code.</li>
+					</ul>
+				</div>
+
+				<div class="k-card mt-3">
+					<div class="k-card-header">
+						<span class="codicon codicon-file"></span><span class="text-ink">cartService.ts</span>
+						<span class="k-diffstat-add">+14</span><span class="k-diffstat-del">−2</span>
+						<span class="ml-auto"></span>
+						<a data-app="differs" data-app-note="In the app: Open Diff opens a single-file &quot;(review)&quot; diff of cartService.ts against the turn's snapshot, with the change navigator; the target page shows the cartService.ts (Working Tree) diff instead." class="k-icon-btn" href="../workbench/diff-editor.html" title="Open Diff"><span class="codicon codicon-go-to-file"></span></a>
+					</div>
+				</div>
+
+				<div class="k-answer-actions">
+					<span class="k-icon-btn" title="Copy"><span class="codicon codicon-copy is-sm"></span></span>
+					<span class="k-icon-btn" title="Fork from here"><span class="codicon codicon-repo-forked is-sm"></span></span>
+					<span class="ml-1">2:41 PM</span>
+				</div>
+			</div>
+
+			<!-- Composer docked at the bottom once the chat has turns -->
+			<div class="px-3 pb-3">
+				<div class="k-changes-bar" data-origin="klawly" data-label="Changes bar" data-source="src/vs/workbench/contrib/claude/browser/review/claudeChangesBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<span class="codicon codicon-chevron-right is-sm"></span>
+					<span>3 Files</span><span class="k-diffstat-add">+41</span><span class="k-diffstat-del">−2</span>
+					<span class="ml-auto"></span>
+					<button class="k-btn is-ghost is-sm">Undo</button>
+					<button class="k-btn is-ghost is-sm">Keep</button>
+					<span class="k-icon-btn" title="Ask Claude to review every change in this turn"><span class="codicon codicon-comment-discussion is-sm"></span></span>
+					<a class="k-btn is-secondary is-sm" href="../review/review-editor.html">Review</a>
+				</div>
+				<div class="k-composer is-docked" data-origin="klawly" data-label="Composer" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<div class="k-composer-input is-placeholder">Add a follow-up</div>
+					<div class="k-composer-toolbar">
+						<a class="k-pill" href="../chat/mode-menu.html"><span class="codicon codicon-sparkle"></span>Agent<span class="codicon codicon-chevron-down is-xs"></span></a>
+						<a class="k-composer-model" href="../chat/model-menu.html">Opus 5.5 <span class="k-effort">High</span></a>
+						<span class="k-composer-model is-locked" title="Claude Code runs in Local for this agent. Start a new agent to run it somewhere else." aria-disabled="true" data-origin="klawly" data-label="Run in pill" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeRunInPicker.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-device-desktop is-sm"></span>Local</span>
+						<span class="ml-auto"></span>
+						<a class="k-icon-btn" href="../chat/context-menu.html" title="Add context"><span class="codicon codicon-mention is-sm"></span></a>
+						<span class="k-icon-btn" title="Attach image"><span class="codicon codicon-device-camera is-sm"></span></span>
+						<span class="k-icon-btn" title="Voice Input (Ctrl+Alt+V)"><span class="codicon codicon-mic is-sm"></span></span>
+						<span class="k-send" title="Send (Enter)"><span class="codicon codicon-arrow-up"></span></span>
+					</div>
+				</div>
+				<a class="k-usage-row" href="../settings/plan-usage.html" data-origin="klawly" data-label="Usage row" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeUsageIndicator.ts src/vs/workbench/contrib/claude/common/claudeUsageRow.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="k-usage-part"><span>Session</span><span class="k-usage-value">42%</span><span class="k-usage-reset">resets in 2 hrs</span></span><span class="k-usage-part"><span>Week</span><span class="k-usage-value">18%</span></span></a>
+			</div>
+		</aside>
+	</div>
+
+	<!-- ===== Status bar ===== -->
+	<footer class="k-statusbar" data-origin="vscode" data-label="Status bar" data-source="src/vs/workbench/browser/parts/statusbar/statusbarPart.ts">
+		<a data-app="differs" data-app-note="In the app: The branch item opens the git checkout branch picker, not the Source Control view." class="k-status-item" href="source-control.html"><span class="codicon codicon-git-branch"></span>main*</a>
+		<span class="k-status-item"><span class="codicon codicon-sync"></span></span>
+		<a data-app="differs" data-app-note="In the app: The errors and warnings item opens the Problems panel, not the Terminal." class="k-status-item" href="panel.html"><span class="codicon codicon-error"></span>0<span class="codicon codicon-warning"></span>1</a>
+		<span class="k-status-spacer"></span>
+		<span class="k-status-item">Ln 15, Col 63</span>
+		<span class="k-status-item">Tab Size: 4</span>
+		<span class="k-status-item">UTF-8</span>
+		<span class="k-status-item">LF</span>
+		<span class="k-status-item"><span class="codicon codicon-bracket"></span>TypeScript</span>
+		<span class="k-status-item" title="An agent turn is running. Session usage: 42%." data-origin="klawly" data-label="Claude status" data-source="src/vs/workbench/contrib/claude/browser/claudeStatus.ts src/vs/workbench/contrib/claude/common/claudeRuntimeStatus.ts"><span class="codicon codicon-loading codicon-modifier-spin"></span>Claude: Working · 42%</span>
+		<a data-app="differs" data-app-note="In the app: The Tab status item opens the Tab suggestions popover, not the notification center." class="k-status-item" href="notifications.html" title="Tab suggestions" data-origin="klawly" data-label="Tab status" data-source="src/vs/workbench/contrib/claude/browser/claudeTabStatus.ts"><span class="codicon codicon-arrow-right"></span>Tab</a>
+		<a class="k-status-item" href="notifications.html" title="Notifications"><span class="codicon codicon-bell"></span></a>
+	</footer>
+</div>
+</body>
+</html>

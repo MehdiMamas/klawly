@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Run and Debug · Klawly</title>
+	<meta name="description" content="A debug session paused on a breakpoint: variables, watch, call stack and breakpoints in the side bar, the floating debug toolbar, and the paused line in the editor.">
+
+	<!-- Shared assets: icons, the global stylesheet, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+</head>
+<body>
+<div class="k-window">
+
+	<!-- ===== Title bar ===== -->
+	<header class="k-titlebar" data-origin="mixed" data-label="Title bar" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts">
+		<img src="../assets/klawly-mark.svg" alt="Klawly" class="k-mark ml-1 mr-2">
+		<nav class="k-titlebar-menus" aria-label="Menu bar" data-origin="vscode" data-label="Menu bar" data-source="src/vs/workbench/browser/parts/titlebar/menubarControl.ts">
+			<a class="k-titlebar-menu flex items-center" href="menus.html">File</a>
+			<span class="k-titlebar-menu flex items-center">Edit</span>
+			<span class="k-titlebar-menu flex items-center">Selection</span>
+			<span class="k-titlebar-menu flex items-center">View</span>
+			<span class="k-titlebar-menu flex items-center">Go</span>
+			<span class="k-titlebar-menu flex items-center">Run</span>
+			<span class="k-titlebar-menu flex items-center">Terminal</span>
+			<span class="k-titlebar-menu flex items-center">Help</span>
+		</nav>
+		<div class="k-titlebar-title">klawly-demo</div>
+		<div class="k-titlebar-actions">
+			<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-add"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Primary Side Bar"><span class="codicon codicon-layout-sidebar-left"></span></span>
+			<a class="k-icon-btn" href="panel.html" title="Toggle Panel"><span class="codicon codicon-layout-panel-off"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Agent"><span class="codicon codicon-layout-sidebar-right"></span></span>
+			<a class="k-agents-pill ml-1" href="../chat/agents-window.html" title="Open the agent in its own window" data-origin="klawly" data-label="Agents Window button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-window is-sm"></span>Agents Window</a>
+			<span class="k-icon-btn ml-1" title="Accounts" data-origin="vscode" data-label="Accounts" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/browser/parts/titlebar/titlebarActions.ts"><span class="codicon codicon-account"></span></span>
+			<a class="k-icon-btn" href="../settings/general.html" title="Klawly Settings" data-origin="klawly" data-label="Settings gear" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-settings-gear"></span></a>
+		</div>
+		<div class="k-window-controls" aria-hidden="true" data-origin="vscode" data-label="Window controls" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts">
+			<span><span class="codicon codicon-chrome-minimize"></span></span>
+			<span><span class="codicon codicon-chrome-maximize"></span></span>
+			<span class="is-close"><span class="codicon codicon-chrome-close"></span></span>
+		</div>
+	</header>
+
+	<div class="k-main">
+
+		<!-- ===== Side bar: view switcher + Run and Debug ===== -->
+		<aside class="k-sidebar" aria-label="Run and Debug" data-origin="vscode" data-label="Run and debug view" data-source="src/vs/workbench/contrib/debug/browser/variablesView.ts src/vs/workbench/contrib/debug/browser/callStackView.ts">
+			<nav class="k-viewswitcher" aria-label="Views" data-origin="vscode" data-label="View switcher" data-source="src/vs/workbench/browser/parts/paneCompositeBar.ts">
+				<a href="editor.html" title="Explorer (Ctrl+Shift+E)"><span class="codicon codicon-files"></span></a>
+				<a href="search.html" title="Search (Ctrl+Shift+F)"><span class="codicon codicon-search"></span></a>
+				<a href="source-control.html" title="Source Control (Ctrl+Shift+G)"><span class="codicon codicon-source-control"></span><span class="k-count">3</span></a>
+				<a class="is-active" href="run-debug.html" title="Run and Debug (Ctrl+Shift+D)"><span class="codicon codicon-debug-alt"></span></a>
+				<a href="extensions.html" title="Extensions (Ctrl+Shift+X)"><span class="codicon codicon-extensions"></span></a>
+			</nav>
+
+			<!-- Title: "Run and Debug" alone because a session is paused and several views show.
+			     With no session only the Run view shows, and the app (upstream ViewPaneContainer.getTitle)
+			     adds the single view's name: "RUN AND DEBUG: RUN". That is intended (issue 168). -->
+			<div class="k-sidebar-title">
+				Run and Debug
+				<div class="k-actions"><span class="k-icon-btn" title="Views and More Actions"><span class="codicon codicon-ellipsis"></span></span></div>
+			</div>
+
+			<!-- ===== Launch configuration ===== -->
+			<div class="k-debug-launch mb-2">
+				<span class="k-icon-btn k-debug-start" title="Start Debugging (F5)"><span class="codicon codicon-debug-start"></span></span>
+				<span class="flex-1 truncate">Run Tests</span>
+				<span class="codicon codicon-chevron-down is-sm text-muted"></span>
+				<span class="k-icon-btn" title="Open 'launch.json'"><span class="codicon codicon-gear"></span></span>
+				<span class="k-icon-btn" title="Debug Console (Ctrl+Shift+Y)"><span class="codicon codicon-debug-console"></span></span>
+			</div>
+
+			<div class="flex-1 overflow-y-auto">
+				<!-- ===== Variables ===== -->
+				<section aria-label="Variables">
+					<div class="k-section-header">
+						<span class="codicon codicon-chevron-down is-sm"></span>Variables
+						<div class="k-actions"><span class="k-icon-btn" title="Collapse All"><span class="codicon codicon-collapse-all is-sm"></span></span></div>
+					</div>
+					<div role="tree">
+						<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-down is-sm"></span><span>Local</span></div>
+						<div class="k-tree-row" style="padding-left:42px"><span class="k-var-name">code</span><span>:</span><span class="k-var-value is-string">'save10 '</span></div>
+						<div class="k-tree-row" style="padding-left:42px"><span class="k-var-name">discount</span><span>:</span><span class="k-var-value">undefined</span></div>
+						<div class="k-tree-row" style="padding-left:24px"><span class="codicon codicon-chevron-right is-sm"></span><span class="k-var-name">this</span><span>:</span><span class="k-var-value">CartService {items: Map(2), discountCode: undefined}</span></div>
+						<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-right is-sm"></span><span>Closure</span></div>
+						<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-right is-sm"></span><span>Global</span></div>
+					</div>
+				</section>
+
+				<!-- ===== Watch ===== -->
+				<section aria-label="Watch">
+					<div class="k-section-header">
+						<span class="codicon codicon-chevron-down is-sm"></span>Watch
+						<div class="k-actions">
+							<span class="k-icon-btn" title="Add Expression"><span class="codicon codicon-add is-sm"></span></span>
+							<span class="k-icon-btn" title="Refresh"><span class="codicon codicon-refresh is-sm"></span></span>
+						</div>
+					</div>
+					<div role="tree">
+						<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-right is-sm"></span><span class="k-var-name">this.totals()</span><span>:</span><span class="k-var-value">{subtotal: 48, discount: 0, total: 48}</span></div>
+						<div class="k-tree-row" style="padding-left:26px"><span class="k-var-name">code.length</span><span>:</span><span class="k-var-value is-number">7</span></div>
+					</div>
+				</section>
+
+				<!-- ===== Call stack ===== -->
+				<section aria-label="Call Stack">
+					<div class="k-section-header">
+						<span class="codicon codicon-chevron-down is-sm"></span>Call Stack
+						<div class="k-actions"><span class="k-icon-btn" title="Collapse All"><span class="codicon codicon-collapse-all is-sm"></span></span></div>
+					</div>
+					<div role="tree">
+						<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-down is-sm"></span><span class="codicon codicon-debug-alt-small"></span><span class="text-ink">Main Thread</span><span class="k-paused-label">Paused on breakpoint</span></div>
+						<div class="k-tree-row is-selected" style="padding-left:28px"><span class="codicon codicon-debug-stackframe" style="color:var(--k-amber)"></span><span>applyDiscount</span><span class="k-frame-file">cartService.ts 15:42</span></div>
+						<div class="k-tree-row" style="padding-left:48px"><span>&lt;anonymous&gt;</span><span class="k-frame-file">cartService.test.ts 22:10</span></div>
+						<div class="k-tree-row text-faint" style="padding-left:48px"><span>runTest</span><span class="k-frame-file">runner.js 812:21</span></div>
+						<div class="k-tree-row text-faint" style="padding-left:48px"><span>processTicksAndRejections</span><span class="k-frame-file">task_queues 95:5</span></div>
+					</div>
+				</section>
+
+				<!-- ===== Breakpoints ===== -->
+				<section aria-label="Breakpoints">
+					<div class="k-section-header">
+						<span class="codicon codicon-chevron-down is-sm"></span>Breakpoints
+						<div class="k-actions">
+							<span class="k-icon-btn" title="Add Function Breakpoint"><span class="codicon codicon-add is-sm"></span></span>
+							<span class="k-icon-btn" title="Toggle Activate Breakpoints"><span class="codicon codicon-activate-breakpoints is-sm"></span></span>
+							<span class="k-icon-btn" title="Remove All Breakpoints"><span class="codicon codicon-close-all is-sm"></span></span>
+						</div>
+					</div>
+					<div role="list">
+						<div class="k-tree-row" style="padding-left:12px"><span class="k-checkbox" data-toggle-class="is-checked"></span><span>Caught Exceptions</span></div>
+						<div class="k-tree-row" style="padding-left:12px"><span class="k-checkbox" data-toggle-class="is-checked"></span><span>Uncaught Exceptions</span></div>
+						<div class="k-tree-row" style="padding-left:12px"><span class="k-checkbox is-checked" data-toggle-class="is-checked"></span><span class="codicon codicon-circle-filled is-xs" style="color:var(--k-breakpoint)"></span><span>cartService.ts</span><span class="k-row-detail">src/cart</span><span class="flex-1"></span><span class="text-muted text-sm">15</span></div>
+						<div class="k-tree-row" style="padding-left:12px"><span class="k-checkbox is-checked" data-toggle-class="is-checked"></span><span class="codicon codicon-circle-filled is-xs" style="color:var(--k-breakpoint)"></span><span>cartService.ts</span><span class="k-row-detail">src/cart</span><span class="flex-1"></span><span class="text-muted text-sm">26</span></div>
+					</div>
+				</section>
+			</div>
+		</aside>
+
+		<!-- ===== Editor: paused on a breakpoint ===== -->
+		<main class="k-editor-area relative" aria-label="Editor" data-origin="vscode" data-label="Editor area" data-source="src/vs/workbench/browser/parts/editor/editorPart.ts">
+			<div class="k-tabs" role="tablist" data-origin="vscode" data-label="Editor tabs" data-source="src/vs/workbench/browser/parts/editor/multiEditorTabsControl.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+				<a class="k-tab is-active" href="run-debug.html"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="k-dirty" title="Unsaved"></span></a>
+				<a data-app="differs" data-app-note="In the app: Clicking the discounts.ts tab shows discounts.ts; the target page shows the cartService.ts diff instead." class="k-tab" href="diff-editor.html"><span class="k-fileicon ts" aria-hidden="true"></span><span>discounts.ts</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<a data-app="differs" data-app-note="In the app: Clicking the CLAUDE.md tab shows CLAUDE.md; the target page shows the cartService.ts diff instead." class="k-tab" href="diff-editor.html"><span class="k-fileicon md" aria-hidden="true"></span><span>CLAUDE.md</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<div class="k-tabs-actions">
+					<span class="k-icon-btn" title="Split Editor Right"><span class="codicon codicon-split-horizontal"></span></span>
+					<span class="k-icon-btn" title="More Actions"><span class="codicon codicon-ellipsis"></span></span>
+				</div>
+			</div>
+			<nav class="k-breadcrumbs" aria-label="Breadcrumbs" data-origin="vscode" data-label="Breadcrumbs" data-source="src/vs/workbench/browser/parts/editor/breadcrumbsControl.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+				<span>src</span><span class="codicon codicon-chevron-right"></span>
+				<span>cart</span><span class="codicon codicon-chevron-right"></span>
+				<span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="codicon codicon-chevron-right"></span>
+				<span class="codicon codicon-symbol-method" style="color:var(--k-purple)"></span><span>applyDiscount</span>
+			</nav>
+
+			<!-- Floating debug toolbar -->
+			<div class="k-debug-toolbar" role="toolbar" aria-label="Debug" data-origin="vscode" data-label="Debug toolbar" data-source="src/vs/workbench/contrib/debug/browser/debugToolBar.ts">
+				<span class="k-grip codicon codicon-gripper is-sm" aria-hidden="true"></span>
+				<span class="k-icon-btn is-continue" title="Continue (F5)"><span class="codicon codicon-debug-continue"></span></span>
+				<span class="k-icon-btn is-continue" title="Step Over (F10)"><span class="codicon codicon-debug-step-over"></span></span>
+				<span class="k-icon-btn is-continue" title="Step Into (F11)"><span class="codicon codicon-debug-step-into"></span></span>
+				<span class="k-icon-btn is-continue" title="Step Out (Shift+F11)"><span class="codicon codicon-debug-step-out"></span></span>
+				<span class="k-icon-btn is-restart" title="Restart (Ctrl+Shift+F5)"><span class="codicon codicon-debug-restart"></span></span>
+				<span class="k-icon-btn is-stop" title="Stop (Shift+F5)"><span class="codicon codicon-debug-stop"></span></span>
+			</div>
+
+			<div class="k-code flex-1 overflow-auto pt-1" role="textbox" aria-label="cartService.ts" aria-readonly="true">
+				<div class="k-code-line"><span class="k-ln">1</span><span class="k-src"><span class="tok-kw">import</span> <span class="tok-pun">{</span> <span class="tok-var">CartItem</span><span class="tok-pun">,</span> <span class="tok-var">CartTotals</span> <span class="tok-pun">}</span> <span class="tok-kw">from</span> <span class="tok-str">'./cartTypes'</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">2</span><span class="k-src"><span class="tok-kw">import</span> <span class="tok-pun">{</span> <span class="tok-var">findDiscount</span> <span class="tok-pun">}</span> <span class="tok-kw">from</span> <span class="tok-str">'./discounts'</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">3</span><span class="k-src"> </span></div>
+				<div class="k-code-line"><span class="k-ln">4</span><span class="k-src"><span class="tok-com">/** Keeps the items in a cart and works out its totals. */</span></span></div>
+				<div class="k-code-line"><span class="k-ln">5</span><span class="k-src"><span class="tok-kw">export class</span> <span class="tok-type">CartService</span> <span class="tok-pun">{</span></span></div>
+				<div class="k-code-line"><span class="k-ln">6</span><span class="k-src">	<span class="tok-kw">private readonly</span> <span class="tok-var">items</span> <span class="tok-pun">=</span> <span class="tok-kw">new</span> <span class="tok-type">Map</span><span class="tok-pun">&lt;</span><span class="tok-type">string</span><span class="tok-pun">,</span> <span class="tok-type">CartItem</span><span class="tok-pun">&gt;();</span></span></div>
+				<div class="k-code-line"><span class="k-ln">7</span><span class="k-src">	<span class="tok-kw">private</span> <span class="tok-var">discountCode</span><span class="tok-pun">:</span> <span class="tok-type">string</span> <span class="tok-pun">|</span> <span class="tok-type">undefined</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">8</span><span class="k-src"> </span></div>
+				<div class="k-code-line"><span class="k-ln">9</span><span class="k-src">	<span class="tok-fn">add</span><span class="tok-pun">(</span><span class="tok-var">item</span><span class="tok-pun">:</span> <span class="tok-type">CartItem</span><span class="tok-pun">):</span> <span class="tok-type">void</span> <span class="tok-pun">{</span></span></div>
+				<div class="k-code-line"><span class="k-ln">10</span><span class="k-src">		<span class="tok-kw">const</span> <span class="tok-var">current</span> <span class="tok-pun">=</span> <span class="tok-kw">this</span><span class="tok-pun">.</span><span class="tok-var">items</span><span class="tok-pun">.</span><span class="tok-fn">get</span><span class="tok-pun">(</span><span class="tok-var">item</span><span class="tok-pun">.</span><span class="tok-var">sku</span><span class="tok-pun">);</span></span></div>
+				<div class="k-code-line"><span class="k-ln">11</span><span class="k-src">		<span class="tok-kw">this</span><span class="tok-pun">.</span><span class="tok-var">items</span><span class="tok-pun">.</span><span class="tok-fn">set</span><span class="tok-pun">(</span><span class="tok-var">item</span><span class="tok-pun">.</span><span class="tok-var">sku</span><span class="tok-pun">, {</span> <span class="tok-pun">...</span><span class="tok-var">item</span><span class="tok-pun">,</span> <span class="tok-var">quantity</span><span class="tok-pun">:</span> <span class="tok-pun">(</span><span class="tok-var">current</span><span class="tok-pun">?.</span><span class="tok-var">quantity</span> <span class="tok-pun">??</span> <span class="tok-num">0</span><span class="tok-pun">)</span> <span class="tok-pun">+</span> <span class="tok-var">item</span><span class="tok-pun">.</span><span class="tok-var">quantity</span> <span class="tok-pun">});</span></span></div>
+				<div class="k-code-line"><span class="k-ln">12</span><span class="k-src">	<span class="tok-pun">}</span></span></div>
+				<div class="k-code-line"><span class="k-ln">13</span><span class="k-src"> </span></div>
+				<div class="k-code-line"><span class="k-ln">14</span><span class="k-src">	<span class="tok-fn">applyDiscount</span><span class="tok-pun">(</span><span class="tok-var">code</span><span class="tok-pun">:</span> <span class="tok-type">string</span><span class="tok-pun">):</span> <span class="tok-type">boolean</span> <span class="tok-pun">{</span></span></div>
+				<div class="k-code-line is-paused"><span class="k-ln has-breakpoint">15</span><span class="k-src">		<span class="tok-kw">const</span> <span class="tok-var">discount</span> <span class="tok-pun">=</span> <span class="tok-fn">findDiscount</span><span class="tok-pun">(</span><span class="tok-var">code</span><span class="tok-pun">.</span><span class="tok-fn">trim</span><span class="tok-pun">().</span><span class="tok-fn">toUpperCase</span><span class="tok-pun">());</span></span></div>
+				<div class="k-code-line"><span class="k-ln">16</span><span class="k-src">		<span class="tok-ctl">if</span> <span class="tok-pun">(!</span><span class="tok-var">discount</span><span class="tok-pun">)</span> <span class="tok-pun">{</span></span></div>
+				<div class="k-code-line"><span class="k-ln">17</span><span class="k-src">			<span class="tok-ctl">return</span> <span class="tok-kw">false</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">18</span><span class="k-src">		<span class="tok-pun">}</span></span></div>
+				<div class="k-code-line"><span class="k-ln">19</span><span class="k-src">		<span class="tok-kw">this</span><span class="tok-pun">.</span><span class="tok-var">discountCode</span> <span class="tok-pun">=</span> <span class="tok-var">discount</span><span class="tok-pun">.</span><span class="tok-var">code</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">20</span><span class="k-src">		<span class="tok-ctl">return</span> <span class="tok-kw">true</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">21</span><span class="k-src">	<span class="tok-pun">}</span></span></div>
+				<div class="k-code-line"><span class="k-ln">22</span><span class="k-src"> </span></div>
+				<div class="k-code-line"><span class="k-ln">23</span><span class="k-src">	<span class="tok-fn">totals</span><span class="tok-pun">():</span> <span class="tok-type">CartTotals</span> <span class="tok-pun">{</span></span></div>
+				<div class="k-code-line"><span class="k-ln">24</span><span class="k-src">		<span class="tok-kw">let</span> <span class="tok-var">subtotal</span> <span class="tok-pun">=</span> <span class="tok-num">0</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">25</span><span class="k-src">		<span class="tok-ctl">for</span> <span class="tok-pun">(</span><span class="tok-kw">const</span> <span class="tok-var">item</span> <span class="tok-kw">of</span> <span class="tok-kw">this</span><span class="tok-pun">.</span><span class="tok-var">items</span><span class="tok-pun">.</span><span class="tok-fn">values</span><span class="tok-pun">())</span> <span class="tok-pun">{</span></span></div>
+				<div class="k-code-line"><span class="k-ln has-breakpoint">26</span><span class="k-src">			<span class="tok-var">subtotal</span> <span class="tok-pun">+=</span> <span class="tok-var">item</span><span class="tok-pun">.</span><span class="tok-var">price</span> <span class="tok-pun">*</span> <span class="tok-var">item</span><span class="tok-pun">.</span><span class="tok-var">quantity</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">27</span><span class="k-src">		<span class="tok-pun">}</span></span></div>
+				<div class="k-code-line"><span class="k-ln">28</span><span class="k-src">		<span class="tok-kw">const</span> <span class="tok-var">discount</span> <span class="tok-pun">=</span> <span class="tok-kw">this</span><span class="tok-pun">.</span><span class="tok-var">discountCode</span> <span class="tok-pun">?</span> <span class="tok-fn">findDiscount</span><span class="tok-pun">(</span><span class="tok-kw">this</span><span class="tok-pun">.</span><span class="tok-var">discountCode</span><span class="tok-pun">)</span> <span class="tok-pun">:</span> <span class="tok-type">undefined</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">29</span><span class="k-src">		<span class="tok-kw">const</span> <span class="tok-var">off</span> <span class="tok-pun">=</span> <span class="tok-var">discount</span> <span class="tok-pun">?</span> <span class="tok-type">Math</span><span class="tok-pun">.</span><span class="tok-fn">round</span><span class="tok-pun">(</span><span class="tok-var">subtotal</span> <span class="tok-pun">*</span> <span class="tok-var">discount</span><span class="tok-pun">.</span><span class="tok-var">percent</span><span class="tok-pun">)</span> <span class="tok-pun">/</span> <span class="tok-num">100</span> <span class="tok-pun">:</span> <span class="tok-num">0</span><span class="tok-pun">;</span></span></div>
+				<div class="k-code-line"><span class="k-ln">30</span><span class="k-src">		<span class="tok-ctl">return</span> <span class="tok-pun">{</span> <span class="tok-var">subtotal</span><span class="tok-pun">,</span> <span class="tok-var">discount</span><span class="tok-pun">:</span> <span class="tok-var">off</span><span class="tok-pun">,</span> <span class="tok-var">total</span><span class="tok-pun">:</span> <span class="tok-var">subtotal</span> <span class="tok-pun">-</span> <span class="tok-var">off</span> <span class="tok-pun">};</span></span></div>
+				<div class="k-code-line"><span class="k-ln">31</span><span class="k-src">	<span class="tok-pun">}</span></span></div>
+				<div class="k-code-line"><span class="k-ln">32</span><span class="k-src"><span class="tok-pun">}</span></span></div>
+			</div>
+		</main>
+
+		<!-- ===== Agent pane (right) ===== -->
+		<aside class="k-chatpane" aria-label="Agent" data-origin="klawly" data-label="Agent pane" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+			<div class="k-chatpane-title" data-origin="vscode"><span class="k-chatpane-title-label">Agent</span><span class="k-icon-btn" title="Views and More Actions"><span class="codicon codicon-ellipsis"></span></span><span class="k-icon-btn" title="Maximize Agent" data-origin="vscode" data-label="Maximize button" data-source="src/vs/workbench/browser/parts/auxiliarybar/auxiliaryBarActions.ts"><span class="codicon codicon-screen-full"></span></span></div>
+			<div class="k-chatpane-viewhead" data-origin="vscode"><span class="codicon codicon-chevron-down is-sm"></span><span>Agent</span></div>
+			<div class="k-chatpane-header">
+				<div class="k-chat-tabs" role="tablist" aria-label="Agent sessions" data-origin="klawly" data-label="Chat tabs" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeSessionTabs.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<a class="k-chat-tab is-active" href="../chat/turn-finished.html"><span>Discount codes in cart</span><span class="codicon codicon-close is-xs"></span></a>
+					<a class="k-chat-tab" href="../chat/turn-running.html"><span class="k-spinner" style="width:10px;height:10px"></span><span>Fix flaky checkout test</span></a>
+				</div>
+				<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts"><span class="codicon codicon-add"></span></a>
+				<a data-app="differs" data-app-note="In the app: Agent History drops down an Agent history popover under the button at any width (search, pinned chats, day groups, Pin and Archive on hover, a Cloud row that brings back a session from claude.ai, archived chats folded at the end); the agents list here is the agents sidebar, which has its own button (off by default)." class="k-icon-btn" href="../chat/agents-list.html" title="Agent History"><span class="codicon codicon-history"></span></a>
+				<a class="k-icon-btn" href="../chat/agents-list.html" title="Show Agents Sidebar" data-origin="klawly" data-label="Agents Sidebar button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/claudeAgentsSidebar.ts"><span class="codicon codicon-layout-sidebar-right"></span></a>
+				<a class="k-icon-btn" href="../chat/more-menu.html" title="More actions"><span class="codicon codicon-ellipsis"></span></a>
+				<span class="k-chatpane-header-sep" aria-hidden="true"></span>
+			</div>
+
+			<div class="k-chat-scroll" data-origin="klawly" data-label="Conversation" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeTimelineRenderer.ts src/vs/workbench/contrib/claude/browser/chat/claudeToolCardView.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-prompt">Add a discount code to the cart. Codes come from <code class="text-sm">discounts.ts</code>, matching should ignore case.</div>
+
+				<div class="mt-4 k-worked"><span class="codicon codicon-chevron-right is-sm"></span>Worked for 48s</div>
+
+				<div class="k-chat-body mt-3">
+					<p>Added discount codes to the cart:</p>
+					<ul>
+						<li><code>applyDiscount(code)</code> trims and upper-cases the code before it looks it up.</li>
+						<li><code>totals()</code> now returns the discount and the total after it.</li>
+						<li>New <code>discounts.ts</code> holds the codes, and two tests cover a valid and an unknown code.</li>
+					</ul>
+				</div>
+
+				<div class="k-card mt-3">
+					<div class="k-card-header">
+						<span class="codicon codicon-file"></span><span class="text-ink">cartService.ts</span>
+						<span class="k-diffstat-add">+14</span><span class="k-diffstat-del">−2</span>
+						<span class="ml-auto"></span>
+						<a data-app="differs" data-app-note="In the app: Open Diff opens a single-file &quot;(review)&quot; diff of cartService.ts against the turn's snapshot, with the change navigator; the target page shows the cartService.ts (Working Tree) diff instead." class="k-icon-btn" href="../workbench/diff-editor.html" title="Open Diff"><span class="codicon codicon-go-to-file"></span></a>
+					</div>
+				</div>
+
+				<div class="k-answer-actions">
+					<span class="k-icon-btn" title="Copy"><span class="codicon codicon-copy is-sm"></span></span>
+					<span class="k-icon-btn" title="Fork from here"><span class="codicon codicon-repo-forked is-sm"></span></span>
+					<span class="ml-1">2:41 PM</span>
+				</div>
+			</div>
+
+			<!-- Composer docked at the bottom once the chat has turns -->
+			<div class="px-3 pb-3">
+				<div class="k-changes-bar" data-origin="klawly" data-label="Changes bar" data-source="src/vs/workbench/contrib/claude/browser/review/claudeChangesBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<span class="codicon codicon-chevron-right is-sm"></span>
+					<span>3 Files</span><span class="k-diffstat-add">+41</span><span class="k-diffstat-del">−2</span>
+					<span class="ml-auto"></span>
+					<button class="k-btn is-ghost is-sm">Undo</button>
+					<button class="k-btn is-ghost is-sm">Keep</button>
+					<span class="k-icon-btn" title="Ask Claude to review every change in this turn"><span class="codicon codicon-comment-discussion is-sm"></span></span>
+					<a class="k-btn is-secondary is-sm" href="../review/review-editor.html">Review</a>
+				</div>
+				<div class="k-composer is-docked" data-origin="klawly" data-label="Composer" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<div class="k-composer-input is-placeholder">Add a follow-up</div>
+					<div class="k-composer-toolbar">
+						<a class="k-pill" href="../chat/mode-menu.html"><span class="codicon codicon-sparkle"></span>Agent<span class="codicon codicon-chevron-down is-xs"></span></a>
+						<a class="k-composer-model" href="../chat/model-menu.html">Opus 5.5 <span class="k-effort">High</span></a>
+						<span class="k-composer-model is-locked" title="Claude Code runs in Local for this agent. Start a new agent to run it somewhere else." aria-disabled="true" data-origin="klawly" data-label="Run in pill" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeRunInPicker.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-device-desktop is-sm"></span>Local</span>
+						<span class="ml-auto"></span>
+						<a class="k-icon-btn" href="../chat/context-menu.html" title="Add context"><span class="codicon codicon-mention is-sm"></span></a>
+						<span class="k-icon-btn" title="Attach image"><span class="codicon codicon-device-camera is-sm"></span></span>
+						<span class="k-icon-btn" title="Voice Input (Ctrl+Alt+V)"><span class="codicon codicon-mic is-sm"></span></span>
+						<span class="k-send" title="Send (Enter)"><span class="codicon codicon-arrow-up"></span></span>
+					</div>
+				</div>
+				<a class="k-usage-row" href="../settings/plan-usage.html" data-origin="klawly" data-label="Usage row" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeUsageIndicator.ts src/vs/workbench/contrib/claude/common/claudeUsageRow.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="k-usage-part"><span>Session</span><span class="k-usage-value">42%</span><span class="k-usage-reset">resets in 2 hrs</span></span><span class="k-usage-part"><span>Week</span><span class="k-usage-value">18%</span></span></a>
+			</div>
+		</aside>
+	</div>
+
+	<!-- ===== Status bar ===== -->
+	<footer class="k-statusbar is-debugging" data-origin="vscode" data-label="Status bar" data-source="src/vs/workbench/browser/parts/statusbar/statusbarPart.ts">
+		<a data-app="differs" data-app-note="In the app: The branch item opens the git checkout branch picker, not the Source Control view." class="k-status-item" href="source-control.html"><span class="codicon codicon-git-branch"></span>main*</a>
+		<span class="k-status-item"><span class="codicon codicon-sync"></span></span>
+		<span class="k-status-item" title="Debug: Run Tests"><span class="codicon codicon-debug-alt-small"></span>Run Tests (klawly-demo)</span>
+		<a data-app="differs" data-app-note="In the app: The errors and warnings item opens the Problems panel, not the Terminal." class="k-status-item" href="panel.html"><span class="codicon codicon-error"></span>0<span class="codicon codicon-warning"></span>1</a>
+		<span class="k-status-spacer"></span>
+		<span class="k-status-item">Ln 15, Col 63</span>
+		<span class="k-status-item">Tab Size: 4</span>
+		<span class="k-status-item">UTF-8</span>
+		<span class="k-status-item">LF</span>
+		<span class="k-status-item"><span class="codicon codicon-bracket"></span>TypeScript</span>
+		<span class="k-status-item" title="An agent turn is running. Session usage: 42%." data-origin="klawly" data-label="Claude status" data-source="src/vs/workbench/contrib/claude/browser/claudeStatus.ts src/vs/workbench/contrib/claude/common/claudeRuntimeStatus.ts"><span class="codicon codicon-loading codicon-modifier-spin"></span>Claude: Working · 42%</span>
+		<a data-app="differs" data-app-note="In the app: The Tab status item opens the Tab suggestions popover, not the notification center." class="k-status-item" href="notifications.html" title="Tab suggestions" data-origin="klawly" data-label="Tab status" data-source="src/vs/workbench/contrib/claude/browser/claudeTabStatus.ts"><span class="codicon codicon-arrow-right"></span>Tab</a>
+		<a class="k-status-item" href="notifications.html" title="Notifications"><span class="codicon codicon-bell"></span></a>
+	</footer>
+</div>
+</body>
+</html>

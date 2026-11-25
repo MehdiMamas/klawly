@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Plan Editor · Klawly</title>
+	<meta name="description" content="A Klawly plan file opened in the plan editor: progress and Build in the header, the plan title and text in a reading column, a to-do list you tick off, and the chats that use the plan.">
+
+	<!-- Shared assets: icons, the global stylesheet, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+</head>
+<body>
+<!--
+	PLAN EDITOR
+	add-discount-codes-3f9a1c.plan.md opened as a plan. The header shows to-do progress and builds the plan;
+	the column holds the title, the text, the to-dos and the chats that reference the plan.
+	The file lives in ~/.klawly/plans (Klawly's plan folder for this user, issue 322), out of the project, so More
+	Plan Actions offers Save Plan to Workspace, which moves it into the workspace's .claude/plans. A plan that is
+	already in the workspace shows Reveal in Explorer in that row instead.
+	Build in Parallel (issue 495) starts each open to-do that does not wait on another as its own background agent (one multitask,
+	see chat/multitask.html); those to-dos spin until their agent finishes and is ticked. A to-do with a "Depends: 3" line shows
+	"Waits for to-do 3" and starts by itself, as a later wave, once to-do 3 is ticked (issue 898); its agent first merges the
+	branches of the to-dos it waited for. A failed to-do is not started again and the to-dos waiting on it stay open.
+	A to-do an agent builds shows a quiet chat icon at the end of its row, shown on hover or focus (DL-60), that opens the agent's chat.
+	The window frame is copied from workbench/editor.html; widget classes are in section 13 of assets/global.css.
+-->
+<div class="k-window">
+
+	<!-- ===== Title bar ===== -->
+	<header class="k-titlebar" data-origin="mixed" data-label="Title bar" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts">
+		<img src="../assets/klawly-mark.svg" alt="Klawly" class="k-mark ml-1 mr-2">
+		<nav class="k-titlebar-menus" aria-label="Menu bar" data-origin="vscode" data-label="Menu bar" data-source="src/vs/workbench/browser/parts/titlebar/menubarControl.ts">
+			<a class="k-titlebar-menu flex items-center" href="../workbench/menus.html">File</a>
+			<span class="k-titlebar-menu flex items-center">Edit</span>
+			<span class="k-titlebar-menu flex items-center">Selection</span>
+			<span class="k-titlebar-menu flex items-center">View</span>
+			<span class="k-titlebar-menu flex items-center">Go</span>
+			<span class="k-titlebar-menu flex items-center">Run</span>
+			<span class="k-titlebar-menu flex items-center">Terminal</span>
+			<span class="k-titlebar-menu flex items-center">Help</span>
+		</nav>
+		<div class="k-titlebar-title">klawly-demo</div>
+		<div class="k-titlebar-actions">
+			<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-add"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Primary Side Bar"><span class="codicon codicon-layout-sidebar-left"></span></span>
+			<a class="k-icon-btn" href="../workbench/panel.html" title="Toggle Panel"><span class="codicon codicon-layout-panel-off"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Agent"><span class="codicon codicon-layout-sidebar-right"></span></span>
+			<a class="k-agents-pill ml-1" href="../chat/agents-window.html" title="Open the agent in its own window" data-origin="klawly" data-label="Agents Window button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-window is-sm"></span>Agents Window</a>
+			<span class="k-icon-btn ml-1" title="Accounts" data-origin="vscode" data-label="Accounts" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/browser/parts/titlebar/titlebarActions.ts"><span class="codicon codicon-account"></span></span>
+			<a class="k-icon-btn" href="../settings/general.html" title="Klawly Settings" data-origin="klawly" data-label="Settings gear" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-settings-gear"></span></a>
+		</div>
+		<div class="k-window-controls" aria-hidden="true" data-origin="vscode" data-label="Window controls" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts">
+			<span><span class="codicon codicon-chrome-minimize"></span></span>
+			<span><span class="codicon codicon-chrome-maximize"></span></span>
+			<span class="is-close"><span class="codicon codicon-chrome-close"></span></span>
+		</div>
+	</header>
+
+	<div class="k-main">
+
+		<!-- ===== Side bar: view switcher + Explorer ===== -->
+		<aside class="k-sidebar" aria-label="Explorer" data-origin="vscode" data-label="Explorer" data-source="src/vs/workbench/contrib/files/browser/views/explorerView.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+			<nav class="k-viewswitcher" aria-label="Views" data-origin="vscode" data-label="View switcher" data-source="src/vs/workbench/browser/parts/paneCompositeBar.ts">
+				<a class="is-active" href="../workbench/editor.html" title="Explorer (Ctrl+Shift+E)"><span class="codicon codicon-files"></span></a>
+				<a href="../workbench/search.html" title="Search (Ctrl+Shift+F)"><span class="codicon codicon-search"></span></a>
+				<a href="../workbench/source-control.html" title="Source Control (Ctrl+Shift+G)"><span class="codicon codicon-source-control"></span><span class="k-count">3</span></a>
+				<a href="../workbench/run-debug.html" title="Run and Debug (Ctrl+Shift+D)"><span class="codicon codicon-debug-alt"></span></a>
+				<a href="../workbench/extensions.html" title="Extensions (Ctrl+Shift+X)"><span class="codicon codicon-extensions"></span></a>
+			</nav>
+
+			<div class="k-sidebar-title">
+				Explorer
+				<div class="k-actions"><span class="k-icon-btn"><span class="codicon codicon-ellipsis"></span></span></div>
+			</div>
+
+			<div class="k-section-header" style="border-top:0">
+				<span class="codicon codicon-chevron-down is-sm"></span>KLAWLY-DEMO
+				<div class="k-actions">
+					<span class="k-icon-btn" title="New File"><span class="codicon codicon-new-file is-sm"></span></span>
+					<span class="k-icon-btn" title="New Folder"><span class="codicon codicon-new-folder is-sm"></span></span>
+					<span class="k-icon-btn" title="Refresh"><span class="codicon codicon-refresh is-sm"></span></span>
+					<span class="k-icon-btn" title="Collapse"><span class="codicon codicon-collapse-all is-sm"></span></span>
+				</div>
+			</div>
+
+			<div class="flex-1 overflow-y-auto" role="tree">
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-right is-sm"></span><span>.claude</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-right is-sm"></span><span>node_modules</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-down is-sm"></span><span>src</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-down is-sm"></span><span>cart</span></div>
+				<div class="k-tree-row is-modified" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="k-git">M</span></div>
+				<div class="k-tree-row" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartTypes.ts</span></div>
+				<div class="k-tree-row is-added" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>discounts.ts</span><span class="k-git">U</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-right is-sm"></span><span>checkout</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-right is-sm"></span><span>ui</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon ts" aria-hidden="true"></span><span>index.ts</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-down is-sm"></span><span>test</span></div>
+				<div class="k-tree-row is-modified" style="padding-left:32px"><span class="k-fileicon ts-test" aria-hidden="true"></span><span>cartService.test.ts</span><span class="k-git">M</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon md" aria-hidden="true"></span><span>CLAUDE.md</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon json" aria-hidden="true"></span><span>package.json</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon readme" aria-hidden="true"></span><span>README.md</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon tsconfig" aria-hidden="true"></span><span>tsconfig.json</span></div>
+			</div>
+
+			<div class="k-section-header"><span class="codicon codicon-chevron-right is-sm"></span>Outline</div>
+			<div class="k-section-header"><span class="codicon codicon-chevron-right is-sm"></span>Timeline</div>
+		</aside>
+
+		<!-- ===== Editor: plan editor (a *.plan.md file opened as a plan) ===== -->
+		<main class="k-editor-area" aria-label="Editor" data-origin="vscode" data-label="Editor area" data-source="src/vs/workbench/browser/parts/editor/editorPart.ts">
+			<div class="k-tabs" role="tablist" data-origin="vscode" data-label="Editor tabs" data-source="src/vs/workbench/browser/parts/editor/multiEditorTabsControl.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+				<a class="k-tab is-active" href="plan-editor.html"><span class="codicon codicon-checklist is-sm"></span><span>add-discount-codes-3f9a1c.plan.md</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<a class="k-tab" href="../workbench/editor.html"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<div class="k-tabs-actions">
+					<span class="k-icon-btn" title="Split Editor Right"><span class="codicon codicon-split-horizontal"></span></span>
+				</div>
+			</div>
+
+			<!-- Plan header: progress, Build, more -->
+			<div class="k-plan-editor-header" data-origin="klawly" data-label="Plan editor header" data-source="src/vs/workbench/contrib/claude/browser/plan/claudePlanEditor.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-plan-progress">
+					<span class="codicon codicon-checklist"></span>
+					<span>2 of 5 done</span>
+					<span class="k-plan-progress-bar" role="progressbar" aria-label="To-dos done" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"><span style="width:40%"></span></span>
+				</div>
+				<span class="flex-1"></span>
+				<div class="relative">
+					<div class="k-split is-plan is-compact">
+						<a href="../chat/turn-running.html" title="Build Here (Ctrl+Enter)">Build</a>
+						<button type="button" data-popover-target="build-options" aria-haspopup="menu" title="More Build Options"><span class="codicon codicon-chevron-down is-sm"></span></button>
+					</div>
+					<!-- Build Options menu (Build chevron): the same menu as the plan card's, with the Build keybinding on the default target -->
+					<div class="k-menu k-build-menu absolute" style="top:calc(100% + 6px);right:0" id="build-options" data-popover role="menu" aria-label="Build Options" data-origin="klawly" data-label="Menu" data-source="src/vs/workbench/contrib/claude/browser/plan/claudeBuildButton.ts src/vs/workbench/contrib/claude/browser/widgets/claudePopoverMenu.ts">
+						<div class="k-menu-header">Build Options</div>
+						<a class="k-menu-item is-two-line" href="../chat/turn-running.html"><span class="codicon codicon-play"></span><span class="k-menu-label">Build Here<span class="k-menu-desc">Claude builds the plan in this window and you review each change as it lands.</span></span><span class="k-menu-detail">Default</span><span class="k-kbd is-quiet"><kbd>Ctrl+Enter</kbd></span></a>
+						<a class="k-menu-item is-two-line" href="../chat/agents-window.html"><span class="codicon codicon-git-branch"></span><span class="k-menu-label">Build in Background Worktree<span class="k-menu-desc">A background agent builds the plan on its own Git branch and worktree.</span></span></a>
+						<a class="k-menu-item is-two-line" href="../chat/multitask.html"><span class="codicon codicon-split-horizontal"></span><span class="k-menu-label">Build in Parallel<span class="k-menu-desc">Each to-do that doesn't wait on another gets its own background agent and worktree, all at once.</span></span></a>
+					</div>
+				</div>
+				<button type="button" class="k-icon-btn" data-popover-target="plan-more" aria-haspopup="menu" title="More Plan Actions"><span class="codicon codicon-ellipsis"></span></button>
+			</div>
+
+			<!-- More Plan Actions menu -->
+			<div class="k-menu absolute" style="top:108px;right:8px" id="plan-more" data-popover role="menu" aria-label="More Plan Actions" data-origin="klawly" data-label="Menu" data-source="src/vs/workbench/contrib/claude/browser/widgets/claudePopoverMenu.ts">
+				<a class="k-menu-item" href="../workbench/editor.html"><span class="codicon codicon-go-to-file"></span><span class="k-menu-label">Open as Text</span></a>
+				<span class="k-menu-item"><span class="codicon codicon-save"></span><span class="k-menu-label">Save Plan to Workspace</span></span>
+				<span class="k-menu-item"><span class="codicon codicon-copy"></span><span class="k-menu-label">Copy Path</span></span>
+			</div>
+
+			<!-- Reading column -->
+			<div class="k-plan-body">
+				<article class="k-plan-page" data-origin="klawly" data-label="Plan editor" data-source="src/vs/workbench/contrib/claude/browser/plan/claudePlanEditor.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<h1 class="k-plan-title">Add discount codes to the cart</h1>
+					<div class="k-plan-prose">
+						<p>Customers type a code at checkout. The cart looks it up in a fixed table in <code>discounts.ts</code>, ignores case, and takes the percent off the subtotal.</p>
+						<p>Unknown codes leave the cart unchanged and return <code>false</code>, so the checkout form can show an error.</p>
+					</div>
+
+					<section class="k-plan-section" aria-label="To-dos">
+						<div class="k-plan-section-head">
+							<h2>5 To-dos</h2>
+							<button type="button" class="k-btn is-ghost is-sm" title="Add a To-do"><span class="codicon codicon-add is-sm"></span>New</button>
+						</div>
+						<ul class="k-plan-todos">
+							<li class="k-plan-todo is-done">
+								<span class="codicon codicon-pass-filled" role="checkbox" aria-checked="true" title="Mark as Done"></span>
+								<span class="min-w-0"><span class="k-title">Add a <code>Discount</code> type and a code table</span>
+									<span class="k-detail">A <code>Discount</code> has a code and a percent. Codes are stored upper case.</span></span>
+							</li>
+							<li class="k-plan-todo is-done">
+								<span class="codicon codicon-pass-filled" role="checkbox" aria-checked="true" title="Mark as Done"></span>
+								<span class="min-w-0"><span class="k-title">Look codes up without case</span>
+									<span class="k-detail"><code>applyDiscount</code> trims and upper-cases the code, then calls <code>findDiscount</code>.</span></span>
+							</li>
+							<li class="k-plan-todo is-building">
+								<span class="k-spinner" role="checkbox" aria-checked="false" title="A background agent is building this to-do"></span>
+								<span class="min-w-0"><span class="k-title">Return the discount from <code>totals()</code></span>
+									<span class="k-detail">Round to cents so the total never drifts.</span></span>
+								<button class="k-plan-agent" type="button" title="Open the Agent Building This To-do" aria-label="Open the agent building this to-do"><span class="codicon codicon-comment-discussion"></span></button>
+							</li>
+							<li class="k-plan-todo is-building">
+								<span class="k-spinner" role="checkbox" aria-checked="false" title="A background agent is building this to-do"></span>
+								<span class="min-w-0"><span class="k-title">Test a valid and an unknown code</span></span>
+								<button class="k-plan-agent" type="button" title="Open the Agent Building This To-do" aria-label="Open the agent building this to-do"><span class="codicon codicon-comment-discussion"></span></button>
+							</li>
+							<li class="k-plan-todo">
+								<span class="codicon codicon-circle-large-outline" role="checkbox" aria-checked="false" title="Mark as Done"></span>
+								<span class="min-w-0"><span class="k-title">Show the discount line in the checkout summary</span>
+									<span class="k-depends">Waits for to-do 3</span></span>
+							</li>
+						</ul>
+					</section>
+
+					<section class="k-plan-section" aria-label="Referenced by 1 Chat">
+						<div class="k-plan-section-head"><h2>Referenced by 1 Chat</h2></div>
+						<ul class="k-plan-links">
+							<li><a class="k-plan-link" href="plan-card.html" title="Open this chat"><span class="codicon codicon-comment-discussion"></span><span>Plan discount codes</span><span class="k-role">Wrote the plan</span></a></li>
+						</ul>
+					</section>
+				</article>
+			</div>
+		</main>
+
+		<!-- ===== Agent pane (right) ===== -->
+		<aside class="k-chatpane" aria-label="Agent" data-origin="klawly" data-label="Agent pane" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+			<div class="k-chatpane-title" data-origin="vscode"><span class="k-chatpane-title-label">Agent</span><span class="k-icon-btn" title="Views and More Actions"><span class="codicon codicon-ellipsis"></span></span><span class="k-icon-btn" title="Maximize Agent" data-origin="vscode" data-label="Maximize button" data-source="src/vs/workbench/browser/parts/auxiliarybar/auxiliaryBarActions.ts"><span class="codicon codicon-screen-full"></span></span></div>
+			<div class="k-chatpane-viewhead" data-origin="vscode"><span class="codicon codicon-chevron-down is-sm"></span><span>Agent</span></div>
+			<div class="k-chatpane-header">
+				<div class="k-chat-tabs" role="tablist" aria-label="Agent sessions" data-origin="klawly" data-label="Chat tabs" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeSessionTabs.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<a class="k-chat-tab is-active" href="../plan/plan-card.html"><span>Plan discount codes</span><span class="codicon codicon-close is-xs"></span></a>
+					<a class="k-chat-tab" href="../chat/turn-running.html"><span class="k-spinner" style="width:10px;height:10px"></span><span>Fix flaky checkout test</span></a>
+				</div>
+				<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts"><span class="codicon codicon-add"></span></a>
+				<a data-app="differs" data-app-note="In the app: Agent History drops down an Agent history popover under the button at any width (search, pinned chats, day groups, Pin and Archive on hover, a Cloud row that brings back a session from claude.ai, archived chats folded at the end); the agents list here is the agents sidebar, which has its own button (off by default)." class="k-icon-btn" href="../chat/agents-list.html" title="Agent History"><span class="codicon codicon-history"></span></a>
+				<a class="k-icon-btn" href="../chat/agents-list.html" title="Show Agents Sidebar" data-origin="klawly" data-label="Agents Sidebar button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/claudeAgentsSidebar.ts"><span class="codicon codicon-layout-sidebar-right"></span></a>
+				<a class="k-icon-btn" href="../chat/more-menu.html" title="More actions"><span class="codicon codicon-ellipsis"></span></a>
+				<span class="k-chatpane-header-sep" aria-hidden="true"></span>
+			</div>
+
+			<div class="k-chat-scroll" data-origin="klawly" data-label="Conversation" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeTimelineRenderer.ts src/vs/workbench/contrib/claude/browser/chat/claudeToolCardView.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-prompt">Plan how to add discount codes to the cart. Codes come from <code class="text-sm">discounts.ts</code> and matching should ignore case.</div>
+
+				<div class="mt-4 k-worked"><span class="codicon codicon-chevron-right is-sm"></span>Worked for 31s</div>
+
+				<div class="k-chat-body mt-3">
+					<p>I read the cart and its tests. Here is the plan; edit it or build it when it looks right.</p>
+				</div>
+
+				<div class="k-card mt-3">
+					<div class="k-card-header">
+						<span class="codicon codicon-checklist" style="color:var(--k-mode-plan-solid)"></span><span class="text-ink">Add discount codes to the cart</span>
+						<span class="text-muted">4 steps</span>
+						<span class="ml-auto"></span>
+						<a class="k-icon-btn" href="../plan/plan-card.html" title="Show the plan in the chat"><span class="codicon codicon-comment-discussion"></span></a>
+					</div>
+				</div>
+
+				<div class="k-answer-actions">
+					<span class="k-icon-btn" title="Copy"><span class="codicon codicon-copy is-sm"></span></span>
+					<span class="k-icon-btn" title="Fork from here"><span class="codicon codicon-repo-forked is-sm"></span></span>
+					<span class="ml-1">2:36 PM</span>
+				</div>
+			</div>
+
+			<!-- Composer docked at the bottom once the chat has turns -->
+			<div class="px-3 pb-3">
+				<div class="k-composer" data-origin="klawly" data-label="Composer" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<div class="k-composer-input is-placeholder">Add a follow-up</div>
+					<div class="k-composer-toolbar">
+						<a class="k-pill is-plan" href="../chat/mode-menu.html"><span class="codicon codicon-checklist"></span>Plan<span class="codicon codicon-chevron-down is-xs"></span></a>
+						<a class="k-composer-model" href="../chat/model-menu.html">Opus 5.5 <span class="k-effort">High</span></a>
+						<span class="k-composer-model is-locked" title="Claude Code runs in Local for this agent. Start a new agent to run it somewhere else." aria-disabled="true" data-origin="klawly" data-label="Run in pill" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeRunInPicker.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-device-desktop is-sm"></span>Local</span>
+						<span class="ml-auto"></span>
+						<a class="k-icon-btn" href="../chat/context-menu.html" title="Add context"><span class="codicon codicon-mention is-sm"></span></a>
+						<span class="k-icon-btn" title="Attach image"><span class="codicon codicon-device-camera is-sm"></span></span>
+						<span class="k-icon-btn" title="Voice Input (Ctrl+Alt+V)"><span class="codicon codicon-mic is-sm"></span></span>
+						<span class="k-send is-plan" title="Send (Enter)"><span class="codicon codicon-arrow-up"></span></span>
+					</div>
+				</div>
+				<a class="k-usage-row" href="../settings/plan-usage.html" data-origin="klawly" data-label="Usage row" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeUsageIndicator.ts src/vs/workbench/contrib/claude/common/claudeUsageRow.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="k-usage-part"><span>Session</span><span class="k-usage-value">42%</span><span class="k-usage-reset">resets in 2 hrs</span></span><span class="k-usage-part"><span>Week</span><span class="k-usage-value">18%</span></span></a>
+			</div>
+		</aside>
+	</div>
+
+	<!-- ===== Status bar ===== -->
+	<footer class="k-statusbar" data-origin="vscode" data-label="Status bar" data-source="src/vs/workbench/browser/parts/statusbar/statusbarPart.ts">
+		<a data-app="differs" data-app-note="In the app: The branch item opens the git checkout branch picker, not the Source Control view." class="k-status-item" href="../workbench/source-control.html"><span class="codicon codicon-git-branch"></span>main*</a>
+		<span class="k-status-item"><span class="codicon codicon-sync"></span></span>
+		<a data-app="differs" data-app-note="In the app: The errors and warnings item opens the Problems panel, not the Terminal." class="k-status-item" href="../workbench/panel.html"><span class="codicon codicon-error"></span>0<span class="codicon codicon-warning"></span>1</a>
+		<span class="k-status-spacer"></span>
+		<span class="k-status-item">Ln 15, Col 63</span>
+		<span class="k-status-item">Tab Size: 4</span>
+		<span class="k-status-item">UTF-8</span>
+		<span class="k-status-item">LF</span>
+		<span class="k-status-item"><span class="codicon codicon-bracket"></span>TypeScript</span>
+		<span class="k-status-item" title="An agent turn is running. Session usage: 42%." data-origin="klawly" data-label="Claude status" data-source="src/vs/workbench/contrib/claude/browser/claudeStatus.ts src/vs/workbench/contrib/claude/common/claudeRuntimeStatus.ts"><span class="codicon codicon-loading codicon-modifier-spin"></span>Claude: Working · 42%</span>
+		<a data-app="differs" data-app-note="In the app: The Tab status item opens the Tab suggestions popover, not the notification center." class="k-status-item" href="../workbench/notifications.html" title="Tab suggestions" data-origin="klawly" data-label="Tab status" data-source="src/vs/workbench/contrib/claude/browser/claudeTabStatus.ts"><span class="codicon codicon-arrow-right"></span>Tab</a>
+		<a class="k-status-item" href="../workbench/notifications.html" title="Notifications"><span class="codicon codicon-bell"></span></a>
+	</footer>
+</div>
+</body>
+</html>

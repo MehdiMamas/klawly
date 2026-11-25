@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Security Findings · Klawly</title>
+	<meta name="description" content="The Security Findings view: open findings from security automations, grouped by repository, each with Fix with Agent and Dismiss.">
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+	<style>
+		/* Mirrors src/vs/workbench/contrib/claude/browser/claudeSecurityFindingsView.ts (DL-107). */
+		body { background: var(--k-pane); color: var(--k-ink); }
+		.sec { padding: 8px 12px; font-size: 12px; max-width: 420px; }
+		.sec h3 { margin: 10px 0 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--k-muted); }
+		.sec-row { padding: 6px 8px; margin-bottom: 6px; background: var(--k-surface); border: 1px solid var(--k-line-solid); border-radius: 6px; }
+		.sec-row strong { display: block; }
+		.sec-row small { display: block; color: var(--k-muted); }
+		.sec-actions { display: flex; gap: 6px; margin-top: 6px; }
+		.sec-empty { color: var(--k-faint); padding: 16px 0; }
+		.sec-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: var(--k-muted); }
+		.sec-title span + span { margin-left: 8px; }
+		.sec-scanning { display: flex; gap: 6px; color: var(--k-muted); }
+	</style>
+</head>
+<body>
+<!--
+	SECURITY FINDINGS
+	A view opened from the Claude container. Findings come from the user's security automations. Fix with Agent starts a
+	background agent on the finding; Dismiss asks for a reason. The title bar has Refresh and Dismiss All (one reason for
+	every open finding); the palette has Klawly: Show Security Findings. A security run under way shows a Scanning line.
+	The empty state, shown below the list for reference, offers Set Up a Security Scan, which opens Settings > Agents with
+	the New Automation form filled from the security template (issue 1076).
+-->
+<main class="sec" data-origin="klawly" data-label="Security Findings view" data-source="src/vs/workbench/contrib/claude/browser/claudeSecurityFindingsView.ts">
+	<div class="sec-title"><strong>SECURITY FINDINGS</strong><span><span title="Refresh">&#x21bb;</span><span title="Dismiss All">&#x2715;</span></span></div>
+	<p class="sec-scanning"><span>&#x25cc;</span><span>Scanning: Security scan is running in acme/shop.</span></p>
+	<h3>acme/shop</h3>
+	<div class="sec-row">
+		<strong>[high] sql-injection</strong>
+		<small>src/db/orders.ts:42</small>
+		<span>User input is concatenated into the query.</span>
+		<div class="sec-actions">
+			<button class="k-btn is-primary" type="button">Fix with Agent</button>
+			<button class="k-btn is-ghost" type="button">Dismiss</button>
+		</div>
+	</div>
+	<div class="sec-row">
+		<strong>[low] weak-hash</strong>
+		<small>src/auth/token.ts:9</small>
+		<span>MD5 is used for a session token.</span>
+		<div class="sec-actions">
+			<button class="k-btn is-primary" type="button">Fix with Agent</button>
+			<button class="k-btn is-ghost" type="button">Dismiss</button>
+		</div>
+	</div>
+	<div class="sec-empty"><strong>No Security Findings Yet</strong><br>A security scan has Claude review the code in your workspace for vulnerabilities, such as injection flaws, secrets committed to code and unsafe dependencies. What it finds is listed here, worst first, so you can open each one or hand the fix to an agent.<br>Set up a scan to run it on a schedule or on demand.</div>
+	<button class="k-btn" type="button">Set Up a Security Scan</button>
+</main>
+</body>
+</html>

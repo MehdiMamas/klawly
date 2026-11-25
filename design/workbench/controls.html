@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Shared Controls · Klawly</title>
+	<meta name="description" content="Every shared control in every state, in the dark and the light theme: buttons, fields, selects, toggle chips, the segmented control and pills (issue 576).">
+
+	<!-- Shared assets: icons, the global stylesheet, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+	<style>
+		.k-controls-table { border-collapse: collapse; font-size: var(--k-text-sm); }
+		.k-controls-table .k-input, .k-controls-table .k-select { width: 150px; min-width: 0; }
+	</style>
+</head>
+<body class="overflow-auto" style="height: auto; min-height: 100vh;">
+<!--
+	SHARED CONTROLS
+	A sheet, not a screen: every shared control in every state, the dark theme beside the light one
+	(issue 576, DL-15). The app draws each of these with one recipe in claude.css: .claude-btn
+	(primary, secondary by default, ghost, icon, danger; medium and small), .claude-field (wrapper,
+	select, multiline), .claude-chip.is-toggle, .claude-segmented and .claude-pill. Secondary is a tone
+	fill and never an outline (DL-13); hover, pressed and selected are the --claude-state-* steps;
+	disabled is 40% opacity; the ring is for the keyboard only. High contrast keeps stock borders (DL-02).
+	The .is-hover, .is-pressed and .is-focus classes pin a state here; in the app they are real states.
+-->
+<main class="grid grid-cols-1 xl:grid-cols-2" data-origin="klawly" data-label="Shared controls" data-source="src/vs/workbench/contrib/claude/browser/media/claude.css">
+	<section data-theme="dark" class="k-controls-sheet bg-surface text-ink-2 p-4" aria-label="Dark theme">
+		<h2 class="k-settings-h2 mt-0">Dark</h2>
+		<table class="k-controls-table">
+			<thead><tr><th></th><th scope="col" class="text-left font-normal text-faint">Rest</th><th scope="col" class="text-left font-normal text-faint">Hover</th><th scope="col" class="text-left font-normal text-faint">Pressed</th><th scope="col" class="text-left font-normal text-faint">Focus</th><th scope="col" class="text-left font-normal text-faint">Disabled</th></tr></thead>
+			<tbody>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Primary</th>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-primary">Build</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-primary is-hover">Build</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-primary is-pressed">Build</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-primary is-focus">Build</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-primary is-disabled">Build</button></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Secondary</th>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-secondary">Review Changes</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-secondary is-hover">Review Changes</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-secondary is-pressed">Review Changes</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-secondary is-focus">Review Changes</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-secondary is-disabled">Review Changes</button></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Ghost</th>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-ghost">Cancel</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-ghost is-hover">Cancel</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-ghost is-pressed">Cancel</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-ghost is-focus">Cancel</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-ghost is-disabled">Cancel</button></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Danger</th>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-danger">Delete</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-danger is-hover">Delete</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-danger is-pressed">Delete</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-danger is-focus">Delete</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-danger is-disabled">Delete</button></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Icon</th>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-icon" title="More Actions"><span class="codicon codicon-ellipsis"></span></button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-icon is-hover" title="More Actions"><span class="codicon codicon-ellipsis"></span></button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-icon is-pressed" title="More Actions"><span class="codicon codicon-ellipsis"></span></button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-icon is-focus" title="More Actions"><span class="codicon codicon-ellipsis"></span></button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-icon is-disabled" title="More Actions"><span class="codicon codicon-ellipsis"></span></button></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Field</th>
+					<td class="py-1 pr-3"><span class="k-input"><input placeholder="Search settings" aria-label="Search settings"></span></td>
+					<td class="py-1 pr-3"><span class="k-input is-hover"><input placeholder="Search settings" aria-label="Search settings"></span></td>
+					<td class="py-1 pr-3"><span class="k-input"><input placeholder="Search settings" aria-label="Search settings"></span></td>
+					<td class="py-1 pr-3"><span class="k-input is-focus"><input placeholder="Search settings" aria-label="Search settings"></span></td>
+					<td class="py-1 pr-3"><span class="k-input is-disabled"><input placeholder="Search settings" aria-label="Search settings"></span></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Select</th>
+					<td class="py-1 pr-3"><span class="k-select">Default<span class="codicon codicon-chevron-down"></span></span></td>
+					<td class="py-1 pr-3"><span class="k-select is-hover">Default<span class="codicon codicon-chevron-down"></span></span></td>
+					<td class="py-1 pr-3"><span class="k-select">Default<span class="codicon codicon-chevron-down"></span></span></td>
+					<td class="py-1 pr-3"><span class="k-select is-focus">Default<span class="codicon codicon-chevron-down"></span></span></td>
+					<td class="py-1 pr-3"><span class="k-select is-disabled">Default<span class="codicon codicon-chevron-down"></span></span></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Toggle chip</th>
+					<td class="py-1 pr-3"><button type="button" class="k-chip is-toggle" aria-pressed="false">Skills</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-chip is-toggle is-hover" aria-pressed="false">Skills</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-chip is-toggle" aria-pressed="true">Skills</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-chip is-toggle is-focus" aria-pressed="true" style="outline: 1px solid var(--k-focus); outline-offset: 1px;">Skills</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-chip is-toggle" aria-pressed="false" style="opacity: 0.4;">Skills</button></td>
+				</tr>
+			</tbody>
+		</table>
+		<h3 class="text-sm text-muted font-normal mt-4 mb-2">Sizes: default 26px, medium 24px, small 20px</h3>
+		<div class="flex items-center gap-2 flex-wrap">
+			<button type="button" class="k-btn is-secondary">Secondary</button>
+			<button type="button" class="k-btn is-icon" title="Refresh"><span class="codicon codicon-refresh"></span></button>
+			<button type="button" class="k-btn is-secondary is-md">Secondary</button>
+			<button type="button" class="k-btn is-icon is-md" title="Refresh"><span class="codicon codicon-refresh"></span></button>
+			<button type="button" class="k-btn is-secondary is-sm">Secondary</button>
+			<button type="button" class="k-btn is-icon is-sm" title="Refresh"><span class="codicon codicon-refresh"></span></button>
+		</div>
+		<h3 class="text-sm text-muted font-normal mt-4 mb-2">Segmented, chip, pills and a multiline field</h3>
+		<div class="flex items-center gap-3 flex-wrap">
+			<span class="k-segmented" role="group" aria-label="Scope"><button type="button" class="is-active">Turn</button><button type="button" class="is-hover">Chat</button><button type="button">Branch</button></span>
+			<span class="k-chip"><span class="codicon codicon-file"></span>claude.css</span>
+			<span class="k-pill is-plan"><span class="codicon codicon-checklist"></span>Plan</span>
+		</div>
+		<textarea class="k-input mt-3 w-full" style="height: auto; min-height: 60px; padding: 5px 8px; line-height: 18px;" placeholder="Instructions for this agent" aria-label="Instructions"></textarea>
+	</section>
+	<section data-theme="light" class="k-controls-sheet bg-surface text-ink-2 p-4" aria-label="Light theme">
+		<h2 class="k-settings-h2 mt-0">Light</h2>
+		<table class="k-controls-table">
+			<thead><tr><th></th><th scope="col" class="text-left font-normal text-faint">Rest</th><th scope="col" class="text-left font-normal text-faint">Hover</th><th scope="col" class="text-left font-normal text-faint">Pressed</th><th scope="col" class="text-left font-normal text-faint">Focus</th><th scope="col" class="text-left font-normal text-faint">Disabled</th></tr></thead>
+			<tbody>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Primary</th>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-primary">Build</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-primary is-hover">Build</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-primary is-pressed">Build</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-primary is-focus">Build</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-primary is-disabled">Build</button></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Secondary</th>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-secondary">Review Changes</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-secondary is-hover">Review Changes</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-secondary is-pressed">Review Changes</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-secondary is-focus">Review Changes</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-secondary is-disabled">Review Changes</button></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Ghost</th>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-ghost">Cancel</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-ghost is-hover">Cancel</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-ghost is-pressed">Cancel</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-ghost is-focus">Cancel</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-ghost is-disabled">Cancel</button></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Danger</th>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-danger">Delete</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-danger is-hover">Delete</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-danger is-pressed">Delete</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-danger is-focus">Delete</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-danger is-disabled">Delete</button></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Icon</th>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-icon" title="More Actions"><span class="codicon codicon-ellipsis"></span></button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-icon is-hover" title="More Actions"><span class="codicon codicon-ellipsis"></span></button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-icon is-pressed" title="More Actions"><span class="codicon codicon-ellipsis"></span></button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-icon is-focus" title="More Actions"><span class="codicon codicon-ellipsis"></span></button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-btn is-icon is-disabled" title="More Actions"><span class="codicon codicon-ellipsis"></span></button></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Field</th>
+					<td class="py-1 pr-3"><span class="k-input"><input placeholder="Search settings" aria-label="Search settings"></span></td>
+					<td class="py-1 pr-3"><span class="k-input is-hover"><input placeholder="Search settings" aria-label="Search settings"></span></td>
+					<td class="py-1 pr-3"><span class="k-input"><input placeholder="Search settings" aria-label="Search settings"></span></td>
+					<td class="py-1 pr-3"><span class="k-input is-focus"><input placeholder="Search settings" aria-label="Search settings"></span></td>
+					<td class="py-1 pr-3"><span class="k-input is-disabled"><input placeholder="Search settings" aria-label="Search settings"></span></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Select</th>
+					<td class="py-1 pr-3"><span class="k-select">Default<span class="codicon codicon-chevron-down"></span></span></td>
+					<td class="py-1 pr-3"><span class="k-select is-hover">Default<span class="codicon codicon-chevron-down"></span></span></td>
+					<td class="py-1 pr-3"><span class="k-select">Default<span class="codicon codicon-chevron-down"></span></span></td>
+					<td class="py-1 pr-3"><span class="k-select is-focus">Default<span class="codicon codicon-chevron-down"></span></span></td>
+					<td class="py-1 pr-3"><span class="k-select is-disabled">Default<span class="codicon codicon-chevron-down"></span></span></td>
+				</tr>
+				<tr>
+					<th scope="row" class="text-left font-normal text-muted pr-3">Toggle chip</th>
+					<td class="py-1 pr-3"><button type="button" class="k-chip is-toggle" aria-pressed="false">Skills</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-chip is-toggle is-hover" aria-pressed="false">Skills</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-chip is-toggle" aria-pressed="true">Skills</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-chip is-toggle is-focus" aria-pressed="true" style="outline: 1px solid var(--k-focus); outline-offset: 1px;">Skills</button></td>
+					<td class="py-1 pr-3"><button type="button" class="k-chip is-toggle" aria-pressed="false" style="opacity: 0.4;">Skills</button></td>
+				</tr>
+			</tbody>
+		</table>
+		<h3 class="text-sm text-muted font-normal mt-4 mb-2">Sizes: default 26px, medium 24px, small 20px</h3>
+		<div class="flex items-center gap-2 flex-wrap">
+			<button type="button" class="k-btn is-secondary">Secondary</button>
+			<button type="button" class="k-btn is-icon" title="Refresh"><span class="codicon codicon-refresh"></span></button>
+			<button type="button" class="k-btn is-secondary is-md">Secondary</button>
+			<button type="button" class="k-btn is-icon is-md" title="Refresh"><span class="codicon codicon-refresh"></span></button>
+			<button type="button" class="k-btn is-secondary is-sm">Secondary</button>
+			<button type="button" class="k-btn is-icon is-sm" title="Refresh"><span class="codicon codicon-refresh"></span></button>
+		</div>
+		<h3 class="text-sm text-muted font-normal mt-4 mb-2">Segmented, chip, pills and a multiline field</h3>
+		<div class="flex items-center gap-3 flex-wrap">
+			<span class="k-segmented" role="group" aria-label="Scope"><button type="button" class="is-active">Turn</button><button type="button" class="is-hover">Chat</button><button type="button">Branch</button></span>
+			<span class="k-chip"><span class="codicon codicon-file"></span>claude.css</span>
+			<span class="k-pill is-plan"><span class="codicon codicon-checklist"></span>Plan</span>
+		</div>
+		<textarea class="k-input mt-3 w-full" style="height: auto; min-height: 60px; padding: 5px 8px; line-height: 18px;" placeholder="Instructions for this agent" aria-label="Instructions"></textarea>
+	</section>
+</main>
+</body>
+</html>

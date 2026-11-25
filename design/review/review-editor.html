@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Review Editor · Klawly</title>
+	<meta name="description" content="The Klawly review editor: every change Claude made in a turn, one card per file, with This Turn / All Changes, Keep and Undo per change, Review and Commit.">
+
+	<!-- Shared assets: icons, the global stylesheet, Tailwind (no build) and its config, prototype behavior -->
+	<link rel="stylesheet" href="../assets/vendor/codicons/codicon.css">
+	<link rel="stylesheet" href="../assets/global.css">
+	<script src="../assets/vendor/tailwindcss-3.4.17.js"></script>
+	<script src="../assets/tailwind.config.js"></script>
+	<script src="../assets/app.js"></script>
+</head>
+<body>
+<!--
+	REVIEW EDITOR
+	Opened from Review in the chat's changed-files bar. The header switches between This Turn and All Changes,
+	asks Claude to review the diff, and commits the kept changes. Each file is a card; each change has Undo / Keep.
+	The window frame is copied from workbench/editor.html; widget classes are in section 13 of assets/global.css.
+-->
+<div class="k-window">
+
+	<!-- ===== Title bar ===== -->
+	<header class="k-titlebar" data-origin="mixed" data-label="Title bar" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts">
+		<img src="../assets/klawly-mark.svg" alt="Klawly" class="k-mark ml-1 mr-2">
+		<nav class="k-titlebar-menus" aria-label="Menu bar" data-origin="vscode" data-label="Menu bar" data-source="src/vs/workbench/browser/parts/titlebar/menubarControl.ts">
+			<a class="k-titlebar-menu flex items-center" href="../workbench/menus.html">File</a>
+			<span class="k-titlebar-menu flex items-center">Edit</span>
+			<span class="k-titlebar-menu flex items-center">Selection</span>
+			<span class="k-titlebar-menu flex items-center">View</span>
+			<span class="k-titlebar-menu flex items-center">Go</span>
+			<span class="k-titlebar-menu flex items-center">Run</span>
+			<span class="k-titlebar-menu flex items-center">Terminal</span>
+			<span class="k-titlebar-menu flex items-center">Help</span>
+		</nav>
+		<div class="k-titlebar-title">klawly-demo</div>
+		<div class="k-titlebar-actions">
+			<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-add"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Primary Side Bar"><span class="codicon codicon-layout-sidebar-left"></span></span>
+			<a class="k-icon-btn" href="../workbench/panel.html" title="Toggle Panel"><span class="codicon codicon-layout-panel-off"></span></a>
+			<span class="k-icon-btn is-active" title="Toggle Agent"><span class="codicon codicon-layout-sidebar-right"></span></span>
+			<a class="k-agents-pill ml-1" href="../chat/agents-window.html" title="Open the agent in its own window" data-origin="klawly" data-label="Agents Window button" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-window is-sm"></span>Agents Window</a>
+			<span class="k-icon-btn ml-1" title="Accounts" data-origin="vscode" data-label="Accounts" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts src/vs/workbench/browser/parts/titlebar/titlebarActions.ts"><span class="codicon codicon-account"></span></span>
+			<a class="k-icon-btn" href="../settings/general.html" title="Klawly Settings" data-origin="klawly" data-label="Settings gear" data-source="src/vs/workbench/contrib/claude/browser/titlebar/claudeTitleBar.ts"><span class="codicon codicon-settings-gear"></span></a>
+		</div>
+		<div class="k-window-controls" aria-hidden="true" data-origin="vscode" data-label="Window controls" data-source="src/vs/workbench/browser/parts/titlebar/titlebarPart.ts">
+			<span><span class="codicon codicon-chrome-minimize"></span></span>
+			<span><span class="codicon codicon-chrome-maximize"></span></span>
+			<span class="is-close"><span class="codicon codicon-chrome-close"></span></span>
+		</div>
+	</header>
+
+	<div class="k-main">
+
+		<!-- ===== Side bar: view switcher + Explorer ===== -->
+		<aside class="k-sidebar" aria-label="Explorer" data-origin="vscode" data-label="Explorer" data-source="src/vs/workbench/contrib/files/browser/views/explorerView.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+			<nav class="k-viewswitcher" aria-label="Views" data-origin="vscode" data-label="View switcher" data-source="src/vs/workbench/browser/parts/paneCompositeBar.ts">
+				<a class="is-active" href="../workbench/editor.html" title="Explorer (Ctrl+Shift+E)"><span class="codicon codicon-files"></span></a>
+				<a href="../workbench/search.html" title="Search (Ctrl+Shift+F)"><span class="codicon codicon-search"></span></a>
+				<a href="../workbench/source-control.html" title="Source Control (Ctrl+Shift+G)"><span class="codicon codicon-source-control"></span><span class="k-count">3</span></a>
+				<a href="../workbench/run-debug.html" title="Run and Debug (Ctrl+Shift+D)"><span class="codicon codicon-debug-alt"></span></a>
+				<a href="../workbench/extensions.html" title="Extensions (Ctrl+Shift+X)"><span class="codicon codicon-extensions"></span></a>
+			</nav>
+
+			<div class="k-sidebar-title">
+				Explorer
+				<div class="k-actions"><span class="k-icon-btn"><span class="codicon codicon-ellipsis"></span></span></div>
+			</div>
+
+			<div class="k-section-header" style="border-top:0">
+				<span class="codicon codicon-chevron-down is-sm"></span>KLAWLY-DEMO
+				<div class="k-actions">
+					<span class="k-icon-btn" title="New File"><span class="codicon codicon-new-file is-sm"></span></span>
+					<span class="k-icon-btn" title="New Folder"><span class="codicon codicon-new-folder is-sm"></span></span>
+					<span class="k-icon-btn" title="Refresh"><span class="codicon codicon-refresh is-sm"></span></span>
+					<span class="k-icon-btn" title="Collapse"><span class="codicon codicon-collapse-all is-sm"></span></span>
+				</div>
+			</div>
+
+			<div class="flex-1 overflow-y-auto" role="tree">
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-right is-sm"></span><span>.claude</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-right is-sm"></span><span>node_modules</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-down is-sm"></span><span>src</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-down is-sm"></span><span>cart</span></div>
+				<div class="k-tree-row is-modified" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="k-git">M</span></div>
+				<div class="k-tree-row" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartTypes.ts</span></div>
+				<div class="k-tree-row is-added" style="padding-left:40px"><span class="k-fileicon ts" aria-hidden="true"></span><span>discounts.ts</span><span class="k-git">U</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-right is-sm"></span><span>checkout</span></div>
+				<div class="k-tree-row" style="padding-left:16px"><span class="codicon codicon-chevron-right is-sm"></span><span>ui</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon ts" aria-hidden="true"></span><span>index.ts</span></div>
+				<div class="k-tree-row" style="padding-left:8px"><span class="codicon codicon-chevron-down is-sm"></span><span>test</span></div>
+				<div class="k-tree-row is-modified" style="padding-left:32px"><span class="k-fileicon ts-test" aria-hidden="true"></span><span>cartService.test.ts</span><span class="k-git">M</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon md" aria-hidden="true"></span><span>CLAUDE.md</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon json" aria-hidden="true"></span><span>package.json</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon readme" aria-hidden="true"></span><span>README.md</span></div>
+				<div class="k-tree-row" style="padding-left:24px"><span class="k-fileicon tsconfig" aria-hidden="true"></span><span>tsconfig.json</span></div>
+			</div>
+
+			<div class="k-section-header"><span class="codicon codicon-chevron-right is-sm"></span>Outline</div>
+			<div class="k-section-header"><span class="codicon codicon-chevron-right is-sm"></span>Timeline</div>
+		</aside>
+
+		<!-- ===== Editor: review editor (every change of the turn, one card per file) ===== -->
+		<main class="k-editor-area" aria-label="Editor" data-origin="vscode" data-label="Editor area" data-source="src/vs/workbench/browser/parts/editor/editorPart.ts">
+			<div class="k-tabs" role="tablist" data-origin="vscode" data-label="Editor tabs" data-source="src/vs/workbench/browser/parts/editor/multiEditorTabsControl.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+				<a data-app="differs" data-app-note="In the app: the Review tab opens after the active editor, as VS Code places new tabs; its tooltip reads Review: plus the chat title." class="k-tab is-active" href="review-editor.html" title="Review: Discount codes in cart"><span class="codicon codicon-diff-multiple is-sm"></span><span>Review</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<a class="k-tab" href="inline-changes.html"><span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="k-dirty" title="Unsaved"></span></a>
+				<a data-app="differs" data-app-note="In the app: Clicking the discounts.ts tab shows discounts.ts; the target page shows the cartService.ts diff instead." class="k-tab" href="../workbench/diff-editor.html"><span class="k-fileicon ts" aria-hidden="true"></span><span>discounts.ts</span><span class="codicon codicon-close is-sm k-tab-close"></span></a>
+				<div class="k-tabs-actions">
+					<span class="k-icon-btn" title="Split Editor Right"><span class="codicon codicon-split-horizontal"></span></span>
+				</div>
+			</div>
+
+			<!-- Review header: scope, summary, Review split button, Commit, more -->
+			<div class="k-review-header" role="toolbar" aria-label="Review changes" data-origin="klawly" data-label="Review header" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-segmented" role="radiogroup" aria-label="Changes to Show">
+					<button type="button" class="is-active" role="radio" aria-checked="true">This Turn</button>
+					<button type="button" role="radio" aria-checked="false">All Changes</button>
+				</div>
+				<div class="k-review-summary" aria-live="polite">
+					<span class="k-count" data-state-hide="undone">3 files</span><span class="k-diffstat-add" data-state-hide="undone">+34</span><span class="k-diffstat-del" data-state-hide="undone">−2</span>
+					<span class="k-count" data-state-show="undone" hidden>0 files</span>
+					<span class="k-count" data-origin="klawly" data-label="Merge readiness badge" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/platform/claude/common/claudeReviewReadiness.ts" title="Merge readiness 4/5: One medium finding. Advice only.">Readiness 4/5</span>
+					<span class="k-count" hidden data-app="differs" data-app-note="In the app: files that .claude/review.json ignores leave the list and are named in a collapsed note under the count, for example 1 file ignored by review.json (#1038). This sample project has no review.json, so the note is hidden.">1 file ignored by review.json</span>
+				</div>
+				<span class="flex-1"></span>
+				<div class="k-split is-quiet is-compact" data-state-hide="undone">
+					<a href="../chat/turn-running.html" data-app="differs" data-app-note="In the app: the project's own /review command or review skill runs in the chat; without one, Claude reviews in place and the findings appear here (Review Findings bar and threads on the lines). An answer that is not findings goes to the chat." title="Ask Claude to review these changes"><span class="codicon codicon-comment-discussion is-sm"></span>Review</a>
+					<button type="button" data-popover-target="review-options" aria-haspopup="menu" title="More Review Options"><span class="codicon codicon-chevron-down is-sm"></span></button>
+				</div>
+				<div class="k-split is-quiet is-compact is-disabled" data-state-show="undone" hidden>
+					<button type="button" disabled><span class="codicon codicon-comment-discussion is-sm"></span>Review</button>
+					<button type="button" disabled aria-label="More Review Options"><span class="codicon codicon-chevron-down is-sm"></span></button>
+				</div>
+				<!-- Keep says what it keeps (DL-70, issue 706); the chevron picks This Turn, This Chat or Everything and offers Undo for the same scope. -->
+				<div class="k-split is-quiet is-compact" data-state-hide="undone" data-origin="klawly" data-label="Keep split button" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/workbench/contrib/claude/common/claudeKeepAll.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<a href="review-editor.html?state=kept" title="Keep 5 Changes in 3 Files"><span class="codicon codicon-check is-sm"></span>Keep 5 Changes in 3 Files</a>
+					<button type="button" data-popover-target="keep-options" aria-haspopup="menu" title="Keep Options"><span class="codicon codicon-chevron-down is-sm"></span></button>
+				</div>
+				<div class="k-split is-quiet is-compact is-disabled" data-state-show="undone" hidden>
+					<button type="button" disabled><span class="codicon codicon-check is-sm"></span>Nothing to Keep</button>
+					<button type="button" disabled aria-label="Keep Options"><span class="codicon codicon-chevron-down is-sm"></span></button>
+				</div>
+				<a data-app="differs" data-app-note="In the app: Commit stages the kept files and runs git.commitStaged in place; it does not open the Source Control view." class="k-btn is-primary is-sm" href="../workbench/source-control.html" title="Stage and commit the kept changes" data-state-hide="undone">Commit</a>
+				<button type="button" class="k-btn is-primary is-sm" disabled title="Keep a change before committing it" data-state-show="undone" hidden>Commit</button>
+				<button type="button" class="k-icon-btn" data-popover-target="review-more" aria-haspopup="menu" title="More Review Actions"><span class="codicon codicon-ellipsis"></span></button>
+			</div>
+
+			<!-- Review options menu (Review chevron) -->
+			<div class="k-menu k-build-menu absolute" style="top:108px;right:96px" id="review-options" data-popover role="menu" aria-label="Review Options" data-origin="klawly" data-label="Menu" data-source="src/vs/workbench/contrib/claude/browser/widgets/claudePopoverMenu.ts">
+				<div class="k-menu-header">Review Options</div>
+				<a class="k-menu-item is-two-line" href="../chat/turn-running.html" data-app="differs" data-app-note="In the app: the project's own /review command or review skill runs in the chat; without one, Claude reviews in place and the findings appear here (Review Findings bar and threads on the lines). An answer that is not findings goes to the chat."><span class="codicon codicon-comment-discussion"></span><span class="k-menu-label">Review Changes<span class="k-menu-desc">Claude reads the diff and points out bugs, risks and missing tests. It does not edit files.</span></span></a>
+				<a class="k-menu-item is-two-line" href="../chat/turn-running.html"><span class="codicon codicon-shield"></span><span class="k-menu-label">Security Review<span class="k-menu-desc">Claude looks for injection, unsafe input handling, leaked secrets and permission mistakes.</span></span></a>
+			</div>
+
+			<!-- Keep Options menu (Keep chevron, issue 706): the scope radios change the Keep label; Undo asks first and lists the files. -->
+			<div class="k-menu absolute" style="top:108px;right:72px" id="keep-options" data-popover role="menu" aria-label="Keep Options" data-origin="klawly" data-label="Menu" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/workbench/contrib/claude/browser/widgets/claudePopoverMenu.ts">
+				<div class="k-menu-header">Keep and Undo Changes In</div>
+				<span class="k-menu-item" role="menuitemradio" aria-checked="true"><span class="k-menu-label">This Turn</span><span class="codicon codicon-check"></span></span>
+				<span class="k-menu-item" role="menuitemradio" aria-checked="false" data-app="differs" data-app-note="In the app: This Chat changes the Keep label to every change waiting in this chat, for example Keep 9 Changes in 5 Files."><span class="k-menu-label">This Chat</span></span>
+				<span class="k-menu-item" role="menuitemradio" aria-checked="false" data-app="differs" data-app-note="In the app: Everything counts every chat and background agent, for example Keep 14 Changes in 6 Files from 3 Chats."><span class="k-menu-label">Everything</span></span>
+				<div class="k-menu-sep"></div>
+				<a class="k-menu-item" href="review-editor.html?state=kept"><span class="codicon codicon-check"></span><span class="k-menu-label">Keep 5 Changes in 3 Files</span></a>
+				<a class="k-menu-item" href="review-editor.html?state=undone" data-app="differs" data-app-note="In the app: Undo asks first in a dialog that lists the files."><span class="codicon codicon-discard"></span><span class="k-menu-label">Undo 5 Changes in 3 Files</span></a>
+			</div>
+
+			<!-- More Review Actions menu (ellipsis) -->
+			<div class="k-menu absolute" style="top:108px;right:8px" id="review-more" data-popover role="menu" aria-label="More Review Actions" data-origin="klawly" data-label="Menu" data-source="src/vs/workbench/contrib/claude/browser/widgets/claudePopoverMenu.ts">
+				<!-- Keep All and Undo All act in place: the same review editor with the files kept, or with no files left (?state=kept, ?state=undone). -->
+				<a class="k-menu-item" href="review-editor.html?state=kept" data-state-hide="undone"><span class="codicon codicon-check"></span><span class="k-menu-label">Keep All</span></a>
+				<a class="k-menu-item" href="review-editor.html?state=undone" data-state-hide="undone"><span class="codicon codicon-discard"></span><span class="k-menu-label">Undo All</span></a>
+				<span class="k-menu-item is-disabled" data-state-show="undone" hidden><span class="codicon codicon-check"></span><span class="k-menu-label">Keep All</span></span>
+				<span class="k-menu-item is-disabled" data-state-show="undone" hidden><span class="codicon codicon-discard"></span><span class="k-menu-label">Undo All</span></span>
+				<div class="k-menu-sep"></div>
+				<span class="k-menu-item"><span class="codicon codicon-diff-single"></span><span class="k-menu-label">Inline View</span><span class="codicon codicon-check"></span></span>
+				<span class="k-menu-item" data-state-hide="undone"><span class="codicon codicon-collapse-all"></span><span class="k-menu-label">Collapse All Files</span></span>
+				<span class="k-menu-item" data-state-hide="undone"><span class="codicon codicon-expand-all"></span><span class="k-menu-label">Expand All Files</span></span>
+				<span class="k-menu-item is-disabled" data-state-show="undone" hidden><span class="codicon codicon-collapse-all"></span><span class="k-menu-label">Collapse All Files</span></span>
+				<span class="k-menu-item is-disabled" data-state-show="undone" hidden><span class="codicon codicon-expand-all"></span><span class="k-menu-label">Expand All Files</span></span>
+				<div class="k-menu-sep"></div>
+				<a class="k-menu-item" href="../chat/question.html" data-app="differs" data-app-note="In the app: Split into Pull Requests opens the chat and runs your /split-to-prs command or skill, or a built-in prompt: Claude groups the changes without editing, asks you to confirm the groups, commits each group on its own branch in a separate worktree, and asks again before it pushes and opens draft pull requests. The question page stands in for the confirm step."><span class="codicon codicon-git-pull-request-create"></span><span class="k-menu-label">Split into Pull Requests</span></a>
+				<a class="k-menu-item" href="#" data-app="differs" data-app-note="In the app: Saves the findings that pass the filter as a Markdown file you pick. Secrets are removed from the output first."><span class="codicon codicon-markdown"></span><span class="k-menu-label">Export Review as Markdown</span></a>
+				<a class="k-menu-item" href="#" data-app="differs" data-app-note="In the app: Saves the findings that pass the filter as a SARIF 2.1 file you pick. Secrets are removed from the output first."><span class="codicon codicon-json"></span><span class="k-menu-label">Export Review as SARIF 2.1</span><span class="k-menu-desc">A standard format for code scanning results; upload it to GitHub code scanning</span></a>
+				<a class="k-menu-item" href="#" data-app="differs" data-app-note="In the app: Asks Claude to post the findings that pass the filter as one pull request review (summary on top, one comment per finding, with a suggestion block when there is a fix). It shows you every comment, posts only after you confirm, and uses your own GitHub sign-in. Secrets are removed first."><span class="codicon codicon-git-pull-request"></span><span class="k-menu-label">Post as Review Comments</span></a>
+				<a class="k-menu-item" href="#" data-app="differs" data-app-note="In the app: Reads the pull request's comments and adds each new @klawly remember rule to REVIEW.md (or .claude/review.md) as a local edit; nothing is committed."><span class="codicon codicon-book"></span><span class="k-menu-label">Remember Rules from PR Comments</span></a>
+				<a class="k-menu-item" href="#" data-app="differs" data-app-note="In the app: Copies the findings that pass the filter as Markdown for a pull request comment. Secrets are removed from the output first."><span class="codicon codicon-copy"></span><span class="k-menu-label">Copy Review as PR Comment</span></a>
+				<a class="k-menu-item" href="../chat/turn-finished.html"><span class="codicon codicon-comment-discussion"></span><span class="k-menu-label">Open Chat</span></a>
+			</div>
+
+			<!--
+				Comments for Claude (issue 431): Comment for Claude in a changed file's context menu asks for a comment
+				on the selected lines and adds it here. Send to Agent sends them as one message of path:line references
+				through the composer's queue (steers instead when While Working is set to steer). Hidden while empty.
+			-->
+			<div class="k-review-feedback" role="region" aria-label="Comments for Claude" hidden data-state-show="reviewed" data-origin="klawly" data-label="Comments for Claude tray" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewFeedback.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-review-feedback-head">
+					<span class="codicon codicon-comment is-sm"></span><span>2 comments for Claude</span>
+					<span class="flex-1"></span>
+					<button type="button" class="k-btn is-ghost is-sm">Discard All</button>
+					<a class="k-btn is-primary is-sm" href="../chat/turn-running.html" title="Send every comment to the agent as one message. A running turn gets it as the composer would.">Send to Agent</a>
+				</div>
+				<ul class="k-review-feedback-list">
+					<li class="k-review-feedback-item"><span class="reference">src/cart/cartService.ts:15</span><span class="text">Trim before the lookup, but keep the original code for the error message.</span><span class="k-icon-btn" title="Remove Comment"><span class="codicon codicon-close is-sm"></span></span></li>
+					<li class="k-review-feedback-item"><span class="reference">src/cart/cartService.ts:28-29</span><span class="text">Round once, at the end, not per line.</span><span class="k-icon-btn" title="Remove Comment"><span class="codicon codicon-close is-sm"></span></span></li>
+				</ul>
+			</div>
+
+			<!-- Summary states (issue 1078, DL-112): while the summary is produced the card says so, and after a failure it says why with Retry. Copy Summary and Accept wait for a summary. The three exports are also in the palette and say "Nothing to export" while there are no findings. -->
+			<div class="k-review-summary" role="region" aria-label="Review Summary" hidden>
+				<div class="k-review-summary-head"><div class="k-review-summary-state" role="status"><span class="codicon codicon-loading codicon-modifier-spin"></span><span>Summarizing the changes...</span></div></div>
+				<div class="k-review-summary-head"><div class="k-review-summary-state" role="alert"><span class="codicon codicon-error"></span><span>Could not summarize the changes: the model did not answer</span></div><span class="flex-1"></span><button type="button" class="k-btn is-small is-ghost">Retry</button></div>
+			</div>
+
+			<!-- Review summary (issue 918): overview and one row per changed file; Copy Summary puts the Markdown on the clipboard. Setting claude.review.summary (Off, Summary, Summary and Description). -->
+			<div class="k-review-summary" role="region" aria-label="Review Summary" hidden data-state-show="reviewed" data-origin="klawly" data-label="Review summary card" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewSummary.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-review-summary-head"><button type="button" class="k-review-summary-toggle" aria-expanded="true" aria-label="Collapse Summary" title="Collapse Summary"><span class="codicon codicon-chevron-down is-sm"></span><span class="title">Summary (2 files)</span></button><span class="flex-1"></span><button type="button" class="k-btn is-small is-ghost">Copy Summary</button></div>
+				<p class="k-review-summary-overview">Adds discount codes to the cart and rounds the result.</p>
+				<!-- Diagram (issue 919, DL-07): Claude adds one small Mermaid diagram (sequence, flow, entities or classes) when the change is large enough; small, docs-only and rename changes get none. Drawn by the chat diagram renderer, so it follows claude.chat.renderDiagrams; when it cannot be drawn the block is hidden. Redraw Diagram asks for a kind and reruns the review. -->
+				<div class="k-review-summary-diagram">
+					<div class="drawn" role="img" aria-label="Flow diagram: Cart, Discounts, Total"><span class="node">Cart</span><span class="codicon codicon-arrow-right is-sm"></span><span class="node">Discounts</span><span class="codicon codicon-arrow-right is-sm"></span><span class="node">Total</span></div>
+					<div class="actions"><button type="button" class="k-btn is-small is-ghost">Redraw Diagram</button></div>
+				</div>
+				<ul class="k-review-summary-files" aria-label="2 files changed">
+					<li><button type="button" class="path" title="Open src/cart/cartService.ts">src/cart/cartService.ts</button><span class="risk is-high" title="How risky this change is: High needs a careful read, Low is routine">High</span><span class="change">Applies the discount to the total</span></li>
+					<li><button type="button" class="path" title="Open src/cart/discounts.ts">src/cart/discounts.ts</button><span class="risk is-low" title="How risky this change is: High needs a careful read, Low is routine">Low</span><span class="change">New discount lookup</span></li>
+				</ul>
+				<!-- Test gaps (issue 936, DL-12): one row per untested case with Write Test (Ask the agent to write it; nothing is kept without Keep) and the chip of its result: Sent, Passed or Failed. Hidden when there are no gaps. -->
+				<div class="k-review-summary-tests" data-origin="klawly" data-label="Test gaps" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewSummary.ts">
+					<div class="label">Test Gaps</div>
+					<ul>
+						<li><span class="symbol">applyDiscount</span><span class="case">rejects an expired code</span><button type="button" class="k-btn is-small is-ghost" title="Ask the agent to write this test in the repo's style and run it. Nothing is kept without Keep.">Write Test</button></li>
+						<li><span class="symbol">roundTotal</span><span class="case">rounds half up</span><span class="k-review-test-chip is-info" role="status">Sent</span><button type="button" class="k-btn is-small is-ghost" disabled title="Ask the agent to write this test in the repo's style and run it. Nothing is kept without Keep.">Write Test</button></li>
+						<li><span class="symbol">cartTotal</span><span class="case">sums an empty cart</span><span class="k-review-test-chip is-good" role="status">Passed</span><button type="button" class="k-btn is-small is-ghost">Write Test</button></li>
+						<li><span class="symbol">stackCodes</span><span class="case">limits two codes</span><span class="k-review-test-chip is-bad" role="status">Failed</span><button type="button" class="k-btn is-small is-ghost">Write Test</button></li>
+					</ul>
+				</div>
+				<!-- Ticket checks (issue 935, DL-12): the linked ticket's acceptance criteria, each Meets, Missing or Unclear with its evidence. Read-only; hidden when no ticket is linked. -->
+				<div class="k-review-summary-tickets" data-origin="klawly" data-label="Ticket checks" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewSummary.ts">
+					<div class="label">Ticket Checks</div>
+					<div class="ticket">#412 Discount codes</div>
+					<ul>
+						<li><span class="k-review-ticket-status is-meets">Meets</span><span class="criterion">A valid code lowers the total</span><span class="evidence">discounts.ts line 18</span></li>
+						<li><span class="k-review-ticket-status is-missing">Missing</span><span class="criterion">An expired code shows a message</span></li>
+						<li><span class="k-review-ticket-status is-unclear">Unclear</span><span class="criterion">Codes are case insensitive</span></li>
+					</ul>
+				</div>
+				<!-- Proposed description (issues 1087, 1088): shown in mode Summary and Description. Accept is disabled without a local folder; a failed send keeps the block open with the error; Dismiss keeps Undo and Copy Description. -->
+				<div class="k-review-summary-description">
+					<div class="label">Proposed Pull Request Description</div>
+					<pre class="body">Adds discount codes to the cart and rounds the result once, at the end.</pre>
+					<div class="error" role="alert">Could not send the description to the chat: no session</div>
+					<div class="actions"><button type="button" class="k-btn is-small is-primary" title="Claude updates the pull request with gh pr edit; the chat asks you before it runs">Accept</button><button type="button" class="k-btn is-small is-ghost">Dismiss</button><button type="button" class="k-btn is-small is-ghost">Copy Description</button></div>
+				</div>
+				<div class="k-review-summary-description">
+					<div class="status" role="status">Sent to the chat. Claude asks before it edits the pull request.</div>
+					<div class="actions"><a class="k-btn is-small is-ghost" href="../chat/turn-running.html">Open Chat</a></div>
+				</div>
+			</div>
+
+			<!-- Verification evidence (issue 1495): what the Agent Browser collected while Claude checked a UI change: the first and newest screenshot as Before and After, the recording (the turn's screenshots played in order, shown from three frames; the browser tool records no video) and the console errors. Hidden when the turn collected none; kept in memory for this window. -->
+			<div class="k-review-evidence" role="region" aria-label="Verification Evidence" data-origin="klawly" data-label="Verification evidence card" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewEvidence.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-review-evidence-head"><span class="title">Verification</span><span class="counts">3 screenshots · 1 console error</span></div>
+				<div class="k-review-evidence-body">
+					<div class="k-review-evidence-pair">
+						<figure class="k-review-evidence-shot"><div class="frame" role="img" aria-label="Before Screenshot"></div><figcaption>Before</figcaption></figure>
+						<figure class="k-review-evidence-shot"><div class="frame" role="img" aria-label="After Screenshot"></div><figcaption>After</figcaption></figure>
+					</div>
+					<div class="k-review-evidence-section">Recording, 3 Frames</div>
+					<div class="k-review-evidence-strip" role="list">
+						<figure class="k-review-evidence-shot" role="listitem"><div class="frame" role="img" aria-label="Before Screenshot"></div><figcaption>1</figcaption></figure>
+						<figure class="k-review-evidence-shot" role="listitem"><div class="frame" role="img" aria-label="Step Screenshot"></div><figcaption>2</figcaption></figure>
+						<figure class="k-review-evidence-shot" role="listitem"><div class="frame" role="img" aria-label="After Screenshot"></div><figcaption>3</figcaption></figure>
+					</div>
+					<div class="k-review-evidence-section">Console Errors</div>
+					<ul class="k-review-evidence-console"><li>[error] Failed to load resource: 404 /api/discounts</li></ul>
+				</div>
+			</div>
+
+			<!--
+				Review findings (issue 431): Review runs the structured pass (read-only, one query over the diff) unless the
+				project has its own /review command or review skill, which still runs in the chat; findings in its answer land
+				here too. Worst first; each row jumps to its thread on the diff. Fix with Agent sends the finding as a line
+				comment; an answer that is not findings goes to the chat as a review. Hidden while empty.
+			-->
+			<div class="k-review-findings" role="region" aria-label="Review Findings" hidden data-state-show="reviewed" data-origin="klawly" data-label="Review findings bar" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewFindings.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-review-findings-head">
+					<span class="codicon codicon-comment-discussion is-sm"></span><span>3 findings</span>
+					<span class="flex-1"></span>
+					<button type="button" class="k-btn is-ghost is-sm">Dismiss All</button>
+				</div>
+				<div class="k-review-findings-filters" role="group" aria-label="Filter Findings"><button type="button" class="k-chip is-toggle" aria-pressed="true">Critical</button><button type="button" class="k-chip is-toggle" aria-pressed="true">High</button><button type="button" class="k-chip is-toggle" aria-pressed="true">Medium</button><button type="button" class="k-chip is-toggle" aria-pressed="true">Low</button><span class="flex-1"></span><button type="button" class="k-chip is-toggle" aria-pressed="true">Security</button><button type="button" class="k-chip is-toggle" aria-pressed="true">Bug</button><button type="button" class="k-chip is-toggle" aria-pressed="true">Logic</button><button type="button" class="k-chip is-toggle" aria-pressed="true">Performance</button><button type="button" class="k-chip is-toggle" aria-pressed="false">Style</button><button type="button" class="k-chip is-toggle" aria-pressed="true">Tests</button></div>
+				<ul class="k-review-findings-list">
+					<li class="k-review-findings-item is-high"><span class="severity codicon codicon-error is-sm" title="High"></span><span class="reference">src/cart/cartService.ts:15</span><span class="text">A blank code matches the first discount without a code</span><a class="k-icon-btn" href="../chat/turn-running.html" title="Ask Agent to Fix"><span class="codicon codicon-wrench is-sm"></span></a><a class="k-icon-btn" href="../chat/turn-running.html" title="Fix on PR Branch" data-app="differs" data-app-note="In the app: shown when the chat is about a pull request. Starts a new chat in a new worktree that checks out the pull request's head branch and fixes only this finding; it asks you before it pushes."><span class="codicon codicon-git-branch is-sm"></span></a><span class="k-icon-btn" title="Dismiss"><span class="codicon codicon-close is-sm"></span></span></li>
+					<li class="k-review-findings-item is-medium"><span class="severity codicon codicon-warning is-sm" title="Medium"></span><span class="reference">src/cart/cartService.ts:29</span><span class="text">The discount is rounded before it is subtracted</span><a class="k-icon-btn" href="../chat/turn-running.html" title="Ask Agent to Fix"><span class="codicon codicon-wrench is-sm"></span></a><a class="k-icon-btn" href="../chat/turn-running.html" title="Fix on PR Branch" data-app="differs" data-app-note="In the app: shown when the chat is about a pull request. Starts a new chat in a new worktree that checks out the pull request's head branch and fixes only this finding; it asks you before it pushes."><span class="codicon codicon-git-branch is-sm"></span></a><span class="k-icon-btn" title="Dismiss"><span class="codicon codicon-close is-sm"></span></span></li>
+					<li class="k-review-findings-item is-low"><span class="severity codicon codicon-info is-sm" title="Low"></span><span class="reference">src/cart/discounts.ts:4</span><span class="text">No test covers an expired code</span><a class="k-icon-btn" href="../chat/turn-running.html" title="Ask Agent to Fix"><span class="codicon codicon-wrench is-sm"></span></a><a class="k-icon-btn" href="../chat/turn-running.html" title="Fix on PR Branch" data-app="differs" data-app-note="In the app: shown when the chat is about a pull request. Starts a new chat in a new worktree that checks out the pull request's head branch and fixes only this finding; it asks you before it pushes."><span class="codicon codicon-git-branch is-sm"></span></a><span class="k-icon-btn" title="Dismiss"><span class="codicon codicon-close is-sm"></span></span></li>
+				</ul>
+			</div>
+
+			<!-- Changed files, one card each -->
+			<!-- Learned-rule offer after repeated dismissals (issue 1068, DL-12: one question, two buttons; DL-15 title-case buttons) -->
+			<div class="k-review-learned" hidden data-state-show="reviewed" data-origin="klawly" data-label="Learned rule offer" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewFindings.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<span><strong>Stop flagging this in this project?</strong> You dismissed this kind of finding 3 times.</span>
+				<span>Adds this rule to .klawly/review.json. You can remove it later in Settings &gt; Review &gt; Learned Rules.</span>
+				<button type="button" class="k-btn is-primary is-sm">Add Rule</button><button type="button" class="k-btn is-secondary is-sm">Not Now</button>
+			</div>
+			<div class="k-review-body">
+				<section class="k-review-file" aria-label="discounts.ts, 14 lines added" data-state-hide="undone" data-origin="mixed" data-label="File diff (VS Code multi-diff)" data-source="src/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidgetImpl.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewEditorActions.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+					<header class="k-review-file-header">
+						<span class="codicon codicon-chevron-down is-sm"></span>
+						<span class="k-fileicon ts" aria-hidden="true"></span><span>discounts.ts</span><span class="k-path">src/cart</span>
+						<span class="k-badge">New</span>
+						<span class="k-diffstat-add">+14</span>
+						<span class="k-review-state" data-state-show="kept" hidden><span class="codicon codicon-check is-sm"></span>Kept</span>
+						<span class="ml-auto"></span>
+						<span class="k-icon-btn" title="Keep" data-state-hide="kept"><span class="codicon codicon-check is-sm"></span></span><span class="k-icon-btn" title="Undo"><span class="codicon codicon-discard is-sm"></span></span><a data-app="differs" data-app-note="In the app: Open File opens discounts.ts in a normal editor tab at its first change, with Keep / Undo on each change; the target page shows it as a discounts.ts (review) diff tab." class="k-icon-btn" href="inline-changes.html?state=next-file" title="Open File"><span class="codicon codicon-go-to-file is-sm"></span></a>
+					</header>
+					<div class="k-code pt-1 pb-1">
+						<div class="k-hunk-anchor">
+							<div class="k-hunk-actions is-chip" style="top:2px" data-state-hide="kept" role="toolbar" aria-label="Claude change" data-origin="klawly" data-label="Keep / Undo on a change" data-source="src/vs/workbench/contrib/claude/browser/review/claudeHunkWidget.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewPane.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+								<a class="k-hunk-btn" href="review-editor.html" title="Undo (Alt+N)">Undo <span class="k-kbd is-quiet"><kbd>Alt</kbd><kbd>N</kbd></span></a>
+								<a class="k-hunk-btn is-keep" href="review-editor.html" title="Keep (Alt+Y)">Keep <span class="k-kbd is-quiet"><kbd>Alt</kbd><kbd>Y</kbd></span></a>
+							</div>
+						</div>
+						<div class="k-code-line is-added"><span class="k-ln">1</span><span class="k-src"><span class="tok-kw">export</span> <span class="tok-kw">interface</span> <span class="tok-type">Discount</span> <span class="tok-pun">{</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">2</span><span class="k-src">	<span class="tok-kw">readonly</span> code<span class="tok-pun">:</span> <span class="tok-type">string</span><span class="tok-pun">;</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">3</span><span class="k-src">	<span class="tok-kw">readonly</span> percent<span class="tok-pun">:</span> <span class="tok-type">number</span><span class="tok-pun">;</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">4</span><span class="k-src"><span class="tok-pun">}</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">5</span><span class="k-src"> </span></div>
+						<div class="k-code-line is-added"><span class="k-ln">6</span><span class="k-src"><span class="tok-kw">const</span> DISCOUNTS<span class="tok-pun">:</span> <span class="tok-kw">readonly</span> <span class="tok-type">Discount</span><span class="tok-pun">[</span><span class="tok-pun">]</span> <span class="tok-pun">=</span> <span class="tok-pun">[</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">7</span><span class="k-src">	<span class="tok-pun">{</span> code<span class="tok-pun">:</span> <span class="tok-str">'SPRING10'</span><span class="tok-pun">,</span> percent<span class="tok-pun">:</span> <span class="tok-num">10</span> <span class="tok-pun">}</span><span class="tok-pun">,</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">8</span><span class="k-src">	<span class="tok-pun">{</span> code<span class="tok-pun">:</span> <span class="tok-str">'WELCOME5'</span><span class="tok-pun">,</span> percent<span class="tok-pun">:</span> <span class="tok-num">5</span> <span class="tok-pun">}</span><span class="tok-pun">,</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">9</span><span class="k-src"><span class="tok-pun">]</span><span class="tok-pun">;</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">10</span><span class="k-src"> </span></div>
+						<div class="k-code-line is-added"><span class="k-ln">11</span><span class="k-src"><span class="tok-com">/** Finds a discount by its upper-case code. */</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">12</span><span class="k-src"><span class="tok-kw">export</span> <span class="tok-kw">function</span> findDiscount<span class="tok-pun">(</span>code<span class="tok-pun">:</span> <span class="tok-type">string</span><span class="tok-pun">)</span><span class="tok-pun">:</span> <span class="tok-type">Discount</span> <span class="tok-pun">|</span> <span class="tok-type">undefined</span> <span class="tok-pun">{</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">13</span><span class="k-src">	<span class="tok-kw">return</span> DISCOUNTS<span class="tok-pun">.</span>find<span class="tok-pun">(</span>d <span class="tok-pun">=</span><span class="tok-pun">&gt;</span> d<span class="tok-pun">.</span>code <span class="tok-pun">=</span><span class="tok-pun">=</span><span class="tok-pun">=</span> code<span class="tok-pun">)</span><span class="tok-pun">;</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">14</span><span class="k-src"><span class="tok-pun">}</span></span></div>
+											<div class="k-code-line is-added"><span class="k-ln">15</span><span class="k-src"> </span></div>
+					</div>
+				</section>
+
+				<section class="k-review-file" aria-label="cartService.ts, 14 lines added, 2 lines removed" data-state-hide="undone" data-origin="mixed" data-label="File diff (VS Code multi-diff)" data-source="src/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidgetImpl.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewEditorActions.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+					<header class="k-review-file-header">
+						<span class="codicon codicon-chevron-down is-sm"></span>
+						<span class="k-fileicon ts" aria-hidden="true"></span><span>cartService.ts</span><span class="k-path">src/cart</span>
+						<span class="k-diffstat-add">+14</span><span class="k-diffstat-del">−2</span>
+						<span class="k-review-state" data-state-show="kept" hidden><span class="codicon codicon-check is-sm"></span>Kept</span>
+						<span class="ml-auto"></span>
+						<span class="k-icon-btn" title="Keep" data-state-hide="kept"><span class="codicon codicon-check is-sm"></span></span><span class="k-icon-btn" title="Undo"><span class="codicon codicon-discard is-sm"></span></span><a class="k-icon-btn" href="inline-changes.html" title="Open File"><span class="codicon codicon-go-to-file is-sm"></span></a>
+					</header>
+					<div class="k-code pt-1 pb-1">
+						<div class="k-code-fold"><span class="codicon codicon-unfold is-sm"></span>13 unchanged lines</div>
+						<div class="k-code-line"><span class="k-ln">14</span><span class="k-src">	<span class="tok-fn">applyDiscount</span><span class="tok-pun">(</span><span class="tok-var">code</span><span class="tok-pun">:</span> <span class="tok-type">string</span><span class="tok-pun">):</span> <span class="tok-type">boolean</span> <span class="tok-pun">{</span></span></div>
+						<div class="k-hunk-anchor">
+							<div class="k-hunk-actions is-chip" style="top:-22px" data-state-hide="kept" role="toolbar" aria-label="Claude change" data-origin="klawly" data-label="Keep / Undo on a change" data-source="src/vs/workbench/contrib/claude/browser/review/claudeHunkWidget.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewPane.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+								<a class="k-hunk-btn" href="review-editor.html" title="Undo (Alt+N)">Undo <span class="k-kbd is-quiet"><kbd>Alt</kbd><kbd>N</kbd></span></a>
+								<a class="k-hunk-btn is-keep" href="review-editor.html" title="Keep (Alt+Y)">Keep <span class="k-kbd is-quiet"><kbd>Alt</kbd><kbd>Y</kbd></span></a>
+							</div>
+						</div>
+						<div class="k-code-line is-removed"><span class="k-ln"></span><span class="k-src">		<span class="tok-kw">const</span> <span class="tok-var">discount</span> <span class="tok-pun">=</span> <span class="tok-fn">findDiscount</span><span class="tok-pun">(</span><span class="k-removed-text"><span class="tok-var">code</span></span><span class="tok-pun">);</span></span></div>
+						<div class="k-code-line is-added is-finding-error"><span class="k-ln">15</span><span class="k-src">		<span class="tok-kw">const</span> <span class="tok-var">discount</span> <span class="tok-pun">=</span> <span class="tok-fn">findDiscount</span><span class="tok-pun">(</span><span class="k-added-text"><span class="tok-var">code</span><span class="tok-pun">.</span><span class="tok-fn">trim</span><span class="tok-pun">().</span><span class="tok-fn">toUpperCase</span><span class="tok-pun">()</span></span><span class="tok-pun">);</span></span></div>
+						<!-- A finding as a thread under its last line: a view zone in the diff's modified editor (issue 431). -->
+						<div class="k-review-finding-zone" hidden data-state-show="reviewed" data-origin="klawly" data-label="Review finding thread" data-source="src/vs/workbench/contrib/claude/browser/review/claudeReviewFindings.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+							<div class="k-review-finding is-high" role="group" aria-label="High: A blank code matches the first discount without a code, src/cart/cartService.ts:15">
+								<div class="k-review-finding-head"><span class="severity codicon codicon-error is-sm" title="High"></span><span class="title">A blank code matches the first discount without a code</span><span class="reference">src/cart/cartService.ts:15</span></div>
+								<div class="k-review-finding-body">code.trim() turns "  " into "", and findDiscount("") returns the first discount whose code is empty.</div>
+								<pre class="k-review-finding-suggestion is-diff"><span class="k-review-diff-line is-removed">- const normalized = code.trim().toUpperCase();</span>
+<span class="k-review-diff-line is-added">+ const normalized = code.trim().toUpperCase();</span>
+<span class="k-review-diff-line is-added">+ if (!normalized) {</span>
+<span class="k-review-diff-line is-added">+ 	return false;</span>
+<span class="k-review-diff-line is-added">+ }</span></pre>
+								<div class="k-review-finding-actions">
+									<button type="button" class="k-btn is-primary is-sm" title="Replace these lines with the suggestion; undo with Ctrl+Z">Apply Suggestion</button>
+									<a class="k-btn is-ghost is-sm" href="../chat/turn-running.html" title="Send this finding to the agent as a review comment on these lines">Fix with Agent</a>
+									<button type="button" class="k-btn is-ghost is-sm">Dismiss</button>
+									<span class="k-icon-btn" title="Helpful"><span class="codicon codicon-thumbsup is-sm"></span></span>
+									<span class="k-icon-btn" title="Not Helpful"><span class="codicon codicon-thumbsdown is-sm"></span></span>
+								</div>
+							</div>
+						</div>
+						<div class="k-code-line"><span class="k-ln">16</span><span class="k-src">		<span class="tok-ctl">if</span> <span class="tok-pun">(!</span><span class="tok-var">discount</span><span class="tok-pun">)</span> <span class="tok-pun">{</span></span></div>
+						<div class="k-code-line"><span class="k-ln">17</span><span class="k-src">			<span class="tok-ctl">return</span> <span class="tok-kw">false</span><span class="tok-pun">;</span></span></div>
+						<div class="k-code-line"><span class="k-ln">18</span><span class="k-src">		<span class="tok-pun">}</span></span></div>
+						<div class="k-code-fold"><span class="codicon codicon-unfold is-sm"></span>8 unchanged lines</div>
+						<div class="k-code-line"><span class="k-ln">27</span><span class="k-src">		<span class="tok-pun">}</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">28</span><span class="k-src">		<span class="tok-kw">const</span> <span class="tok-var">discount</span> <span class="tok-pun">=</span> <span class="tok-kw">this</span><span class="tok-pun">.</span><span class="tok-var">discountCode</span> <span class="tok-pun">?</span> <span class="tok-fn">findDiscount</span><span class="tok-pun">(</span><span class="tok-kw">this</span><span class="tok-pun">.</span><span class="tok-var">discountCode</span><span class="tok-pun">)</span> <span class="tok-pun">:</span> <span class="tok-type">undefined</span><span class="tok-pun">;</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">29</span><span class="k-src">		<span class="tok-kw">const</span> <span class="tok-var">off</span> <span class="tok-pun">=</span> <span class="tok-var">discount</span> <span class="tok-pun">?</span> <span class="tok-type">Math</span><span class="tok-pun">.</span><span class="tok-fn">round</span><span class="tok-pun">(</span><span class="tok-var">subtotal</span> <span class="tok-pun">*</span> <span class="tok-var">discount</span><span class="tok-pun">.</span><span class="tok-var">percent</span><span class="tok-pun">)</span> <span class="tok-pun">/</span> <span class="tok-num">100</span> <span class="tok-pun">:</span> <span class="tok-num">0</span><span class="tok-pun">;</span></span></div>
+						<div class="k-code-line is-removed"><span class="k-ln"></span><span class="k-src">		<span class="tok-ctl">return</span> <span class="tok-pun">{</span> <span class="tok-var">subtotal</span><span class="tok-pun">,</span> <span class="tok-var">total</span><span class="tok-pun">:</span> <span class="tok-var">subtotal</span> <span class="tok-pun">};</span></span></div>
+						<div class="k-code-line is-added"><span class="k-ln">30</span><span class="k-src">		<span class="tok-ctl">return</span> <span class="tok-pun">{</span> <span class="tok-var">subtotal</span><span class="tok-pun">,</span> <span class="tok-var">discount</span><span class="tok-pun">:</span> <span class="tok-var">off</span><span class="tok-pun">,</span> <span class="tok-var">total</span><span class="tok-pun">:</span> <span class="tok-var">subtotal</span> <span class="tok-pun">-</span> <span class="tok-var">off</span> <span class="tok-pun">};</span></span></div>
+						<div class="k-code-line"><span class="k-ln">31</span><span class="k-src">	<span class="tok-pun">}</span></span></div>
+						<div class="k-code-line"><span class="k-ln">32</span><span class="k-src"><span class="tok-pun">}</span></span></div>
+					</div>
+				</section>
+
+				<section class="k-review-file is-kept" aria-label="cartService.test.ts, kept" data-state-hide="undone" data-origin="mixed" data-label="File diff (VS Code multi-diff)" data-source="src/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidgetImpl.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewEditor.ts src/vs/workbench/contrib/claude/browser/review/claudeReviewEditorActions.ts extensions/theme-seti/icons/vs-seti-icon-theme.json">
+					<header class="k-review-file-header">
+						<span class="codicon codicon-chevron-right is-sm"></span>
+						<span class="k-fileicon ts-test" aria-hidden="true"></span><span>cartService.test.ts</span><span class="k-path">test</span>
+						<span class="k-diffstat-add">+6</span>
+						<span class="k-review-state"><span class="codicon codicon-check is-sm"></span>Kept</span>
+						<span class="ml-auto"></span>
+						<span class="k-icon-btn" title="Undo"><span class="codicon codicon-discard is-sm"></span></span><a class="k-icon-btn" href="../workbench/editor.html" title="Open File"><span class="codicon codicon-go-to-file is-sm"></span></a>
+					</header>
+				</section>
+				<div class="k-review-empty" data-state-show="undone" hidden data-origin="vscode" data-label="No Changed Files" data-source="src/vs/editor/browser/widget/multiDiffEditor/multiDiffEditorWidgetImpl.ts">No Changed Files</div>
+			</div>
+		</main>
+
+		<!-- ===== Agent pane (right) ===== -->
+		<aside class="k-chatpane" aria-label="Agent" data-origin="klawly" data-label="Agent pane" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+			<div class="k-chatpane-title" data-origin="vscode"><span class="k-chatpane-title-label">Agent</span><span class="k-icon-btn" title="Views and More Actions"><span class="codicon codicon-ellipsis"></span></span><span class="k-icon-btn" title="Maximize Agent" data-origin="vscode" data-label="Maximize button" data-source="src/vs/workbench/browser/parts/auxiliarybar/auxiliaryBarActions.ts"><span class="codicon codicon-screen-full"></span></span></div>
+			<div class="k-chatpane-viewhead" data-origin="vscode"><span class="codicon codicon-chevron-down is-sm"></span><span>Agent</span></div>
+			<div class="k-chatpane-header">
+				<div class="k-chat-tabs" role="tablist" aria-label="Agent sessions" data-origin="klawly" data-label="Chat tabs" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeSessionTabs.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<a class="k-chat-tab is-active" href="../chat/turn-finished.html"><span>Discount codes in cart</span><span class="codicon codicon-close is-xs"></span></a>
+					<a class="k-chat-tab" href="../chat/turn-running.html"><span class="k-spinner" style="width:10px;height:10px"></span><span>Fix flaky checkout test</span></a>
+				</div>
+				<a class="k-icon-btn" href="../chat/new-chat.html" title="New Agent" data-origin="klawly" data-label="New Agent button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeViewPane.ts"><span class="codicon codicon-add"></span></a>
+				<a data-app="differs" data-app-note="In the app: Agent History drops down an Agent history popover under the button at any width (search, pinned chats, day groups, Pin and Archive on hover, a Cloud row that brings back a session from claude.ai, archived chats folded at the end); the agents list here is the agents sidebar, which has its own button (off by default)." class="k-icon-btn" href="../chat/agents-list.html" title="Agent History"><span class="codicon codicon-history"></span></a>
+				<a class="k-icon-btn" href="../chat/agents-list.html" title="Show Agents Sidebar" data-origin="klawly" data-label="Agents Sidebar button" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeChatWidget.ts src/vs/workbench/contrib/claude/browser/claudeAgentsSidebar.ts"><span class="codicon codicon-layout-sidebar-right"></span></a>
+				<a class="k-icon-btn" href="../chat/more-menu.html" title="More actions"><span class="codicon codicon-ellipsis"></span></a>
+				<span class="k-chatpane-header-sep" aria-hidden="true"></span>
+			</div>
+
+			<div class="k-chat-scroll" data-origin="klawly" data-label="Conversation" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeTimelineRenderer.ts src/vs/workbench/contrib/claude/browser/chat/claudeToolCardView.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+				<div class="k-prompt">Add a discount code to the cart. Codes come from <code class="text-sm">discounts.ts</code>, matching should ignore case.</div>
+
+				<div class="mt-4 k-worked"><span class="codicon codicon-chevron-right is-sm"></span>Worked for 48s</div>
+
+				<div class="k-chat-body mt-3">
+					<p>Added discount codes to the cart:</p>
+					<ul>
+						<li><code>applyDiscount(code)</code> trims and upper-cases the code before it looks it up.</li>
+						<li><code>totals()</code> now returns the discount and the total after it.</li>
+						<li>New <code>discounts.ts</code> holds the codes, and two tests cover a valid and an unknown code.</li>
+					</ul>
+				</div>
+
+				<div class="k-card mt-3">
+					<div class="k-card-header">
+						<span class="codicon codicon-file"></span><span class="text-ink">cartService.ts</span>
+						<span class="k-diffstat-add">+14</span><span class="k-diffstat-del">−2</span>
+						<span class="ml-auto"></span>
+						<a data-app="differs" data-app-note="In the app: Open Diff opens a single-file &quot;(review)&quot; diff of cartService.ts against the turn's snapshot, with the change navigator; the target page shows the cartService.ts (Working Tree) diff instead." class="k-icon-btn" href="../workbench/diff-editor.html" title="Open Diff"><span class="codicon codicon-go-to-file"></span></a>
+					</div>
+				</div>
+
+				<div class="k-answer-actions">
+					<span class="k-icon-btn" title="Copy"><span class="codicon codicon-copy is-sm"></span></span>
+					<span class="k-icon-btn" title="Fork from here"><span class="codicon codicon-repo-forked is-sm"></span></span>
+					<span class="ml-1">2:41 PM</span>
+				</div>
+			</div>
+
+			<!-- Composer docked at the bottom once the chat has turns -->
+			<div class="px-3 pb-3">
+				<div class="k-changes-bar" data-state-hide="kept undone" data-origin="klawly" data-label="Changes bar" data-source="src/vs/workbench/contrib/claude/browser/review/claudeChangesBar.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<span class="codicon codicon-chevron-right is-sm"></span>
+					<span>3 Files</span><span class="k-diffstat-add">+34</span><span class="k-diffstat-del">−2</span>
+					<span class="ml-auto"></span>
+					<button class="k-btn is-ghost is-sm">Undo</button>
+					<button class="k-btn is-ghost is-sm">Keep</button>
+					<span class="k-icon-btn" title="Ask Claude to review every change in this turn"><span class="codicon codicon-comment-discussion is-sm"></span></span>
+					<a class="k-btn is-secondary is-sm" href="../review/review-editor.html">Review</a>
+				</div>
+				<div class="k-changes-bar" data-state-show="kept" hidden data-origin="klawly" data-label="Changes bar" data-source="src/vs/workbench/contrib/claude/browser/review/claudeChangesCard.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<span class="codicon codicon-chevron-right is-sm"></span>
+					<span>3 of 3 reviewed</span><span class="k-diffstat-add">+34</span><span class="k-diffstat-del">−2</span>
+					<span class="ml-auto"></span>
+					<button class="k-btn is-ghost is-sm" title="Commit the kept changes">Commit</button>
+					<span class="k-icon-btn" title="Ask Claude to review every change in this turn"><span class="codicon codicon-comment-discussion is-sm"></span></span>
+					<a class="k-btn is-secondary is-sm" href="review-editor.html?state=kept">Review</a>
+				</div>
+				<div class="k-changes-bar" data-state-show="undone" hidden data-origin="klawly" data-label="Changes bar" data-source="src/vs/workbench/contrib/claude/browser/review/claudeChangesCard.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<span class="codicon codicon-chevron-right is-sm"></span>
+					<span>3 of 3 reviewed</span>
+					<span class="ml-auto"></span>
+					<span class="k-icon-btn" title="Ask Claude to review every change in this turn"><span class="codicon codicon-comment-discussion is-sm"></span></span>
+					<a class="k-btn is-secondary is-sm" href="review-editor.html?state=undone">Review</a>
+				</div>
+				<div class="k-composer is-docked" data-origin="klawly" data-label="Composer" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeComposer.ts src/vs/workbench/contrib/claude/browser/media/claude.css">
+					<div class="k-composer-input is-placeholder">Add a follow-up</div>
+					<div class="k-composer-toolbar">
+						<a class="k-pill" href="../chat/mode-menu.html"><span class="codicon codicon-sparkle"></span>Agent<span class="codicon codicon-chevron-down is-xs"></span></a>
+						<a class="k-composer-model" href="../chat/model-menu.html">Opus 5.5 <span class="k-effort">High</span></a>
+						<span class="k-composer-model is-locked" title="Claude Code runs in Local for this agent. Start a new agent to run it somewhere else." aria-disabled="true" data-origin="klawly" data-label="Run in pill" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeRunInPicker.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="codicon codicon-device-desktop is-sm"></span>Local</span>
+						<span class="ml-auto"></span>
+						<a class="k-icon-btn" href="../chat/context-menu.html" title="Add context"><span class="codicon codicon-mention is-sm"></span></a>
+						<span class="k-icon-btn" title="Attach image"><span class="codicon codicon-device-camera is-sm"></span></span>
+						<span class="k-icon-btn" title="Voice Input (Ctrl+Alt+V)"><span class="codicon codicon-mic is-sm"></span></span>
+						<span class="k-send" title="Send (Enter)"><span class="codicon codicon-arrow-up"></span></span>
+					</div>
+				</div>
+				<a class="k-usage-row" href="../settings/plan-usage.html" data-origin="klawly" data-label="Usage row" data-source="src/vs/workbench/contrib/claude/browser/chat/claudeUsageIndicator.ts src/vs/workbench/contrib/claude/common/claudeUsageRow.ts src/vs/workbench/contrib/claude/browser/media/claude.css"><span class="k-usage-part"><span>Session</span><span class="k-usage-value">42%</span><span class="k-usage-reset">resets in 2 hrs</span></span><span class="k-usage-part"><span>Week</span><span class="k-usage-value">18%</span></span></a>
+			</div>
+		</aside>
+	</div>
+
+	<!-- ===== Status bar ===== -->
+	<footer class="k-statusbar" data-origin="vscode" data-label="Status bar" data-source="src/vs/workbench/browser/parts/statusbar/statusbarPart.ts">
+		<a data-app="differs" data-app-note="In the app: The branch item opens the git checkout branch picker, not the Source Control view." class="k-status-item" href="../workbench/source-control.html"><span class="codicon codicon-git-branch"></span>main*</a>
+		<span class="k-status-item"><span class="codicon codicon-sync"></span></span>
+		<a data-app="differs" data-app-note="In the app: The errors and warnings item opens the Problems panel, not the Terminal." class="k-status-item" href="../workbench/panel.html"><span class="codicon codicon-error"></span>0<span class="codicon codicon-warning"></span>1</a>
+		<span class="k-status-spacer"></span>
+		<span class="k-status-item" title="Keep 5 Changes in 3 Files" data-state-hide="undone" data-app="differs" data-app-note="In the app: the item opens a quick pick with Keep All, Undo All and Open Review for every chat's waiting changes, and hides when nothing waits." data-origin="klawly" data-label="Changes to review" data-source="src/vs/workbench/contrib/claude/browser/review/claudeKeepAll.ts"><span class="codicon codicon-diff-multiple"></span>5 changes to review</span>
+		<span class="k-status-item">Ln 15, Col 63</span>
+		<span class="k-status-item">Tab Size: 4</span>
+		<span class="k-status-item">UTF-8</span>
+		<span class="k-status-item">LF</span>
+		<span class="k-status-item"><span class="codicon codicon-bracket"></span>TypeScript</span>
+		<span class="k-status-item" title="An agent turn is running. Session usage: 42%." data-origin="klawly" data-label="Claude status" data-source="src/vs/workbench/contrib/claude/browser/claudeStatus.ts src/vs/workbench/contrib/claude/common/claudeRuntimeStatus.ts"><span class="codicon codicon-loading codicon-modifier-spin"></span>Claude: Working · 42%</span>
+		<a data-app="differs" data-app-note="In the app: The Tab status item opens the Tab suggestions popover, not the notification center." class="k-status-item" href="../workbench/notifications.html" title="Tab suggestions" data-origin="klawly" data-label="Tab status" data-source="src/vs/workbench/contrib/claude/browser/claudeTabStatus.ts"><span class="codicon codicon-arrow-right"></span>Tab</a>
+		<a class="k-status-item" href="../workbench/notifications.html" title="Notifications"><span class="codicon codicon-bell"></span></a>
+	</footer>
+</div>
+</body>
+</html>
