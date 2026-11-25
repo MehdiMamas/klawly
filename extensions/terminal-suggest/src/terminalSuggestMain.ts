@@ -11,6 +11,7 @@ import azdSpec from './completions/azd';
 import cdSpec from './completions/cd';
 import codeCompletionSpec from './completions/code';
 import codeInsidersCompletionSpec from './completions/code-insiders';
+import klawlyCompletionSpec from './completions/klawly';
 import codeTunnelCompletionSpec from './completions/code-tunnel';
 import codeTunnelInsidersCompletionSpec from './completions/code-tunnel-insiders';
 import copilotSpec from './completions/copilot';
@@ -60,6 +61,7 @@ export const availableSpecs: Fig.Spec[] = [
 	cdSpec,
 	codeInsidersCompletionSpec,
 	codeCompletionSpec,
+	klawlyCompletionSpec,
 	codeTunnelCompletionSpec,
 	codeTunnelInsidersCompletionSpec,
 	copilotSpec,

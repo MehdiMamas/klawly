@@ -64,13 +64,20 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 
+      # The packaging step checks for Authenticode signatures with signtool, which ships in the Windows SDK.
+      - name: signtool on PATH (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          tool="$(ls -d "/c/Program Files (x86)/Windows Kits/10/bin/"*/x64 | sort -V | tail -1)"
+          echo "$(cygpath -w "$tool")" >> "$GITHUB_PATH"
+
       - name: Package
         run: |
           target="$(node -p "process.platform + '-' + process.arch")"
           npm run gulp "vscode-${target}-min"
           mkdir -p .build/package
           # The gulp task writes ../VSCode-<platform>-<arch>, next to the checkout.
-          built="../VSCode-${target}"
+          built="../Klawly-${target}"
           if [ "$RUNNER_OS" = "macOS" ]; then
             ditto -c -k --sequesterRsrc --keepParent "${built}/Klawly.app" ".build/package/Klawly-${target}.zip"
           elif [ "$RUNNER_OS" = "Windows" ]; then
@@ -78,6 +85,14 @@ jobs:
           else
             tar -czf ".build/package/Klawly-${target}.tar.gz" -C "$(dirname "$built")" "$(basename "$built")"
           fi
+
+      # Installers: the Windows setup (KlawlySetup.exe) carries the product name too.
+      - name: Windows installer
+        if: runner.os == 'Windows'
+        run: |
+          npm run gulp vscode-win32-x64-inno-updater
+          npm run gulp vscode-win32-x64-user-setup
+          cp .build/win32-x64/user-setup/KlawlySetup.exe .build/package/KlawlySetup.exe
 
       - name: Upload app
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
