@@ -172,7 +172,23 @@ jobs:
         shell: bash
         run: sudo apt-get update && sudo apt-get install -y libxkbfile-dev libx11-dev libx11-xcb-dev libsecret-1-dev libkrb5-dev
 
+      # Linux native modules build against upstream's sysroot, set up by setup-env.sh, as in upstream's pr-linux-test.yml.
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -e
+          (cd build && npm ci)
+          source ./build/azure-pipelines/linux/setup-env.sh
+          npm ci
+        env:
+          npm_config_arch: x64
+          VSCODE_ARCH: x64
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
       - name: Install dependencies
+        if: runner.os != 'Linux'
         run: |
           process.getBuiltinModule('node:fs').rmSync('node_modules', { recursive: true, force: true, maxRetries: 5, retryDelay: 2000 });
           process.getBuiltinModule('node:child_process').execSync('npm ci', { stdio: 'inherit' });
