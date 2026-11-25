@@ -1511,7 +1511,8 @@ export class ChatEntitlementContext extends Disposable {
 		}));
 	}
 
-	private _forceHidden = false;
+	// Klawly D01 (one engine): the upstream Copilot chat UI stays hidden.
+	private _forceHidden = true;
 
 	private withConfiguration(state: IChatEntitlementContextState): IChatEntitlementContextState {
 		if (this._forceHidden || this.configurationService.getValue(ChatAIDisabledSettingId) === true) {

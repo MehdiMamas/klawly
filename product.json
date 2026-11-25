@@ -168,6 +168,9 @@
 	],
 	"sessionsWindowAllowedExtensions": [],
 	"enableTelemetry": false,
+	"configurationDefaults": {
+		"chat.disableAIFeatures": true
+	},
 	"defaultChatAgent": {
 		"extensionId": "klawly.none",
 		"chatExtensionId": "klawly.none",

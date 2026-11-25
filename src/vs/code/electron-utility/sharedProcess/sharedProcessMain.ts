@@ -151,6 +151,8 @@ import { IMeteredConnectionService } from '../../../platform/meteredConnection/c
 import { MeteredConnectionChannelClient, METERED_CONNECTION_CHANNEL } from '../../../platform/meteredConnection/common/meteredConnectionIpc.js';
 import { PlaywrightChannel } from '../../../platform/browserView/node/playwrightChannel.js';
 import { AgentNetworkFilterService } from '../../../platform/networkFilter/common/networkFilterService.js';
+import { CLAUDE_RUNTIME_CHANNEL, IClaudeRuntimeService } from '../../../platform/claude/common/claudeRuntime.js';
+import { ClaudeRuntimeService } from '../../../platform/claude/node/claudeRuntimeService.js';
 import { ILocalGitService } from '../../../platform/git/common/localGitService.js';
 import { LocalGitService } from '../../../platform/git/node/localGitService.js';
 
@@ -428,6 +430,9 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		// Local Git
 		services.set(ILocalGitService, new SyncDescriptor(LocalGitService, undefined, false /* proxied to other processes */));
 
+		// Claude runtime (drives the installed Claude Code CLI)
+		services.set(IClaudeRuntimeService, new SyncDescriptor(ClaudeRuntimeService, undefined, false /* proxied to other processes */));
+
 		// SSH Remote Agent Host
 		services.set(ISSHRemoteAgentHostMainService, new SyncDescriptor(SSHRemoteAgentHostMainService, undefined, true));
 
@@ -518,6 +523,10 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		// Local Git
 		const localGitChannel = ProxyChannel.fromService(accessor.get(ILocalGitService), this._store);
 		this.server.registerChannel('localGit', localGitChannel);
+
+		// Claude runtime
+		const claudeRuntimeChannel = ProxyChannel.fromService(accessor.get(IClaudeRuntimeService), this._store);
+		this.server.registerChannel(CLAUDE_RUNTIME_CHANNEL, claudeRuntimeChannel);
 
 		// SSH Remote Agent Host
 		const sshRemoteAgentHostChannel = ProxyChannel.fromService(accessor.get(ISSHRemoteAgentHostMainService), this._store);

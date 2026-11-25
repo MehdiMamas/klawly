@@ -194,6 +194,7 @@ import './contrib/remoteTunnel/electron-browser/remoteTunnel.contribution.js';
 
 // Chat
 import './contrib/chat/electron-browser/chat.contribution.js';
+import './contrib/claude/electron-browser/claude.contribution.js';
 import './contrib/chat/electron-browser/tunnelHost.contribution.js';
 
 // Copilot Voice
