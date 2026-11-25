@@ -20,7 +20,7 @@ When validating an upstream provider/runtime fix, use [ci-artifact-testing](../c
 3. **Recording is intentional and credentialed.** `AGENT_HOST_REPLAY_RECORD=1` talks to real CAPI and needs `GITHUB_TOKEN` or `gh auth token`. Keep prompts trivial and read-only in temporary directories.
 4. **Fixtures are generated, never hand-edited.** Fix normalization or redaction and re-record if a capture contains unstable or sensitive data.
 5. **Disabled variants stay accountable.** Record every gate in `e2e/KNOWN_ISSUES.md` with its scope, expected and observed behavior, and focused reproduction command.
-6. **Azure validation is required.** Every new Agent Host E2E or real-provider integration test must pass a focused build from VS Code pipeline definition `111` before merge.
+6. **Azure validation is required.** Every new Agent Host E2E or real-provider integration test must pass a focused build from Klawly pipeline definition `111` before merge.
 
 ## Basic workflow: write and evaluate an E2E test
 
@@ -77,7 +77,7 @@ Always add a comment explaining *why* the gate exists. Also add or update the co
 
 New Agent Host E2E and real-provider integration tests are not ready to merge after local or GitHub pull-request CI alone. Push the branch, open or update a draft PR, then use the `azure-pipelines` skill to validate the real packaged Electron integration-test path.
 
-1. Queue VS Code pipeline definition `111` with `VSCODE_BUILD_TYPE=CI`; enable Windows, Linux, and macOS x64 while disabling publishing, release, Web, ARM, Alpine, and Snap artifacts. The `azure-pipelines` skill contains the canonical command.
+1. Queue Klawly pipeline definition `111` with `VSCODE_BUILD_TYPE=CI`; enable Windows, Linux, and macOS x64 while disabling publishing, release, Web, ARM, Alpine, and Snap artifacts. The `azure-pipelines` skill contains the canonical command.
 2. Monitor jobs as they finish. Inspect a failed platform's Electron integration-test task immediately rather than waiting for unrelated stages to complete.
 3. Treat the Agent Host E2E result as accepted only when the Electron integration tests succeed on Windows, Linux, and macOS.
 4. Rerun an apparently unrelated or pre-existing failure in isolation before attributing it to the PR.

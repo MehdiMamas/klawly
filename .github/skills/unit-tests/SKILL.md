@@ -1,6 +1,6 @@
 ---
 name: unit-tests
-description: Use when running unit tests in the VS Code repo. Covers the runTests tool, scripts/test.sh (macOS/Linux) and scripts/test.bat (Windows), and their supported arguments for filtering, globbing, and debugging tests.
+description: Use when running unit tests in the Klawly repo. Covers the runTests tool, scripts/test.sh (macOS/Linux) and scripts/test.bat (Windows), and their supported arguments for filtering, globbing, and debugging tests.
 ---
 
 # Running Unit Tests
@@ -102,4 +102,4 @@ Integration tests (files ending in `.integrationTest.ts` or located in `extensio
 
 ### Compilation requirement
 
-Tests run against compiled JavaScript output. Reuse current output from an existing `VS Code - Build` task when available; otherwise refresh client output with `npm run build-fast -- --client-only` before running tests. This supports cold and incremental builds without a persistent watcher or extension builds. Use `npm run build-fast` when extension and Copilot outputs are also needed. Fast builds transpile rather than type-check, so run appropriate explicit type checks when warranted by the change. Do not rebuild between test selections when inputs have not changed. Test failures caused by stale output are a common pitfall.
+Tests run against compiled JavaScript output. Reuse current output from an existing `Klawly - Build` task when available; otherwise refresh client output with `npm run build-fast -- --client-only` before running tests. This supports cold and incremental builds without a persistent watcher or extension builds. Use `npm run build-fast` when extension and Copilot outputs are also needed. Fast builds transpile rather than type-check, so run appropriate explicit type checks when warranted by the change. Do not rebuild between test selections when inputs have not changed. Test failures caused by stale output are a common pitfall.

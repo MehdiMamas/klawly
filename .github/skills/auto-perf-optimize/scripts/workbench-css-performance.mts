@@ -765,8 +765,8 @@ Options:
   --port <port>            DevTools port (default: 9231)
   --output <path>          Artifact directory
   --workspace <path>       Throwaway workspace
-  --code-root <path>       VS Code checkout to launch (default: current checkout)
+  --code-root <path>       Klawly checkout to launch (default: current checkout)
   --skip-prelaunch         Skip Electron/extensions prelaunch preparation
-  --keep-open              Leave the Code OSS window open
-  --verbose                Stream Code OSS output`);
+  --keep-open              Leave the Klawly window open
+  --verbose                Stream Klawly output`);
 }

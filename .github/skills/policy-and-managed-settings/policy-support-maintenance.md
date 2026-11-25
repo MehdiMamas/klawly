@@ -9,7 +9,7 @@ The [support inventory](../../../src/vs/platform/agentHost/common/agentHostPolic
 For each changed control, trace:
 
 1. The configuration registration, policy name, value schema, defaults, and any `policyReference` settings.
-2. Delivery through VS Code device policy, projected Copilot managed settings, and runtime-native managed settings. An editor projection is not proof that the runtime received the same value.
+2. Delivery through Klawly device policy, projected Copilot managed settings, and runtime-native managed settings. An editor projection is not proof that the runtime received the same value.
 3. Initial connection, reconnect, live refresh/removal, create/resume, and the consumer that enforces the value before the relevant action.
 4. Alternate paths: runtime discovery versus forwarded configuration, built-in versus custom tools, approval modes, sandbox opt-outs, and editor versus Agents window routing.
 
@@ -65,4 +65,4 @@ The readiness summary reports policy names, configuration keys, source labels, a
 - For bridge changes, exercise the bundled runtime with isolated temporary homes and a synthetic local model. Check create, cold resume, removal, managed asks under Allow All/assisted modes, and unaffected requests. No real Copilot sign-in or device-policy changes should be needed for these fixtures.
 - Run focused suites, client type checking, and lint as appropriate. Run the canonical `npm run export-policy-data` after inventory, DTO, or policy changes; never hand-edit the generated catalog. The catalog test must cover every exported policy, and both product entrypoints must agree.
 
-For setting registration and policy-export details, see [VS Code configuration policy](./vscode-policy.md).
+For setting registration and policy-export details, see [Klawly configuration policy](./vscode-policy.md).

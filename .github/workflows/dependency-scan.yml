@@ -1,0 +1,59 @@
+name: Dependency and license scan
+
+# Master plan section 40: maintain dependency and license scanning.
+# Manual only. Repo rules allow no automatic heavy jobs and no Claude jobs in Actions.
+# Runs on a GitHub-hosted runner. Steps are Node, so no OS shell is assumed.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: npm audit and license allowlist
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: node {0}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      # Only package files are needed: no install scripts, no native builds, no dev packages.
+      - name: Install production packages
+        run: |
+          process.getBuiltinModule('node:child_process').execSync('npm ci --omit=dev --ignore-scripts --no-audit --no-fund', { stdio: 'inherit' });
+        env:
+          npm_config_cache: ${{ runner.workspace }}/../.npm-cache-${{ runner.name }}
+          npm_config_devdir: ${{ runner.workspace }}/../.node-gyp-${{ runner.name }}
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+          ELECTRON_SKIP_BINARY_DOWNLOAD: 1
+
+      - name: Install production packages (remote)
+        run: |
+          process.getBuiltinModule('node:child_process').execSync('npm ci --omit=dev --ignore-scripts --no-audit --no-fund --prefix remote', { stdio: 'inherit' });
+        env:
+          npm_config_cache: ${{ runner.workspace }}/../.npm-cache-${{ runner.name }}
+          npm_config_devdir: ${{ runner.workspace }}/../.node-gyp-${{ runner.name }}
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+          ELECTRON_SKIP_BINARY_DOWNLOAD: 1
+
+      - name: npm audit (production, high and critical)
+        run: |
+          process.getBuiltinModule('node:child_process').execSync('npm audit --omit=dev --audit-level=high', { stdio: 'inherit' });
+
+      - name: npm audit (remote, high and critical)
+        if: ${{ !cancelled() }}
+        run: |
+          process.getBuiltinModule('node:child_process').execSync('npm audit --omit=dev --audit-level=high --prefix remote', { stdio: 'inherit' });
+
+      - name: License allowlist (production)
+        if: ${{ !cancelled() }}
+        run: |
+          process.getBuiltinModule('node:child_process').execSync('node build/klawly/check-licenses.ts . remote', { stdio: 'inherit' });

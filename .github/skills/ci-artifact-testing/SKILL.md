@@ -1,11 +1,11 @@
 ---
 name: ci-artifact-testing
-description: Use when validating an upstream pull request or dependency fix against VS Code tests using GitHub Actions CI build artifacts instead of building locally. Covers finding compatible binaries, verifying PR and merge-commit provenance, selecting a candidate runtime or build, comparing unchanged regression tests, and restoring the baseline.
+description: Use when validating an upstream pull request or dependency fix against Klawly tests using GitHub Actions CI build artifacts instead of building locally. Covers finding compatible binaries, verifying PR and merge-commit provenance, selecting a candidate runtime or build, comparing unchanged regression tests, and restoring the baseline.
 ---
 
 # Test with CI artifacts
 
-Prefer an existing compatible CI build when checking whether an upstream change fixes a downstream regression. A successful upstream workflow is not proof that the VS Code scenario passes: run the downstream test with the candidate artifact.
+Prefer an existing compatible CI build when checking whether an upstream change fixes a downstream regression. A successful upstream workflow is not proof that the Klawly scenario passes: run the downstream test with the candidate artifact.
 
 This workflow applies to runtime executables, native libraries, SDK packages, and packaged applications. Use the relevant [integration-test](../integration-tests/SKILL.md), [unit-test](../unit-tests/SKILL.md), or [smoke-test](../smoke-tests/SKILL.md) workflow for execution. For Azure-hosted artifacts, use [azure-pipelines](../azure-pipelines/SKILL.md) for discovery and retrieval; the provenance and comparison rules below still apply.
 

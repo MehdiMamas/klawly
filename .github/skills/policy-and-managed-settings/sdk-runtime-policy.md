@@ -96,7 +96,7 @@ Bridge invariants:
 
 Keep additional legacy mappings in the shared bridge table and cover their scope, removal, create/resume, and refresh behavior in the corresponding Agent Host unit tests.
 
-`chat.tools.terminal.enableAutoApprove` has a registered VS Code policy; `chat.tools.terminal.autoApprove` does not. Per-command `policyValue` fixtures exercise the resolver synthetically, not a currently deployable VS Code policy. Test targeted managed shell asks directly at the SDK boundary, and test the registered terminal approval policy through the bridge.
+`chat.tools.terminal.enableAutoApprove` has a registered Klawly policy; `chat.tools.terminal.autoApprove` does not. Per-command `policyValue` fixtures exercise the resolver synthetically, not a currently deployable Klawly policy. Test targeted managed shell asks directly at the SDK boundary, and test the registered terminal approval policy through the bridge.
 
 Default-on bridging is not full policy parity. Unsupported allowlists, patterns, per-tool approval, and discovery paths are still tracked in `agentHostPolicySupport.ts`. Policy Diagnostics reports applied migration concerns without changing rollout or harness selection. Report-only gaps do not disable supported bridge restrictions.
 

@@ -36,7 +36,7 @@ General rules:
 - Do not duplicate a runtime parser, matcher, or security decision in VS Code.
 - A VS Code policy is appropriate only for editor/workbench-owned behavior.
 - New Copilot enterprise controls should target the shared managed-settings/SDK model.
-- The VS Code settings-to-managed-settings bridge is a compatibility path for legacy settings only. Do not add a new VS Code setting in order to bridge it; define new runtime-owned controls directly in the managed-settings/SDK contract. The bridge itself is unconditional; do not reintroduce a compatibility gate for it.
+- The Klawly settings-to-managed-settings bridge is a compatibility path for legacy settings only. Do not add a new Klawly setting in order to bridge it; define new runtime-owned controls directly in the managed-settings/SDK contract. The bridge itself is unconditional; do not reintroduce a compatibility gate for it.
 - Run `npm run export-policy-data` for every VS Code or extension policy change. Never edit `build/lib/policies/policyData.jsonc` manually.
 
 ## Deprecated and Historical Channels

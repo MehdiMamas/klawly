@@ -1,11 +1,11 @@
 ---
 name: design-philosophy
-description: The VS Code design philosophy — a shared Values→Principles→Moves vocabulary for reasoning about UI in design terms instead of raw pixels. Use when designing, building, reviewing, or giving feedback on any visual surface; when deciding a radius, spacing, type role, icon size, border, color, or motion; or when translating a "this feels off" observation into a concrete, principled fix.
+description: The Klawly design philosophy — a shared Values→Principles→Moves vocabulary for reasoning about UI in design terms instead of raw pixels. Use when designing, building, reviewing, or giving feedback on any visual surface; when deciding a radius, spacing, type role, icon size, border, color, or motion; or when translating a "this feels off" observation into a concrete, principled fix.
 ---
 
-# VS Code Design Philosophy
+# Klawly Design Philosophy
 
-This skill is the **canonical VS Code design philosophy** — the single source of truth for how we reason about UI, for both developers and agents.
+This skill is the **canonical Klawly design philosophy** — the single source of truth for how we reason about UI, for both developers and agents.
 
 As more and more of the UI is implemented via agents and tooling, the pixels increasingly take care of themselves, and the scarce, human part becomes the design judgment behind them.
 
@@ -36,11 +36,11 @@ Read top-down when you're learning the system, and bottom-up when you're fixing 
 
 ## The values: what we design for
 
-These four values name what we want people to *feel* using VS Code - they're the top layer, the thing every principle and move below is ultimately in service of. Learn them and you can describe almost any bug. Each is a *feeling* the UI should give; each is upheld by one or more **principles** below. Reach for the value first, the principle second, the move last.
+These four values name what we want people to *feel* using Klawly - they're the top layer, the thing every principle and move below is ultimately in service of. Learn them and you can describe almost any bug. Each is a *feeling* the UI should give; each is upheld by one or more **principles** below. Reach for the value first, the principle second, the move last.
 
 | Value | Means | When it's broken it feels… | Principles |
 |------|-------|----------------------------|------------|
-| **Calm** | quiet at rest, uncluttered; room to breathe; soft, not sharp; plain-spoken and human | busy, noisy, cramped, jagged, cryptic, shouty | 1, 2, 3 |
+| **Calm** | quiet at rest, uncluttered; room to breathe; soft, not sharp; plain-spoken and human | busy, noisy, cramped, jagged, cryptic, shouty | 1, 2, 3, 8 |
 | **Focused** | clear hierarchy; one thing leads, the rest supports | flat, samey, the eye has nowhere to go | 4, 5 |
 | **Consistent** | everything sits on the same ramps and tiers | random, off-grid, drifting | 5, 6 |
 | **Delightful** | small moments that *do a job* - guide, confirm, orient | lifeless, abrupt, or gimmicky | 7 |
@@ -49,11 +49,11 @@ These four values name what we want people to *feel* using VS Code - they're the
 
 ### Why these four?
 
-It's fair to ask: who would ever *want* a UI that isn't calm, focused, consistent, and delightful? That's exactly the point. These aren't differentiators we're claiming over other products - they're the qualities most **under threat in a tool like ours**, and naming them is how we defend them. We chose them because they're the values VS Code is structurally inclined to *lose*:
+It's fair to ask: who would ever *want* a UI that isn't calm, focused, consistent, and delightful? That's exactly the point. These aren't differentiators we're claiming over other products - they're the qualities most **under threat in a tool like ours**, and naming them is how we defend them. We chose them because they're the values Klawly is structurally inclined to *lose*:
 
-- **Calm** is the first casualty of an IDE. VS Code is information-dense and lived in for hours; every feature team has a good reason to add one more affordance, and the sum is noise. Calm is the value that pushes back on our own gravity.
+- **Calm** is the first casualty of an IDE. Klawly is information-dense and lived in for hours; every feature team has a good reason to add one more affordance, and the sum is noise. Calm is the value that pushes back on our own gravity.
 - **Focused** matters because our surfaces are *deep*. A screen full of equally-weighted, equally-valid controls is the default failure mode of a power tool. Naming focus forces us to decide what leads.
-- **Consistent** has the largest surface area to defend. VS Code is built by many hands over many years; drift is the natural state. Consistency is less an aspiration than a maintenance discipline.
+- **Consistent** has the largest surface area to defend. Klawly is built by many hands over many years; drift is the natural state. Consistency is less an aspiration than a maintenance discipline.
 - **Delightful** is the one we deliberately **ration**. It earns its place only by doing a job (Principle 7). We name it not to add more polish but to keep it honest, so delight guides and confirms rather than decorates.
 
 And each value names a real **tension**, not a free win - which is what makes it a choice worth stating rather than a platitude:
@@ -106,6 +106,22 @@ The UI should read like a person talking. Prefer a word to a mystery glyph; writ
 > - **Feeling:** not *Calm* - busy and boxed-in.
 > - **Principle:** breaks *Quiet at rest* (the fill and separators are permanent chrome that hasn't earned its place) and *Room to breathe* (buttons jammed together).
 > - **Move:** let the bar read transparent at rest, drop the separators (one stroke - and here the answer is *no*), and space the buttons out on the ramp.
+
+#### 8. Tone before line, neutral before color
+
+> **Ask:** *if every border and every accent disappeared, would the layout still read?*
+
+Klawly's look is **neutral, low-saturation and modern**, not the traditional developer-tool look of warm grays, strong accents and a line around every region. Surfaces are cool charcoal (or soft off-white) grays, and neighboring surfaces differ by a small step in lightness, not by a border. Text and icons are cool grays, with the secondary ones muted. Color is **rare and desaturated**: it marks the one primary action, the selection and focus, and a real status, never decoration or grouping. Controls are borderless at rest. Hierarchy comes from tone, size and weight, so the window feels calm, cohesive and polished.
+
+When this is wrong it sounds like *"this looks like a stock developer tool"*, *"everything is boxed in"*, *"the blue is shouting"* or *"the syntax colors look warm and loud"*. Those describe the palette, not a single hex.
+
+*Carried out by:* [neutral palette](#neutral-palette), [one stroke](#one-stroke) (usually *no*), [theme color](#theme-color), [reveal-on-intent](#reveal-on-intent).
+
+> **Worked example - a boxed-in workbench**
+> - **See:** the side bar, editor tabs, panel and status bar each have a visible border; buttons are saturated blue, badges bright, and the code is orange, yellow and pink.
+> - **Feeling:** not *Calm*: dated and cluttered, with no clear place to look.
+> - **Principle:** breaks *Tone before line, neutral before color* (lines and hues do work that tone should do) and *One thing leads* (every accent competes).
+> - **Move:** drop the separating borders and let a one-step lightness change mark each region; desaturate the action accent and keep it for the primary action; move syntax to the muted, cool, equal-lightness palette.
 
 ### Focused
 
@@ -234,6 +250,13 @@ Every color is a `--vscode-*` theme token, so the UI tracks the active theme and
 - **Decision rule:** a hardcoded hex is a bug by construction. Color bugs are *"wrong theme token"* (or *"a token that disappears in light/HC"*), never a hex value to nudge.
 - **Serves:** *Quiet at rest* (1), *Sameness signals sameness* (6).
 
+<a id="neutral-palette"></a>
+### Neutral palette - tone steps, muted accents
+
+The Klawly themes are built from a **cool neutral surface ramp** (chrome → editor → raised → overlay), each step a small, even change in lightness, plus **one desaturated action accent** and a **muted syntax palette** whose hues share a lightness band.
+- **Decision rule:** separate two regions with the next step on the surface ramp before you reach for a border; reach for an accent only for the primary action, the selection, focus or a real status. A warm gray, a saturated hue, or a border between two surfaces that already differ in tone is a bug: *"this region should be one tone step apart, not outlined,"* *"this accent is decorating, not acting."*
+- **Serves:** *Tone before line, neutral before color* (8), *Quiet at rest* (1), *One thing leads* (4). Recorded as DL-13 in `design/LANGUAGE.md`.
+
 <a id="reveal-on-intent"></a>
 ### Reveal-on-intent behaviors
 
@@ -279,6 +302,9 @@ Lead with the **role / tier / ramp**, not the number - then name the principle s
 | "the focus outline shows when I click" | "the ring is **keyboard-focus only** (`:focus-visible`)" | 1 · Quiet at rest |
 | "the list is cut off at the bottom" | "the surface is **missing its scroll-shadow fade**" | 7 · Delight / 5 · Elevation |
 | "the pane header has a line / hard edge" | "pane headers are **rounded, separator-less section titles**" | 1 · Quiet at rest |
+| "add a border between the side bar and the editor" | "these regions should be **one tone step apart** on the surface ramp, not outlined" | 8 · Tone before line |
+| "make the button bluer / brighter" | "the action accent is **muted and rare** - is this the one primary action?" | 8 · Neutral before color |
+| "the code looks too colorful" | "syntax should sit in **one lightness band, cool and low-chroma**" | 8 · Neutral before color |
 
 ---
 

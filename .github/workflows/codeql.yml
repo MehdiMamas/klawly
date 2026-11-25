@@ -1,16 +1,8 @@
 name: CodeQL
 
+# Manual only: heavy jobs never run on a schedule.
 on:
-  push:
-    branches:
-      - main
-      - 'release/**/*'
-  pull_request:
-    branches:
-      - main
-      - 'release/**/*'
-  schedule:
-    - cron: '17 19 * * 6'
+  workflow_dispatch:
 
 permissions: {}
 
