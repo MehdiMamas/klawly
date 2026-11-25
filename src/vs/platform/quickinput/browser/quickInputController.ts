@@ -64,7 +64,7 @@ type QuickInputOverlayLayoutCorrection = {
 };
 
 export class QuickInputController extends Disposable {
-	private static readonly MAX_WIDTH = 600; // Max total width of quick input widget
+	private static readonly MAX_WIDTH = 800; // Max total width of quick input widget (Klawly: 600 upstream)
 
 	private idPrefix: string;
 	private ui: QuickInputUI | undefined;

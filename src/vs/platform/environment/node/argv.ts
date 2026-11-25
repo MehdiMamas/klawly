@@ -54,6 +54,8 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		options: {
 			'_': { type: 'string[]', description: localize('prompt', "The prompt to use as chat.") },
 			'mode': { type: 'string', cat: 'o', alias: 'm', args: 'mode', description: localize('chatMode', "The mode to use for the chat session. Available options: 'ask', 'edit', 'agent', or the identifier of a custom mode. Defaults to 'agent'.") },
+			'worktree': { type: 'boolean', cat: 'o', alias: 'w', description: localize('chatWorktree', "Run the chat in a new git worktree, so its edits stay out of your working copy.") },
+			'resume': { type: 'string', cat: 'o', args: 'session-id', description: localize('chatResume', "Continue a Claude Code session from the terminal as a Klawly chat, by its session id. The prompt, if any, waits in the message box.") },
 			'add-file': { type: 'string[]', cat: 'o', alias: 'a', args: 'path', description: localize('addFile', "Add files as context to the chat session.") },
 			'maximize': { type: 'boolean', cat: 'o', description: localize('chatMaximize', "Maximize the chat session view.") },
 			'reuse-window': { type: 'boolean', cat: 'o', alias: 'r', description: localize('reuseWindowForChat', "Force to use the last active window for the chat session.") },
@@ -82,7 +84,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 	},
 	'tunnel': {
 		type: 'subcommand',
-		description: 'Make the current machine accessible from vscode.dev or other machines through a secure tunnel.',
+		description: 'Make the current machine accessible from other machines through a secure tunnel.',
 		options: {
 			'cli-data-dir': { type: 'string', args: 'dir', description: localize('cliDataDir', "Directory where CLI metadata should be stored.") },
 			'disable-telemetry': { type: 'boolean' },
@@ -113,7 +115,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 	'wait': { type: 'boolean', cat: 'o', alias: 'w', description: localize('wait', "Wait for the files to be closed before returning.") },
 	'waitMarkerFilePath': { type: 'string' },
 	'locale': { type: 'string', cat: 'o', args: 'locale', description: localize('locale', "The locale to use (e.g. en-US or zh-TW).") },
-	'user-data-dir': { type: 'string', cat: 'o', args: 'dir', description: localize('userDataDir', "Specifies the directory that user data is kept in. Can be used to open multiple distinct instances of Code.") },
+	'user-data-dir': { type: 'string', cat: 'o', args: 'dir', description: localize('userDataDir', "Specifies the directory that user data is kept in. Can be used to open multiple distinct instances of Klawly.") },
 	'profile': { type: 'string', 'cat': 'o', args: 'profileName', description: localize('profileName', "Opens the provided folder or workspace with the given profile and associates the profile with the workspace. If the profile does not exist, a new empty one is created.") },
 	'help': { type: 'boolean', cat: 'o', alias: 'h', description: localize('help', "Print usage.") },
 
@@ -123,6 +125,8 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 	'shared-data-dir': { type: 'string' },
 	'list-extensions': { type: 'boolean', cat: 'e', description: localize('listExtensions', "List the installed extensions.") },
 	'agent-plugins-dir': { type: 'string' },
+	'agents-layout': { type: 'boolean' },
+	'background-start': { type: 'boolean' },
 	'agents-user-data-dir': { type: 'string' },
 	'agents-extensions-dir': { type: 'string' },
 	'show-versions': { type: 'boolean', cat: 'e', description: localize('showVersions', "Show versions of installed extensions, when using --list-extensions.") },
@@ -157,7 +161,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 	'disable-chromium-sandbox': { type: 'boolean', cat: 't', description: localize('disableChromiumSandbox', "Use this option only when there is requirement to launch the application as sudo user on Linux or when running as an elevated user in an applocker environment on Windows.") },
 	'sandbox': { type: 'boolean' },
 	'locate-shell-integration-path': { type: 'string', cat: 't', args: ['shell'], description: localize('locateShellIntegrationPath', "Print the path to a terminal shell integration script. Allowed values are 'bash', 'pwsh', 'zsh' or 'fish'.") },
-	'telemetry': { type: 'boolean', cat: 't', description: localize('telemetry', "Shows all telemetry events which VS code collects.") },
+	'telemetry': { type: 'boolean', cat: 't', description: localize('telemetry', "Shows all telemetry events which Klawly collects.") },
 
 	'remote': { type: 'string', allowEmptyValue: true },
 	'folder-uri': { type: 'string[]', cat: 'o', args: 'uri' },

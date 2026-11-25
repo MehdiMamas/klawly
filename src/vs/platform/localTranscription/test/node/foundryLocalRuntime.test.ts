@@ -14,6 +14,7 @@ import { Promises } from '../../../../base/node/pfs.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { flakySuite, getRandomTestPath } from '../../../../base/test/node/testUtils.js';
 import {
+	bundledFoundryLocalRuntime,
 	FOUNDRY_LOCAL_SUPPORTED_PLATFORMS,
 	foundryLocalPlatformKey,
 	isFoundryLocalRuntimeSupported,
@@ -77,6 +78,24 @@ flakySuite('FoundryLocalRuntime', () => {
 		writeMarker(testDir, platformKey);
 		fs.rmSync(join(testDir, 'prebuilds', platformKey, 'libonnxruntime-genai.so'));
 		assert.strictEqual(await isRuntimeProvisioned(testDir, platformKey), false);
+	});
+
+	test('bundledFoundryLocalRuntime: the complete unpacked prebuilds of a package, else none (issue 547)', async () => {
+		const unpacked = join(testDir, 'node_modules.asar.unpacked', 'foundry-local-sdk');
+		const before = await bundledFoundryLocalRuntime(testDir, 'win32-x64');
+		writePayload(unpacked, 'win32-x64');
+		const complete = await bundledFoundryLocalRuntime(testDir, 'win32-x64');
+		const otherArch = await bundledFoundryLocalRuntime(testDir, 'win32-arm64');
+		const unsupported = await bundledFoundryLocalRuntime(testDir, undefined);
+		fs.rmSync(join(unpacked, 'prebuilds', 'win32-x64', 'onnxruntime-genai.dll'));
+		const partial = await bundledFoundryLocalRuntime(testDir, 'win32-x64');
+		assert.deepStrictEqual({ before, complete, otherArch, unsupported, partial }, {
+			before: undefined,
+			complete: join(unpacked, 'prebuilds', 'win32-x64'),
+			otherArch: undefined,
+			unsupported: undefined,
+			partial: undefined,
+		});
 	});
 
 	test('requiredRuntimeFileNames: includes addons and shared libraries', () => {

@@ -6860,10 +6860,10 @@ suite('AgentSideEffects', () => {
 			assert.deepStrictEqual({
 				sessionTitle: localStateManager.getSessionState(sessionUri.toString())?.title,
 				defaultChatTitle: localStateManager.getChatState(defaultChat)?.title,
-				persistedSessionTitle: await waitForMetadata(SESSION_CUSTOM_TITLE_KEY),
-				persistedSessionSource: await waitForMetadata(SESSION_CUSTOM_TITLE_SOURCE_KEY),
-				persistedChatTitle: await waitForMetadata(customChatTitleMetadataKey(defaultChat)),
-				persistedChatSource: await waitForMetadata(customChatTitleSourceMetadataKey(defaultChat)),
+				persistedSessionTitle: await waitForMetadata(SESSION_CUSTOM_TITLE_KEY, 'Renamed Default'),
+				persistedSessionSource: await waitForMetadata(SESSION_CUSTOM_TITLE_SOURCE_KEY, 'user'),
+				persistedChatTitle: await waitForMetadata(customChatTitleMetadataKey(defaultChat), 'Renamed Default'),
+				persistedChatSource: await waitForMetadata(customChatTitleSourceMetadataKey(defaultChat), 'user'),
 			}, {
 				sessionTitle: 'Renamed Default',
 				defaultChatTitle: 'Renamed Default',

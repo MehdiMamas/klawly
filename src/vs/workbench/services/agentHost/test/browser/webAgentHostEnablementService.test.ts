@@ -6,7 +6,7 @@
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { AGENT_HOST_ENABLED_CONTEXT_KEY } from '../../../../../platform/agentHost/common/agentHostEnablementService.js';
-import { ChatAIDisabledSettingId } from '../../../../../platform/chat/common/chatSettings.js';
+import { CLAUDE_AGENTS_WINDOW_ENABLED_SETTING } from '../../../../../platform/claude/common/claudeAgentHost.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
@@ -21,14 +21,14 @@ suite('WebAgentHostEnablementService', () => {
 
 	function getEnablement(options: {
 		readonly remoteAuthority?: string;
-		readonly aiDisabled?: boolean;
+		readonly agentsWindowEnabled?: boolean;
 	}): {
 		readonly enabled: boolean;
 		readonly contextKey: boolean | undefined;
 	} {
 		const instantiationService = disposables.add(new TestInstantiationService());
 		const configurationService = new TestConfigurationService({
-			[ChatAIDisabledSettingId]: options.aiDisabled ?? false,
+			[CLAUDE_AGENTS_WINDOW_ENABLED_SETTING]: options.agentsWindowEnabled ?? true,
 		});
 		const contextKeyService = disposables.add(new MockContextKeyService());
 		instantiationService.stub(IConfigurationService, configurationService);
@@ -57,8 +57,9 @@ suite('WebAgentHostEnablementService', () => {
 		});
 	});
 
-	test('respects AI disablement in web with a remote extension host', () => {
-		assert.deepStrictEqual(getEnablement({ remoteAuthority: 'ssh-remote+test', aiDisabled: true }), {
+	// Klawly: the Agent Host follows the Agents window setting, not Copilot's AI disablement (issue 617).
+	test('stays off in web with a remote extension host while the Agents window setting is off', () => {
+		assert.deepStrictEqual(getEnablement({ remoteAuthority: 'ssh-remote+test', agentsWindowEnabled: false }), {
 			enabled: false,
 			contextKey: false,
 		});

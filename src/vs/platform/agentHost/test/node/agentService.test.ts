@@ -7,7 +7,7 @@ import assert from 'assert';
 import { spy } from 'sinon';
 import { isCustomizationEnabled } from '../../common/customizationEnablement.js';
 import { rm } from 'fs/promises';
-import type Anthropic from '@anthropic-ai/sdk';
+import type * as Anthropic from '../../node/shared/anthropicMessageTypes.js';
 import type { CCAModel } from '@vscode/copilot-api';
 import type { Database } from '@vscode/sqlite3';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'fs';
@@ -6590,7 +6590,7 @@ suite('AgentService (node dispatcher)', () => {
 			const database = new TestSessionDatabase();
 			const localService = disposables.add(createTestAgentService(new NullLogService(), fileService, createSessionDataService(database), { _serviceBrand: undefined } as IProductService, createNoopGitService()));
 			registerTestAgentProvider(localService, copilotAgent);
-			const initiator = { name: 'vscode-agents-window', title: 'VS Code Agents Window' };
+			const initiator = { name: 'vscode-agents-window', title: 'Klawly Agents Window' };
 			const session = await localService.createSession({ _meta: withSessionInitiator(undefined, initiator) });
 			const listed = await localService.listSessions();
 			assert.deepStrictEqual({
@@ -16009,14 +16009,14 @@ suite('AgentService (node dispatcher)', () => {
 			const svc = disposables.add(createTestAgentService(new NullLogService(), fileService, createSessionDataService(), { _serviceBrand: undefined } as IProductService, createNoopGitService()));
 			const agent = disposables.add(new SingleFlightRetryAgent('copilot'));
 			registerTestAgentProvider(svc, agent);
-			for (let i = 0; i < 20 && agent.catalogCalls === 0; i++) {
-				await timeout(0);
+			for (let i = 0; i < 1000 && agent.catalogCalls === 0; i++) {
+				await timeout(5);
 			}
 
 			const last30Days = svc.listSessions(AgentHostExternalSessionsMode.Last30Days);
 			const recent = svc.listSessions(AgentHostExternalSessionsMode.Recent);
-			for (let i = 0; i < 20 && agent.catalogCalls < 2; i++) {
-				await timeout(0);
+			for (let i = 0; i < 1000 && agent.catalogCalls < 2; i++) {
+				await timeout(5);
 			}
 			assert.strictEqual(agent.catalogCalls, 2, 'overlapping computations must share the replacement retry');
 			retryGate.complete();
@@ -19432,8 +19432,10 @@ suite('AgentService (node dispatcher)', () => {
 			}
 
 			async function advanceUntil(predicate: () => boolean): Promise<void> {
-				for (let i = 0; i < 50 && !predicate(); i++) {
-					await timeout(0);
+				// Bounded by time, not by a tick count: a loaded runner needs real I/O time here.
+				const deadline = Date.now() + 5000;
+				while (!predicate() && Date.now() < deadline) {
+					await timeout(1);
 				}
 			}
 

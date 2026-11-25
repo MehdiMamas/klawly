@@ -5,7 +5,7 @@
 
 import assert from 'assert';
 import * as sinon from 'sinon';
-import type Anthropic from '@anthropic-ai/sdk';
+import type * as Anthropic from '../../../node/shared/anthropicMessageTypes.js';
 import { DeferredPromise } from '../../../../../base/common/async.js';
 import { Iterable } from '../../../../../base/common/iterator.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';

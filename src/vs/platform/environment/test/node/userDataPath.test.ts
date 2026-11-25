@@ -42,6 +42,33 @@ suite('User data path', () => {
 		assert.ok(path.includes(cliUserDataDir));
 	});
 
+	test('getUserDataPath - dev uses klawly-dev', () => {
+		const origDev = process.env['VSCODE_DEV'];
+		const origPortable = process.env['VSCODE_PORTABLE'];
+		const origAppData = process.env['VSCODE_APPDATA'];
+		try {
+			process.env['VSCODE_DEV'] = '1';
+			delete process.env['VSCODE_PORTABLE'];
+			delete process.env['VSCODE_APPDATA'];
+
+			const path = getUserDataPath(parseArgs([], OPTIONS), 'Klawly');
+			assert.ok(path.endsWith('klawly-dev'));
+			assert.ok(!path.includes('code-oss-dev'));
+		} finally {
+			if (typeof origDev === 'string') {
+				process.env['VSCODE_DEV'] = origDev;
+			} else {
+				delete process.env['VSCODE_DEV'];
+			}
+			if (typeof origPortable === 'string') {
+				process.env['VSCODE_PORTABLE'] = origPortable;
+			}
+			if (typeof origAppData === 'string') {
+				process.env['VSCODE_APPDATA'] = origAppData;
+			}
+		}
+	});
+
 	test('getUserDataPath - VSCODE_APPDATA', () => {
 		const origAppData = process.env['VSCODE_APPDATA'];
 		try {

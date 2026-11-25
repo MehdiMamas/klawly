@@ -176,7 +176,8 @@ suite('shellInitScript', () => {
 				`Write-Output "profiles=$env:VSCODE_TEST_ALL_HOSTS,$env:VSCODE_TEST_CURRENT_HOST activation=$env:VSCODE_TEST_ACTIVATION exit=$global:LASTEXITCODE"`,
 			].join('\n');
 
-			const { stdout } = await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', command]);
+			// Klawly: the profiles are script files, which a machine's default Restricted execution policy refuses to run.
+			const { stdout } = await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', command]);
 
 			assert.deepStrictEqual(stdout.trim().split(/\r?\n/), [
 				'copilot shell init: loading the PowerShell profile failed; continuing.',

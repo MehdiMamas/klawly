@@ -13,7 +13,7 @@ import { ICommandAction } from '../../../action/common/action.js';
 import { NativeParsedArgs } from '../../../environment/common/argv.js';
 import { INativeWindowConfiguration } from '../../../window/common/window.js';
 import { ICodeWindow, ILoadEvent, IWindowState } from '../../../window/electron-main/window.js';
-import { findWindowOnFile } from '../../electron-main/windowsFinder.js';
+import { findWindowOnFile, findWindowOnWorkspaceOrFolder } from '../../electron-main/windowsFinder.js';
 import { toWorkspaceFolders } from '../../../workspaces/common/workspaces.js';
 import { IWorkspaceIdentifier } from '../../../workspace/common/workspace.js';
 import { FileAccess } from '../../../../base/common/network.js';
@@ -32,7 +32,7 @@ suite('WindowsFinder', () => {
 	const testWorkspaceFolders = toWorkspaceFolders([{ path: join(fixturesFolder, 'vscode_workspace_1_folder') }, { path: join(fixturesFolder, 'vscode_workspace_2_folder') }], testWorkspace.configPath, extUriBiasedIgnorePathCase);
 	const localWorkspaceResolver = async (workspace: IWorkspaceIdentifier) => { return workspace === testWorkspace ? { id: testWorkspace.id, configPath: workspace.configPath, folders: testWorkspaceFolders } : undefined; };
 
-	function createTestCodeWindow(options: { lastFocusTime: number; openedFolderUri?: URI; openedWorkspace?: IWorkspaceIdentifier }): ICodeWindow {
+	function createTestCodeWindow(options: { lastFocusTime: number; openedFolderUri?: URI; openedWorkspace?: IWorkspaceIdentifier; agentsLayout?: boolean }): ICodeWindow {
 		return new class implements ICodeWindow {
 			readonly onWillLoad: Event<ILoadEvent> = Event.None;
 			onDidMaximize = Event.None;
@@ -46,7 +46,7 @@ suite('WindowsFinder', () => {
 			whenClosedOrLoaded: Promise<void> = Promise.resolve();
 			id: number = -1;
 			win: Electron.BrowserWindow = null!;
-			config: INativeWindowConfiguration | undefined;
+			config: INativeWindowConfiguration | undefined = options.agentsLayout ? { 'agents-layout': true } as unknown as INativeWindowConfiguration : undefined;
 			openedWorkspace = options.openedFolderUri ? { id: '', uri: options.openedFolderUri } : options.openedWorkspace;
 			backupPath?: string | undefined;
 			remoteAuthority?: string | undefined;
@@ -90,6 +90,14 @@ suite('WindowsFinder', () => {
 		lastActiveWindow,
 		noVscodeFolderWindow,
 	];
+
+	test('The Agents window is never the window a file or folder opens in', async () => {
+		const folder = URI.file(join(fixturesFolder, 'vscode_folder'));
+		const agentsWindow = createTestCodeWindow({ lastFocusTime: 9, openedFolderUri: folder, agentsLayout: true });
+		assert.strictEqual(await findWindowOnFile([agentsWindow], URI.file(join(fixturesFolder, 'vscode_folder', 'file.txt')), localWorkspaceResolver), undefined);
+		assert.strictEqual(findWindowOnWorkspaceOrFolder([agentsWindow], folder), undefined);
+		assert.strictEqual(findWindowOnWorkspaceOrFolder([agentsWindow, vscodeFolderWindow], folder), vscodeFolderWindow);
+	});
 
 	test('New window without folder when no windows exist', async () => {
 		assert.strictEqual(await findWindowOnFile([], URI.file('nonexisting'), localWorkspaceResolver), undefined);

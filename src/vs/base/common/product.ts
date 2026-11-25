@@ -101,6 +101,10 @@ export interface IProductConfiguration {
 	readonly date?: string;
 	readonly quality?: string;
 	readonly commit?: string;
+	/** Code - OSS commit this product was forked from. */
+	readonly upstreamCommit?: string;
+	/** Klawly release this build was packaged for, such as `alpha.8`; stamped from the release tag. */
+	readonly klawlyRelease?: string;
 
 	readonly nameShort: string;
 	readonly nameLong: string;
@@ -162,6 +166,8 @@ export interface IProductConfiguration {
 	};
 
 	readonly dictationRuntime?: IDictationRuntimeProductConfig;
+	/** Klawly: the package carries the on-device dictation runtime of its platform, so nothing is downloaded (issue 547). */
+	readonly klawlyDictationBundled?: boolean;
 
 	readonly mcpGallery?: {
 		readonly serviceUrl: string;

@@ -1004,7 +1004,7 @@ suite('Dev Container Agent Host Main Service', () => {
 		});
 	}
 
-	test('failed sample preparation does not stop containers used by other VS Code sessions', async () => {
+	test('failed sample preparation does not stop containers used by other Klawly sessions', async () => {
 		const service = store.add(new class extends TestDevContainerAgentHostMainService {
 			protected override async _prepareSample(_connectionId: string, _sample: DevContainerSample, _token: CancellationToken, onContainerStarted: (containerId: string) => void): Promise<IPreparedDevContainerSample> {
 				onContainerStarted('sample-container');

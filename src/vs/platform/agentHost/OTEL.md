@@ -119,7 +119,7 @@ Records are emitted at terminal observation, including errors/cancellation. Pend
 
 ### Existing product telemetry and logs
 
-The renderer reports `agentHost.firstResponse` and writes a content-free `[AgentHostFirstResponse]` JSON record to its existing log. Schema version 1 contains `requestId`, `provider`, `connectionKind`, optional backend `agentSessionId` / `chatId`, `sessionTurnKind` (`first`, `later`, or `unknown`), `outcome` (`success`, `cancelled`, `error`, or `notDispatched`), `hasResponseText`, optional `firstResponseTextMs`, and `totalElapsedMs`. The log additionally retains `sessionId`, identical to `agentSessionId`, for compatibility, and includes `turnId`, identical to `requestId`, for AHP joins. The telemetry property uses `agentSessionId` to avoid colliding with the common VS Code `sessionID` property. Durations use a local monotonic clock starting at agent invocation, before trust/authentication/session preparation. `invocationKind` is `newTurn`, `existingTurn`, `subagent`, or `unknown` before hydration. Exclude `existingTurn` and `subagent` records from first-response comparisons rather than treating them as successful turns without an answer. The endpoint is the first nonwhitespace live root markdown emission, including final-only responses, not physical submit, paint, or a semantic guarantee of an answer. Reasoning, tool output, restored history and server-initiated observation do not start this metric. Existing first-progress measurements are unchanged.
+The renderer reports `agentHost.firstResponse` and writes a content-free `[AgentHostFirstResponse]` JSON record to its existing log. Schema version 1 contains `requestId`, `provider`, `connectionKind`, optional backend `agentSessionId` / `chatId`, `sessionTurnKind` (`first`, `later`, or `unknown`), `outcome` (`success`, `cancelled`, `error`, or `notDispatched`), `hasResponseText`, optional `firstResponseTextMs`, and `totalElapsedMs`. The log additionally retains `sessionId`, identical to `agentSessionId`, for compatibility, and includes `turnId`, identical to `requestId`, for AHP joins. The telemetry property uses `agentSessionId` to avoid colliding with the common Klawly `sessionID` property. Durations use a local monotonic clock starting at agent invocation, before trust/authentication/session preparation. `invocationKind` is `newTurn`, `existingTurn`, `subagent`, or `unknown` before hydration. Exclude `existingTurn` and `subagent` records from first-response comparisons rather than treating them as successful turns without an answer. The endpoint is the first nonwhitespace live root markdown emission, including final-only responses, not physical submit, paint, or a semantic guarantee of an answer. Reasoning, tool output, restored history and server-initiated observation do not start this metric. Existing first-progress measurements are unchanged.
 
 `connectionKind` reuses `AgentHostClientConnectionKind`, assigned by the owning client transport/integration and exposed through `IAgentConnection`. Values are `local`, `direct_websocket`, `dev_tunnel`, `dev_container`, `ssh`, `wsl`, `remote_extension_host`, `web_pub_sub`, `mission_control`, and `unknown`. The invocation captures this classification once, independently of provider names, host identities, or the configured-host registry, so it survives disconnection. Missing or unrecognized classifications become `unknown`; older diagnostic payloads can omit the field. The log and OTel diagnostic carry the same value, with no environment IDs, addresses, or credentials.
 
@@ -139,7 +139,7 @@ The usage sidecar diagnostics are separate from provider OTel and product teleme
 
 ## Sandbox Connection Product Scorecard
 
-The renderer's [cloud sandbox telemetry owner](../../workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxTelemetry.ts) uses ordinary VS Code product telemetry, not provider OTel. Existing telemetry-level and administrator controls apply; no additional setting or exporter is needed.
+The renderer's [cloud sandbox telemetry owner](../../workbench/contrib/chat/browser/remoteAgentHost/cloudSandboxTelemetry.ts) uses ordinary Klawly product telemetry, not provider OTel. Existing telemetry-level and administrator controls apply; no additional setting or exporter is needed.
 
 - `cloudSandboxConnectionOutcome`: one `connect` or `recover` outcome (`success`, `failure`, `cancelled`) and `durationMs`. Public connects start before credential minting, waking and sealed-token waits; direct factory dials start at connection setup. `stage` is the last observed credentials, connection, relay, protocol, authentication or restoration stage. Readiness means authenticated AHP initialization/state restoration, not WebSocket open. Reuse is excluded. Retries, backoff and outer-client replacement stay in the same operation; an initial handshake retry is not a healthy connection drop.
 - `cloudSandboxProvisioningOutcome`: one task/VM creation outcome (`success`, `failure`, `cancelled`) and client-observed `durationMs`, before connection tracking starts. Includes account resolution, HTTP, response validation and failure cleanup. Success means a usable environment/session binding was returned, not that AHP or the repository is ready. This event does not contain a connection identifier; analyze provisioning separately rather than joining individual attempts.
@@ -177,7 +177,7 @@ Agent Host owns transport routing, optional interception and persistence, resour
 - **Claude:** the Claude runtime's native OTel implementation and launch environment.
 - **Codex:** the Codex app-server's native OTel implementation and launch overrides.
 
-Do not copy provider-native span, event, metric, or environment-variable catalogs into this document. Keep this reference focused on the VS Code-owned integration boundary. The extension-host Copilot CLI bridge under `extensions/copilot/src/extension/chatSessions/copilotcli/` is a deprecated compatibility path and is not the Agent Host architecture.
+Do not copy provider-native span, event, metric, or environment-variable catalogs into this document. Keep this reference focused on the Klawly-owned integration boundary. The extension-host Copilot CLI bridge under `extensions/copilot/src/extension/chatSessions/copilotcli/` is a deprecated compatibility path and is not the Agent Host architecture.
 
 ## Two Modes
 
@@ -242,7 +242,7 @@ Agent Host is one logical system with several native OTel producers. Agent Host-
 | Claude runtime | `claude-code` |
 | Codex app-server | `codex-app-server` |
 
-Unrelated inherited resource attributes are preserved. A conflicting inherited `service.namespace` is replaced only inside Agent Host-owned telemetry and provider launch environments; no global VS Code namespace is set. Provider launch environments do not inherit a host `OTEL_SERVICE_NAME`.
+Unrelated inherited resource attributes are preserved. A conflicting inherited `service.namespace` is replaced only inside Agent Host-owned telemetry and provider launch environments; no global Klawly namespace is set. Provider launch environments do not inherit a host `OTEL_SERVICE_NAME`.
 
 Claude honors these standard resource variables for traces, logs, and metrics while retaining its native `claude-code` service name. The current Codex app-server hardcodes `codex-app-server` and does not consume standard resource overrides; Agent Host preserves that native name and adds the shared namespace to intercepted traces. Direct Codex logs/metrics cannot carry the namespace until Codex adds standard resource-attribute support.
 
@@ -254,12 +254,12 @@ Sessions created by Run Multiple Agents add bounded correlation attributes to th
 
 | Attribute | Description |
 |---|---|
-| `vscode.agent_host.comparison.id` | Hashed random comparison identifier, matching the correlation key in the VS Code comparison telemetry events. |
+| `vscode.agent_host.comparison.id` | Hashed random comparison identifier, matching the correlation key in the Klawly comparison telemetry events. |
 | `vscode.agent_host.comparison.role` | `attempt`, `judge`, or `synthesis`. |
 | `vscode.agent_host.comparison.attempt_index` | Zero-based attempt ordinal; present only for attempts. |
 | `vscode.agent_host.comparison.attempt_count` | Number of implementation attempts in the comparison. |
 
-These attributes contain no prompt, title, path, model label, or tool content and do not require content capture. They are emitted only when Agent Host OTel is already enabled; comparisons do not enable or reconfigure OTel. Token consumption comes from the provider-native chat spans in the same trace (`gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens`) rather than VS Code telemetry.
+These attributes contain no prompt, title, path, model label, or tool content and do not require content capture. They are emitted only when Agent Host OTel is already enabled; comparisons do not enable or reconfigure OTel. Token consumption comes from the provider-native chat spans in the same trace (`gen_ai.usage.input_tokens` and `gen_ai.usage.output_tokens`) rather than Klawly telemetry.
 
 ## Session Title Metadata
 
@@ -274,7 +274,7 @@ When content capture is enabled, the agent host emits a zero-duration `vscode.ag
 Title text is user-derived content, so these spans are emitted only when `chat.agentHost.otel.captureContent` is enabled. Host-produced title spans copy `OTEL_SERVICE_NAME` and `OTEL_RESOURCE_ATTRIBUTES` so collectors group them with the SDK telemetry. They are persisted in DB mode and use the configured OTLP, file, or console forwarder. Synthetic OTLP forwarding currently uses OTLP/HTTP JSON; when `http/protobuf` or gRPC is configured, title spans remain available in DB mode but are not sent to that external endpoint.
 
 
-## VS Code Settings
+## Klawly Settings
 
 Open **Settings** (`Ctrl+,`) and search for `agentHost otel`:
 
@@ -307,9 +307,9 @@ The workbench-side starter translates the settings above into the following env 
 | `OTEL_RESOURCE_ATTRIBUTES` | (inherited or enterprise policy) | Extra resource attributes (`k=v,k2=v2`); set from the managed `telemetry.resourceAttributes`. |
 | `OTEL_EXPORTER_OTLP_HEADERS` | (inherited) | Auth headers (for example, `Authorization=<value>`). **Not** delivered from managed settings — env delivery would leak the secret to tool subprocesses; managed headers apply to the Copilot Chat extension only. |
 
-Inside Agent Host, OTel activates when `COPILOT_OTEL_ENABLED` or `COPILOT_OTEL_DB_SPAN_EXPORTER_ENABLED` is truthy, or when an OTLP endpoint or file-exporter path is non-empty. This allows inherited environment configuration to enable OTel without a local VS Code setting.
+Inside Agent Host, OTel activates when `COPILOT_OTEL_ENABLED` or `COPILOT_OTEL_DB_SPAN_EXPORTER_ENABLED` is truthy, or when an OTLP endpoint or file-exporter path is non-empty. This allows inherited environment configuration to enable OTel without a local Klawly setting.
 
-> **Activation timing.** Env vars are bound at agent host **spawn time**. When settled enterprise OTel policy changes after startup, VS Code automatically respawns the local agent host with the new policy. Temporary policy-refresh values and windows still resolving their initial account do not restart an existing host. Changes to personal settings still require a manual agent host or window restart.
+> **Activation timing.** Env vars are bound at agent host **spawn time**. When settled enterprise OTel policy changes after startup, Klawly automatically respawns the local agent host with the new policy. Temporary policy-refresh values and windows still resolving their initial account do not restart an existing host. Changes to personal settings still require a manual agent host or window restart.
 
 ## Local SQLite Span Store
 

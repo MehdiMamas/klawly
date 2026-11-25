@@ -89,7 +89,8 @@ import { getPiiPathsFromEnvironment, getTelemetryLevel, isInternalTelemetry, Nul
 import { IUpdateService } from '../../platform/update/common/update.js';
 import { UpdateChannel } from '../../platform/update/common/updateIpc.js';
 import { NotAvailableUpdateDialog } from '../../platform/update/electron-main/notAvailableUpdateDialog.js';
-import { DarwinUpdateService } from '../../platform/update/electron-main/updateService.darwin.js';
+import { registerClaudeLoginItem } from '../../platform/claude/electron-main/claudeLoginItem.js';
+import { DarwinSquirrelUpdateService } from '../../platform/claude/electron-main/darwinSquirrelUpdateService.js';
 import { LinuxUpdateService } from '../../platform/update/electron-main/updateService.linux.js';
 import { SnapUpdateService } from '../../platform/update/electron-main/updateService.snap.js';
 import { Win32UpdateService } from '../../platform/update/electron-main/updateService.win32.js';
@@ -697,7 +698,7 @@ export class CodeApplication extends Disposable {
 
 	async startup(): Promise<void> {
 		mark('code/willStartCodeApplication');
-		this.logService.debug('Starting VS Code');
+		this.logService.debug('Starting Klawly');
 		this.logService.debug(`from: ${this.environmentMainService.appRoot}`);
 		this.logService.debug('args:', this.environmentMainService.args);
 		logNodeCompileCacheStatus(message => this.logService.info(message));
@@ -1087,7 +1088,7 @@ export class CodeApplication extends Disposable {
 			const windows = await windowsMainService.openAgentsWindow({
 				context: OpenContext.LINK,
 				cli: { ...this.environmentMainService.args },
-			}, newSessionLink.workspaceUri, undefined, AgentsWindowOpenSource.Link, false, newSessionLink.draft);
+			}, newSessionLink.workspaceUri, undefined, AgentsWindowOpenSource.Link);
 			return windows.length > 0;
 		}
 
@@ -1235,7 +1236,7 @@ export class CodeApplication extends Disposable {
 				break;
 
 			case 'darwin':
-				services.set(IUpdateService, new SyncDescriptor(DarwinUpdateService));
+				services.set(IUpdateService, new SyncDescriptor(DarwinSquirrelUpdateService)); // Klawly: Squirrel, fed the app's zip by the relay (issue 1212)
 				break;
 		}
 
@@ -1560,7 +1561,7 @@ export class CodeApplication extends Disposable {
 					context: OpenContext.LINK,
 					cli: args,
 					initialStartup: true,
-				}, newSessionLink?.workspaceUri, agentSessionLink, AgentsWindowOpenSource.Link, false, newSessionLink?.draft);
+				}, newSessionLink?.workspaceUri, agentSessionLink, AgentsWindowOpenSource.Link);
 			}
 
 			// Openables can open as windows directly
@@ -1682,6 +1683,14 @@ export class CodeApplication extends Disposable {
 
 		// Windows: mutex
 		this.installMutex();
+
+		// Klawly: optional login item for automations (issue 463); a login start opens minimized
+		this._register(registerClaudeLoginItem(this.configurationService, this.logService));
+		if (this.environmentMainService.args['background-start']) {
+			for (const window of this.windowsMainService?.getWindows() ?? []) {
+				window.win?.minimize();
+			}
+		}
 
 		// Remote Authorities
 		protocol.handle(Schemas.vscodeRemoteResource, createRemoteResourceRequestHandler(this.logService));

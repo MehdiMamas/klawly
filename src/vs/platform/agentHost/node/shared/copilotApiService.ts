@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type Anthropic from '@anthropic-ai/sdk';
+import type * as Anthropic from './anthropicMessageTypes.js';
 import { CAPIClient, RequestType, type CCAModel, type IExtensionInformation } from '@vscode/copilot-api';
 import { generateUuid } from '../../../../base/common/uuid.js';
 import { Disposable, toDisposable } from '../../../../base/common/lifecycle.js';

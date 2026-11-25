@@ -89,7 +89,7 @@ export class DarwinUpdateService extends AbstractUpdateService implements IRelau
 		}
 
 		// only show message when explicitly checking for updates
-		const message = (this.state.type === StateType.CheckingForUpdates && this.state.explicit) ? err : undefined;
+		const message = ((this.state.type === StateType.CheckingForUpdates || this.state.type === StateType.Downloading) && this.state.explicit) ? err : undefined; // Klawly (issue 1580): a failed download says why
 		this.setState(State.Idle(UpdateType.Archive, message));
 	}
 
@@ -124,15 +124,10 @@ export class DarwinUpdateService extends AbstractUpdateService implements IRelau
 			return;
 		}
 
-		// When connection is metered and this is not an explicit check, avoid electron call as to not to trigger auto-download.
-		if (!explicit && this.meteredConnectionService.isConnectionMetered) {
-			this.logService.info('update#doCheckForUpdates - checking for update without auto-download because connection is metered');
-			this.checkForUpdateNoDownload(url);
-			return;
-		}
-
-		this.logService.trace('update#doCheckForUpdates - using Electron autoUpdater', { url, explicit, background });
-		electron.autoUpdater.checkForUpdates();
+		// Klawly (issue 1580): never let Squirrel download on a check. The feed is read here, the user sees
+		// Update (AvailableForDownload), and doDownloadUpdate starts Squirrel only when they press it.
+		this.logService.trace('update#doCheckForUpdates - checking the feed without auto-download', { url, explicit, background });
+		void this.checkForUpdateNoDownload(url);
 	}
 
 	/**
@@ -188,6 +183,12 @@ export class DarwinUpdateService extends AbstractUpdateService implements IRelau
 	private onUpdateNotAvailable(): void {
 		this.logService.trace('update#onUpdateNotAvailable - Electron autoUpdater reported no update available');
 
+		if (this.state.type === StateType.Downloading) {
+			// Klawly (issue 1580): the feed no longer lists the update the user pressed Update for.
+			this.setState(State.Idle(UpdateType.Archive));
+			return;
+		}
+
 		if (this.state.type !== StateType.CheckingForUpdates) {
 			return;
 		}
@@ -197,9 +198,10 @@ export class DarwinUpdateService extends AbstractUpdateService implements IRelau
 	}
 
 	protected override async doDownloadUpdate(state: AvailableForDownload): Promise<void> {
-		// Rebuild feed URL and trigger download via Electron's auto-updater
-		this.buildUpdateFeedUrl(this.quality!, state.update.version, { internalOrg: this.getInternalOrg() });
-		this.setState(State.CheckingForUpdates(true));
+		// Klawly (issue 1580): the feed answers for the commit the app runs (state.update.version is the newest
+		// commit and would get 204), and the state goes straight to Downloading so the bar shows at once.
+		this.buildUpdateFeedUrl(this.quality!, this.productService.commit!, { internalOrg: this.getInternalOrg() });
+		this.setState(State.Downloading(state.update, true, false));
 		electron.autoUpdater.checkForUpdates();
 	}
 

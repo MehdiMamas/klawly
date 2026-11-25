@@ -18,7 +18,9 @@ import { getResolvedShellEnv } from '../../shell/node/shellEnv.js';
 import { ITelemetryService } from '../../telemetry/common/telemetry.js';
 import { IAgentHostConnection, IAgentHostStarter } from '../common/agent.js';
 import { AgentHostLaunchKind, AgentHostLaunchKindEnvVar, telemetryLevelToAgentHostValue } from '../common/agentHostTelemetry.js';
-import { AgentHostClaudeAgentEnabledSettingId, AgentHostCodexAgentBinaryArgsSettingId, AgentHostCodexAgentEnabledSettingId, AgentHostCodexAgentSdkRootSettingId, AgentHostCodexAgentCodexHomeSettingId, AgentHostIpcChannels, AgentHostOTelCaptureContentSettingId, AgentHostOTelCaptureIdentitySettingId, AgentHostOTelDbSpanExporterEnabledSettingId, AgentHostOTelEnabledSettingId, AgentHostOTelExporterTypeSettingId, AgentHostOTelOtlpEndpointSettingId, AgentHostOTelOutfileSettingId, buildAgentHostOTelEnv, buildAgentSdkEnv, IAgentHostManagementService, readAgentHostOTelPolicySettings } from '../common/agentService.js';
+import { AgentHostCodexAgentBinaryArgsSettingId, AgentHostCodexAgentEnabledSettingId, AgentHostCodexAgentSdkRootSettingId, AgentHostCodexAgentCodexHomeSettingId, AgentHostIpcChannels, AgentHostOTelCaptureContentSettingId, AgentHostOTelCaptureIdentitySettingId, AgentHostOTelDbSpanExporterEnabledSettingId, AgentHostOTelEnabledSettingId, AgentHostOTelExporterTypeSettingId, AgentHostOTelOtlpEndpointSettingId, AgentHostOTelOutfileSettingId, buildAgentHostOTelEnv, buildAgentSdkEnv, IAgentHostManagementService, readAgentHostOTelPolicySettings } from '../common/agentService.js';
+import { CLAUDE_AGENTS_WINDOW_ENABLED_SETTING, klawlyAgentHostEnv } from '../../claude/common/claudeAgentHost.js';
+import { CLAUDE_AGENT_RUNTIME_PATH_SETTING } from '../../claude/common/claudeConfiguration.js';
 
 /**
  * Options for configuring the agent host WebSocket server in the child process.
@@ -104,9 +106,10 @@ export class NodeAgentHostStarter extends Disposable implements IAgentHostStarte
 			codexSdkRoot: this._configurationService.getValue<string>(AgentHostCodexAgentSdkRootSettingId),
 			codexHome: this._configurationService.getValue<string>(AgentHostCodexAgentCodexHomeSettingId),
 			codexBinaryArgs: this._configurationService.getValue<readonly string[]>(AgentHostCodexAgentBinaryArgsSettingId),
-			claudeAgentEnabled: this._configurationService.getValue<boolean>(AgentHostClaudeAgentEnabledSettingId),
+			claudeAgentEnabled: this._configurationService.getValue<boolean>(CLAUDE_AGENTS_WINDOW_ENABLED_SETTING) === true,
 			codexAgentEnabled: this._configurationService.getValue<boolean>(AgentHostCodexAgentEnabledSettingId),
 		}, process.env);
+		Object.assign(sdkEnv, klawlyAgentHostEnv(this._configurationService.getValue<string>(CLAUDE_AGENT_RUNTIME_PATH_SETTING), process.env));
 		Object.assign(env, sdkEnv);
 
 		// Translate `chat.agentHost.otel.*` settings into the env vars consumed by

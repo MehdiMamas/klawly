@@ -23,6 +23,7 @@ import { AbstractPolicyService, IPolicyService, PolicyDefinition, PolicyValue, P
 import { Registry } from '../../../../../platform/registry/common/platform.js';
 import { TestContextService, TestProductService, TestStorageService } from '../../../../test/common/workbenchTestServices.js';
 import { getComputedDefaultSessionType, getDefaultNewChatSessionType } from '../../../../contrib/chat/common/constants.js';
+import { CLAUDE_AGENTS_WINDOW_ENABLED_SETTING } from '../../../../../platform/claude/common/claudeAgentHost.js';
 import { localChatSessionType, SessionType } from '../../../../contrib/chat/common/chatSessionsService.js';
 import { storeUserSelectedSessionType } from '../../../../contrib/chat/common/chatSessionTypePreference.js';
 import { DefaultAccountService } from '../../../accounts/browser/defaultAccount.js';
@@ -516,7 +517,7 @@ suite('AccountPolicyService', () => {
 
 		policyService = disposables.add(new AccountPolicyService(logService, defaultAccountService, undefined, nativeManagedSettingsService));
 		await policyService.updatePolicyDefinitions({ SandboxTest: { type: 'boolean' } });
-		const configurationService = new TestConfigurationService();
+		const configurationService = new TestConfigurationService({ [CLAUDE_AGENTS_WINDOW_ENABLED_SETTING]: true });
 		disposables.add(configurationService.onDidChangeConfigurationEmitter);
 		const contextKeyService = disposables.add(new MockContextKeyService());
 		const enablementService = disposables.add(new AgentHostEnablementService(true, configurationService, contextKeyService, policyService));

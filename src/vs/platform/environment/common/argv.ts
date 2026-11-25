@@ -29,6 +29,8 @@ export interface NativeParsedArgs {
 		_: string[];
 		'add-file'?: string[];
 		mode?: string;
+		worktree?: boolean;
+		resume?: string;
 		maximize?: boolean;
 		'reuse-window'?: boolean;
 		'new-window'?: boolean;
@@ -55,6 +57,10 @@ export interface NativeParsedArgs {
 	'new-window'?: boolean;
 	'reuse-window'?: boolean;
 	'agents'?: boolean;
+	/** Set on a window opened by `openAgentsWindow`: the workbench shows the agents-only layout. */
+	'agents-layout'?: boolean;
+	/** Set by the automations login item: windows open minimized so the scheduler runs without one in front. */
+	'background-start'?: boolean;
 	'session-title-base64'?: string;
 	locale?: string;
 	'user-data-dir'?: string;

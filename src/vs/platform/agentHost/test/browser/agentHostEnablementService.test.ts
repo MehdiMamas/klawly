@@ -10,7 +10,7 @@ import { Emitter } from '../../../../base/common/event.js';
 import { AgentHostEnablementService } from '../../browser/agentHostEnablementService.js';
 import { AGENT_HOST_ENABLED_CONTEXT_KEY } from '../../common/agentHostEnablementService.js';
 import { ConfigurationTarget, IConfigurationChangeEvent, IConfigurationOverrides } from '../../../configuration/common/configuration.js';
-import { ChatAIDisabledSettingId } from '../../../chat/common/chatSettings.js';
+import { CLAUDE_AGENTS_WINDOW_ENABLED_SETTING } from '../../../claude/common/claudeAgentHost.js';
 import { TestConfigurationService } from '../../../configuration/test/common/testConfigurationService.js';
 import { COPILOT_SANDBOX_ALLOW_BYPASS_KEY, COPILOT_SANDBOX_ENABLED_KEY, IManagedSettingsService, NullManagedSettingsService } from '../../../policy/common/copilotManagedSettings.js';
 import { MockContextKeyService } from '../../../keybinding/test/common/mockKeybindingService.js';
@@ -19,9 +19,9 @@ class AgentHostTestConfigurationService extends TestConfigurationService {
 
 	private readonly values = new Map<string, boolean>();
 
-	constructor(aiDisabled = false) {
+	constructor(agentsWindowEnabled = true) {
 		super();
-		this.values.set(ChatAIDisabledSettingId, aiDisabled);
+		this.values.set(CLAUDE_AGENTS_WINDOW_ENABLED_SETTING, agentsWindowEnabled);
 	}
 
 	override getValue<T>(arg1?: string | IConfigurationOverrides): T | undefined {
@@ -43,12 +43,12 @@ class AgentHostTestConfigurationService extends TestConfigurationService {
 suite('AgentHostEnablementService', () => {
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 
-	function createService(aiDisabled = false, runtimeAvailable = true, managedSettingsService: IManagedSettingsService = new NullManagedSettingsService()): {
+	function createService(agentsWindowEnabled = true, runtimeAvailable = true, managedSettingsService: IManagedSettingsService = new NullManagedSettingsService()): {
 		readonly service: AgentHostEnablementService;
 		readonly configurationService: AgentHostTestConfigurationService;
 		readonly contextKeyService: MockContextKeyService;
 	} {
-		const configurationService = new AgentHostTestConfigurationService(aiDisabled);
+		const configurationService = new AgentHostTestConfigurationService(agentsWindowEnabled);
 		disposables.add(configurationService.onDidChangeConfigurationEmitter);
 		const contextKeyService = disposables.add(new MockContextKeyService());
 		const service = disposables.add(new AgentHostEnablementService(
@@ -71,8 +71,8 @@ suite('AgentHostEnablementService', () => {
 		});
 	});
 
-	test('is disabled when AI features are disabled', () => {
-		const { service, contextKeyService } = createService(true);
+	test('is disabled when the Agents window setting is off', () => {
+		const { service, contextKeyService } = createService(false);
 		assert.deepStrictEqual({
 			enabled: service.enabled.get(),
 			contextKey: contextKeyService.getContextKeyValue(AGENT_HOST_ENABLED_CONTEXT_KEY.key),
@@ -83,7 +83,7 @@ suite('AgentHostEnablementService', () => {
 	});
 
 	test('is disabled when the runtime is unavailable', () => {
-		const { service, contextKeyService } = createService(false, false);
+		const { service, contextKeyService } = createService(true, false);
 		assert.deepStrictEqual({
 			enabled: service.enabled.get(),
 			contextKey: contextKeyService.getContextKeyValue(AGENT_HOST_ENABLED_CONTEXT_KEY.key),
@@ -93,13 +93,13 @@ suite('AgentHostEnablementService', () => {
 		});
 	});
 
-	test('tracks AI feature disablement in both directions', () => {
+	test('tracks the Agents window setting in both directions', () => {
 		const { service, configurationService, contextKeyService } = createService();
 		const changes: boolean[] = [];
 		disposables.add(autorun(reader => changes.push(service.enabled.read(reader))));
 
-		configurationService.setValue(ChatAIDisabledSettingId, true, ConfigurationTarget.USER);
-		configurationService.setValue(ChatAIDisabledSettingId, false, ConfigurationTarget.USER);
+		configurationService.setValue(CLAUDE_AGENTS_WINDOW_ENABLED_SETTING, false, ConfigurationTarget.USER);
+		configurationService.setValue(CLAUDE_AGENTS_WINDOW_ENABLED_SETTING, true, ConfigurationTarget.USER);
 
 		assert.deepStrictEqual({
 			enabled: service.enabled.get(),

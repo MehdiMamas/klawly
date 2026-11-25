@@ -7,7 +7,7 @@ import { Disposable } from '../../../base/common/lifecycle.js';
 import { derived, IObservable, observableFromEvent } from '../../../base/common/observable.js';
 import { isWeb } from '../../../base/common/platform.js';
 import { IConfigurationService } from '../../configuration/common/configuration.js';
-import { ChatAIDisabledSettingId } from '../../chat/common/chatSettings.js';
+import { CLAUDE_AGENTS_WINDOW_ENABLED_SETTING } from '../../claude/common/claudeAgentHost.js';
 import { IContextKeyService } from '../../contextkey/common/contextkey.js';
 import { InstantiationType, registerSingleton } from '../../instantiation/common/extensions.js';
 import { bindContextKey, observableConfigValue } from '../../observable/common/platformObservableUtils.js';
@@ -29,8 +29,9 @@ export class AgentHostEnablementService extends Disposable implements IAgentHost
 		managedSettingsService: IManagedSettingsService,
 	) {
 		super();
-		const aiFeaturesDisabled = observableConfigValue(ChatAIDisabledSettingId, false, configurationService);
-		this.enabled = derived(this, reader => this._isAgentHostRuntimeAvailable && !aiFeaturesDisabled.read(reader));
+		// Klawly: the Agent Host runs Claude only when Klawly's Agents window setting is on, not when Copilot's AI features are (issue 617).
+		const agentsWindowEnabled = observableConfigValue(CLAUDE_AGENTS_WINDOW_ENABLED_SETTING, false, configurationService);
+		this.enabled = derived(this, reader => this._isAgentHostRuntimeAvailable && agentsWindowEnabled.read(reader));
 		this._register(bindContextKey(AGENT_HOST_ENABLED_CONTEXT_KEY, contextKeyService, reader => this.enabled.read(reader)));
 
 		this.managedSandboxEnforced = observableFromEvent(this,

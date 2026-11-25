@@ -22,6 +22,28 @@ import { COPILOT_CONNECTORS_REQUEST_CHANNEL_NAME, CopilotConnectorsRequestChanne
 import { CopilotConnectorsRequestService } from '../../../platform/copilotConnectors/common/copilotConnectorsRequestService.js';
 import { IChecksumService } from '../../../platform/checksum/common/checksumService.js';
 import { ChecksumService } from '../../../platform/checksum/node/checksumService.js';
+import { IClaudeRuntimeService } from '../../../platform/claude/common/claude.js';
+import { CLAUDE_RUNTIME_CHANNEL } from '../../../platform/claude/common/claudeIpc.js';
+import { ClaudeSharedProcessRuntimeService } from '../../../platform/claude/node/claudeSharedRuntimeService.js';
+import { IClaudeWorktreeService } from '../../../platform/claude/common/claudeBackground.js';
+import { CLAUDE_MACHINE_SESSION_CHANNEL, CLAUDE_WORKTREE_CHANNEL } from '../../../platform/claude/common/claudeBackgroundIpc.js';
+import { IClaudeMachineSessionService } from '../../../platform/claude/common/claudeMachineSessions.js';
+import { ClaudeMachineSessionService } from '../../../platform/claude/node/claudeMachineSessionService.js';
+import { ClaudeWorktreeService } from '../../../platform/claude/node/claudeWorktreeService.js';
+import { CLAUDE_PLUGIN_CHANNEL, IClaudePluginService } from '../../../platform/claude/common/claudePlugins.js';
+import { ClaudePluginService } from '../../../platform/claude/node/claudePluginService.js';
+import { CLAUDE_REMOTE_FILES_CHANNEL, IClaudeRemoteFilesService } from '../../../platform/claude/common/claudeRemoteFiles.js';
+import { ClaudeRemoteFiles } from '../../../platform/claude/node/claudeRemoteFiles.js';
+import { CLAUDE_FEEDBACK_CHANNEL, IClaudeFeedbackService } from '../../../platform/claude/common/claudeFeedbackRelay.js';
+import { ClaudeFeedbackService } from '../../../platform/claude/node/claudeFeedbackRelay.js';
+import { IKlawlySyncService, KLAWLY_SYNC_CHANNEL } from '../../../platform/claude/common/klawlySyncService.js';
+import { KlawlySyncRuntimeService } from '../../../platform/claude/node/klawlySyncRuntimeService.js';
+import { CLAUDE_CHECK_INVESTIGATOR_CHANNEL, IClaudeCheckInvestigator } from '../../../platform/claude/common/claudeCheckInvestigation.js';
+import { ClaudeCheckInvestigator } from '../../../platform/claude/node/claudeCheckInvestigator.js';
+import { CLAUDE_GITHUB_API_CHANNEL, IClaudeGitHubApiService } from '../../../platform/claude/common/claudeAutomationGitHub.js';
+import { ClaudeGitHubApi } from '../../../platform/claude/node/claudeGitHubApi.js';
+import { CLAUDE_OS_SCHEDULE_CHANNEL, IClaudeOsScheduleService } from '../../../platform/claude/common/claudeAutomationOsScheduleService.js';
+import { ClaudeOsScheduleService } from '../../../platform/claude/node/claudeOsScheduleService.js';
 import { IConfigurationService } from '../../../platform/configuration/common/configuration.js';
 import { ConfigurationService } from '../../../platform/configuration/common/configurationService.js';
 import { IDiagnosticsService } from '../../../platform/diagnostics/common/diagnostics.js';
@@ -312,6 +334,28 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		// Checksum
 		services.set(IChecksumService, new SyncDescriptor(ChecksumService, undefined, false /* proxied to other processes */));
 
+		// Claude runtime (proxied to the renderer)
+		services.set(IClaudeRuntimeService, new SyncDescriptor(ClaudeSharedProcessRuntimeService, undefined, false /* proxied to other processes */));
+
+		// Claude background worktrees (proxied to the renderer)
+		services.set(IClaudeWorktreeService, new SyncDescriptor(ClaudeWorktreeService, undefined, false /* proxied to other processes */));
+		services.set(IClaudeMachineSessionService, new SyncDescriptor(ClaudeMachineSessionService, undefined, false /* proxied to other processes */));
+
+		// Claude plugin marketplaces (proxied to the renderer)
+		services.set(IClaudePluginService, new SyncDescriptor(ClaudePluginService, undefined, false /* proxied to other processes */));
+		// Claude files on an SSH run target (proxied to the renderer)
+		services.set(IClaudeRemoteFilesService, new SyncDescriptor(ClaudeRemoteFiles, undefined, false /* proxied to other processes */));
+		// Send Feedback posts from here, where the relay's missing CORS answer does not matter (proxied to the renderer)
+		services.set(IClaudeFeedbackService, new SyncDescriptor(ClaudeFeedbackService, undefined, false /* proxied to other processes */));
+		// Klawly Sync: schedule, engine, GitHub store and sign-in; off until klawly.sync.enabled (proxied to the renderer)
+		services.set(IKlawlySyncService, new SyncDescriptor(KlawlySyncRuntimeService, undefined, false /* proxied to other processes */));
+		// Claude CI investigator: reads failed checks through the user's GitHub CLI (proxied to the renderer)
+		services.set(IClaudeCheckInvestigator, new SyncDescriptor(ClaudeCheckInvestigator, undefined, false /* proxied to other processes */));
+		// Claude automation GitHub triggers, through `gh api` (proxied to the renderer)
+		services.set(IClaudeGitHubApiService, new SyncDescriptor(ClaudeGitHubApi, undefined, false /* proxied to other processes */));
+		// Claude automations that run while Klawly is closed, on the OS scheduler (proxied to the renderer)
+		services.set(IClaudeOsScheduleService, new SyncDescriptor(ClaudeOsScheduleService, undefined, false /* proxied to other processes */));
+
 		// V8 Inspect profiler
 		services.set(IV8InspectProfilingService, new SyncDescriptor(V8InspectProfilingService, undefined, false /* proxied to other processes */));
 
@@ -471,6 +515,31 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		// Checksum
 		const checksumChannel = ProxyChannel.fromService(accessor.get(IChecksumService), this._store);
 		this.server.registerChannel('checksum', checksumChannel);
+
+		// Claude runtime
+		const claudeRuntimeChannel = ProxyChannel.fromService(accessor.get(IClaudeRuntimeService), this._store);
+		this.server.registerChannel(CLAUDE_RUNTIME_CHANNEL, claudeRuntimeChannel);
+
+		const claudeWorktreeChannel = ProxyChannel.fromService(accessor.get(IClaudeWorktreeService), this._store);
+		this.server.registerChannel(CLAUDE_WORKTREE_CHANNEL, claudeWorktreeChannel);
+
+		const claudeMachineSessionChannel = ProxyChannel.fromService(accessor.get(IClaudeMachineSessionService), this._store);
+		this.server.registerChannel(CLAUDE_MACHINE_SESSION_CHANNEL, claudeMachineSessionChannel);
+
+		const claudePluginChannel = ProxyChannel.fromService(accessor.get(IClaudePluginService), this._store);
+		this.server.registerChannel(CLAUDE_PLUGIN_CHANNEL, claudePluginChannel);
+		const claudeRemoteFilesChannel = ProxyChannel.fromService(accessor.get(IClaudeRemoteFilesService), this._store);
+		this.server.registerChannel(CLAUDE_REMOTE_FILES_CHANNEL, claudeRemoteFilesChannel);
+		const claudeFeedbackChannel = ProxyChannel.fromService(accessor.get(IClaudeFeedbackService), this._store);
+		this.server.registerChannel(CLAUDE_FEEDBACK_CHANNEL, claudeFeedbackChannel);
+		const klawlySyncChannel = ProxyChannel.fromService(accessor.get(IKlawlySyncService), this._store);
+		this.server.registerChannel(KLAWLY_SYNC_CHANNEL, klawlySyncChannel);
+		const claudeCheckInvestigatorChannel = ProxyChannel.fromService(accessor.get(IClaudeCheckInvestigator), this._store);
+		this.server.registerChannel(CLAUDE_CHECK_INVESTIGATOR_CHANNEL, claudeCheckInvestigatorChannel);
+		const claudeGitHubApiChannel = ProxyChannel.fromService(accessor.get(IClaudeGitHubApiService), this._store);
+		this.server.registerChannel(CLAUDE_GITHUB_API_CHANNEL, claudeGitHubApiChannel);
+		const claudeOsScheduleChannel = ProxyChannel.fromService(accessor.get(IClaudeOsScheduleService), this._store);
+		this.server.registerChannel(CLAUDE_OS_SCHEDULE_CHANNEL, claudeOsScheduleChannel);
 
 		// Profiling
 		const profilingChannel = ProxyChannel.fromService(accessor.get(IV8InspectProfilingService), this._store);

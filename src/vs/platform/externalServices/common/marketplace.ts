@@ -23,7 +23,7 @@ export async function resolveMarketplaceHeaders(version: string,
 
 	const headers: IHeaders = {
 		'X-Market-Client-Id': `VSCode ${version}`,
-		'User-Agent': `VSCode ${version} (${productService.nameShort})`
+		'User-Agent': `Klawly ${version} (${productService.nameShort})`
 	};
 
 	if (supportsTelemetry(productService, environmentService) && getTelemetryLevel(configurationService) === TelemetryLevel.USAGE) {

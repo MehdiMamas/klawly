@@ -2295,7 +2295,7 @@ suite('CodexAgent prewarm eviction', () => {
 			const { session } = await createSession(agent, { workingDirectories: [URI.file(scope.workspace)] });
 			const entry = agent['_sessions'].get(AgentSession.id(session))!;
 			entry.clientCustomizations.setClient('client', [{
-				synced: { customization: { type: CustomizationType.Plugin, id: bundleUri, uri: bundleUri, name: 'VS Code Synced Data' }, pluginDir },
+				synced: { customization: { type: CustomizationType.Plugin, id: bundleUri, uri: bundleUri, name: 'Klawly Synced Data' }, pluginDir },
 				parsed: { format: PluginFormat.OpenPlugin, hooks: [], agents: [], instructions: [], mcpServers: [], skills: [{ uri: skillUri, name: customization.name, customization }] },
 			}]);
 			return { session, entry, skillRoot, skillUri };

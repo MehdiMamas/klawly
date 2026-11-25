@@ -239,6 +239,14 @@ class QuickPickItemElement extends BaseQuickPickItemElement {
 	}
 }
 
+/**
+ * Whether a separator renders as its own header row above its group rather
+ * than as a label on the group's first item.
+ */
+function isSeparatorRow(separator: IQuickPickSeparator): boolean {
+	return !!separator.buttons || !!separator.label; // Klawly: upstream only separators with buttons
+}
+
 enum QuickPickSeparatorFocusReason {
 	/**
 	 * No item is hovered or active
@@ -276,9 +284,9 @@ class QuickInputItemDelegate implements IListVirtualDelegate<IQuickPickElement> 
 	getHeight(element: IQuickPickElement): number {
 
 		if (element instanceof QuickPickSeparatorElement) {
-			return 30;
+			return 24; // Klawly: 30 upstream
 		}
-		return element.saneDetail ? 44 : 22;
+		return element.saneDetail ? 44 : 24; // Klawly: 22 upstream
 	}
 
 	getTemplateId(element: IQuickPickElement): string {
@@ -1119,7 +1127,7 @@ export class QuickInputList extends Disposable {
 		this._elementTree = inputElements.reduce((result, item, index) => {
 			let element: IQuickPickElement;
 			if (item.type === 'separator') {
-				if (!item.buttons) {
+				if (!isSeparatorRow(item)) {
 					// This separator will be rendered as a part of the list item
 					return result;
 				}
@@ -1132,7 +1140,7 @@ export class QuickInputList extends Disposable {
 			} else {
 				const previous = index > 0 ? inputElements[index - 1] : undefined;
 				let separator: IQuickPickSeparator | undefined;
-				if (previous && previous.type === 'separator' && !previous.buttons) {
+				if (previous && previous.type === 'separator' && !isSeparatorRow(previous)) {
 					separator = previous;
 				}
 				const qpi = new QuickPickItemElement(
@@ -1439,7 +1447,7 @@ export class QuickInputList extends Disposable {
 				element.hidden = false;
 				const previous = element.index && this._inputElements[element.index - 1];
 				if (element.item) {
-					element.separator = previous && previous.type === 'separator' && !previous.buttons ? previous : undefined;
+					element.separator = previous && previous.type === 'separator' && !isSeparatorRow(previous) ? previous : undefined;
 				}
 			});
 		}
@@ -1479,7 +1487,7 @@ export class QuickInputList extends Disposable {
 				// we can show the separator unless the list gets sorted by match
 				if (!this.sortByLabel) {
 					const previous = element.index && this._inputElements[element.index - 1] || undefined;
-					if (previous?.type === 'separator' && !previous.buttons) {
+					if (previous?.type === 'separator' && !isSeparatorRow(previous)) {
 						currentSeparator = previous;
 					}
 					if (currentSeparator && !element.hidden) {

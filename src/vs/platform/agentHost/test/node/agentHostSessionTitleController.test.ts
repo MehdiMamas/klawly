@@ -5,7 +5,7 @@
 
 import assert from 'assert';
 import * as sinon from 'sinon';
-import type Anthropic from '@anthropic-ai/sdk';
+import type * as Anthropic from '../../node/shared/anthropicMessageTypes.js';
 import type { CCAModel } from '@vscode/copilot-api';
 import { DeferredPromise, timeout } from '../../../../base/common/async.js';
 import { Event } from '../../../../base/common/event.js';

@@ -8,7 +8,8 @@ import { Disposable, toDisposable } from '../../../base/common/lifecycle.js';
 import { CancellationTokenSource } from '../../../base/common/cancellation.js';
 import { VSBuffer } from '../../../base/common/buffer.js';
 import { dirname, join } from '../../../base/common/path.js';
-import { ensureFoundryLocalRuntime } from './foundryLocalRuntime.js';
+import { FileAccess } from '../../../base/common/network.js';
+import { bundledFoundryLocalRuntime, ensureFoundryLocalRuntime, foundryLocalPlatformKey } from './foundryLocalRuntime.js';
 import {
 	ILocalTranscriptionModelStatus,
 	ILocalTranscriptionResult,
@@ -532,9 +533,13 @@ export class LocalTranscriptionService extends Disposable implements ILocalTrans
 				// This is a no-op once cached. In dev builds (no product config)
 				// the SDK resolves its native files from node_modules, so we skip
 				// provisioning and leave the loader on its default path.
+				// Klawly packages ship the runtime unpacked next to node_modules.asar
+				// instead (issue 547).
 				let nativeLibraryPath: string | undefined;
 				if (this._runtimeDownload) {
 					nativeLibraryPath = await ensureFoundryLocalRuntime(runtimeCacheDir(cacheDir), this._runtimeDownload, cts.token);
+				} else {
+					nativeLibraryPath = await bundledFoundryLocalRuntime(dirname(FileAccess.asFileUri('').fsPath), foundryLocalPlatformKey());
 				}
 
 				if (!this._sdk) {

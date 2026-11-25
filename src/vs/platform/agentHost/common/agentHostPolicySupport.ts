@@ -187,4 +187,13 @@ export const agentHostPolicySupport: Readonly<Record<string, IAgentHostPolicySup
 	CopilotNextEditSuggestions: { status: 'notApplicable' },
 
 	// #endregion
+
+	// #region Klawly Claude agent
+
+	// Read by Klawly's own Claude runner (SDK `sandbox` and `managedSettings` options), not by Agent Host.
+	ClaudeSandboxEnabled: { status: 'notApplicable' },
+	ClaudeSandboxAllowUnsandboxedCommands: { status: 'notApplicable' },
+	ClaudeManagedSettings: { status: 'notApplicable' },
+
+	// #endregion
 };

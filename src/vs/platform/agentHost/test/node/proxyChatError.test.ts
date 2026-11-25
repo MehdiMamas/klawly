@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import type Anthropic from '@anthropic-ai/sdk';
+import type * as Anthropic from '../../node/shared/anthropicMessageTypes.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { COPILOT_API_ERROR_STATUS_STREAMING, CopilotApiError } from '../../node/shared/copilotApiService.js';
 import {

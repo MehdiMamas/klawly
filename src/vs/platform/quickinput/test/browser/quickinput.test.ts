@@ -20,7 +20,7 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { DisposableStore, toDisposable } from '../../../../base/common/lifecycle.js';
 import { mainWindow } from '../../../../base/browser/window.js';
 import { backButton, QuickPick } from '../../browser/quickInput.js';
-import { IQuickPickItem, ItemActivation, isKeyModified, NO_KEY_MODS } from '../../common/quickInput.js';
+import { IQuickPickItem, ItemActivation, isKeyModified, NO_KEY_MODS, QuickPickFocus } from '../../common/quickInput.js';
 import { TestInstantiationService } from '../../../instantiation/test/common/instantiationServiceMock.js';
 import { IThemeService } from '../../../theme/common/themeService.js';
 import { IConfigurationService } from '../../../configuration/common/configuration.js';
@@ -649,6 +649,30 @@ suite('QuickInput', () => { // https://github.com/microsoft/vscode/issues/147543
 		assert.deepStrictEqual({ id, recycledId }, {
 			id: 'item-id',
 			recycledId: null
+		});
+	});
+
+	test('labeled separators render as header rows that keyboard focus skips', () => {
+		const quickpick = store.add(controller.createQuickPick({ useSeparators: true }));
+		quickpick.items = [
+			{ type: 'separator', label: 'recently opened' },
+			{ label: 'first' },
+			{ type: 'separator', label: 'other commands' },
+			{ label: 'second' },
+		];
+		controller.layout({ height: 600, width: 600 }, 0);
+		quickpick.show();
+
+		const headers = Array.from(fixture.querySelectorAll('.quick-input-list-separator-as-item .label-name'), header => header.textContent);
+		const active = [quickpick.activeItems[0]?.label];
+		quickpick.focus(QuickPickFocus.Next);
+		active.push(quickpick.activeItems[0]?.label);
+		quickpick.focus(QuickPickFocus.Previous);
+		active.push(quickpick.activeItems[0]?.label);
+
+		assert.deepStrictEqual({ headers, active }, {
+			headers: ['recently opened', 'other commands'],
+			active: ['first', 'second', 'first']
 		});
 	});
 

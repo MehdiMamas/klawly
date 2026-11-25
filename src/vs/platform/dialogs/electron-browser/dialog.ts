@@ -9,36 +9,32 @@ import { localize } from '../../../nls.js';
 import { IOSProperties } from '../../native/common/native.js';
 import { IProductService } from '../../product/common/productService.js';
 import { process } from '../../../base/parts/sandbox/electron-browser/globals.js';
-
-function formatCopilotVersion(version: string | undefined): string {
-	return version?.replace(/^(?<core>\d+\.\d+\.\d+)-(?:canary|unstable)(?=[.+-]|$)/, '$<core>').replace(/\.unsigned$/, '') || 'Unknown';
-}
+import { CLAUDE_PROTOCOL_VERSION } from '../../claude/common/claudeProtocol.js';
+import { anthropicNotice, formatReleaseVersion } from '../../claude/common/claudeRelease.js';
 
 export function createNativeAboutDialogDetails(productService: IProductService, osProps: IOSProperties): { title: string; details: string; detailsToCopy: string } {
-	let version = productService.version;
+	let version = formatReleaseVersion(productService.version, productService.klawlyRelease);
 	if (productService.target) {
 		version = `${version} (${productService.target} setup)`;
 	} else if (productService.darwinUniversalAssetId) {
 		version = `${version} (Universal)`;
 	}
 
-	const copilotRuntimeVersion = formatCopilotVersion(productService.copilotVersions?.runtime);
-	const copilotSdkVersion = formatCopilotVersion(productService.copilotVersions?.sdk);
-
 	const getDetails = (useAgo: boolean): string => {
-		return localize({ key: 'aboutDetail', comment: ['Electron, Chromium, Node.js, V8 and Copilot are product names that need no translation'] },
-			"Version: {0}\nCommit: {1}\nDate: {2}\nElectron: {3}\nElectronBuildId: {4}\nChromium: {5}\nNode.js: {6}\nV8: {7}\n@github/copilot: {8}\n@github/copilot-sdk: {9}\nOS: {10}",
+		return localize({ key: 'aboutDetail', comment: ['Electron, Chromium, Node.js and V8 are product names that need no translation'] },
+			"Version: {0}\nCommit: {1}\nUpstream: {2}\nDate: {3}\nElectron: {4}\nElectronBuildId: {5}\nChromium: {6}\nNode.js: {7}\nV8: {8}\nOS: {9}\nClaude protocol: {10}\n\n{11}",
 			version,
 			productService.commit || 'Unknown',
+			productService.upstreamCommit || 'Unknown',
 			productService.date ? `${productService.date}${useAgo ? ' (' + fromNow(new Date(productService.date), true) + ')' : ''}` : 'Unknown',
 			process.versions['electron'],
 			process.versions['microsoft-build'],
 			process.versions['chrome'],
 			process.versions['node'],
 			process.versions['v8'],
-			copilotRuntimeVersion,
-			copilotSdkVersion,
-			`${osProps.type} ${osProps.arch} ${osProps.release}${isLinuxSnap ? ' snap' : ''}`
+			`${osProps.type} ${osProps.arch} ${osProps.release}${isLinuxSnap ? ' snap' : ''}`,
+			String(CLAUDE_PROTOCOL_VERSION),
+			anthropicNotice()
 		);
 	};
 

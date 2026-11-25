@@ -5,7 +5,7 @@
 
 import type { CopilotClient, CopilotClientOptions, CopilotSession, GitHubTelemetryNotification, PermissionMode, PermissionRequest, SessionConfig, SessionEvent, SessionEventHandler, SessionEventPayload, SessionEventType, TypedSessionEventHandler } from '@github/copilot-sdk';
 import { mock } from '../../../../base/test/common/mock.js';
-import type Anthropic from '@anthropic-ai/sdk';
+import type * as Anthropic from '../../node/shared/anthropicMessageTypes.js';
 import type { CCAModel } from '@vscode/copilot-api';
 import assert from 'assert';
 import { spy, stub, useFakeTimers } from 'sinon';
@@ -15161,7 +15161,7 @@ suite('CopilotAgent', () => {
 				assert.strictEqual(systemMessage.sections?.identity?.action, 'replace');
 				assert.strictEqual(
 					systemMessage.sections?.identity?.content,
-					'You are an AI assistant using Copilot SDK in VS Code. You help users with software engineering tasks. When asked about your identity, you must state that you are an AI assistant using Copilot SDK in VS Code.'
+					'You are an AI assistant using Copilot SDK in Klawly. You help users with software engineering tasks. When asked about your identity, you must state that you are an AI assistant using Copilot SDK in VS Code.'
 				);
 			} finally {
 				await disposeAgent(agent);

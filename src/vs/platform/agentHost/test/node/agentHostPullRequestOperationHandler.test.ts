@@ -36,7 +36,7 @@ import { IPullRequestMutations } from '../../../github/common/pullRequestMutatio
 import { AgentHostGitHubService } from '../../node/agentHostGitHubService.js';
 import { createTestGitHubClient, createTestGitHubService, createTestPullRequest } from './testGitHubService.js';
 import type { ICopilotApiService, ICopilotApiServiceRequestOptions, ICopilotUtilityChatCompletionRequest } from '../../node/shared/copilotApiService.js';
-import type Anthropic from '@anthropic-ai/sdk';
+import type * as Anthropic from '../../node/shared/anthropicMessageTypes.js';
 import type { CCAModel } from '@vscode/copilot-api';
 import type { IAgentHostAuthenticationService, IAgentHostAuthTokenChangeEvent } from '../../node/agentHostAuthenticationService.js';
 import type { IAgentBranchNameGenerator, IAgentBranchNameGeneratorRequest } from '../../node/shared/agentBranchNameGenerator.js';

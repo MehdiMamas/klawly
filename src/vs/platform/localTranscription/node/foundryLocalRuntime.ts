@@ -288,6 +288,22 @@ export async function isRuntimeProvisioned(overrideDir: string, platformKey: str
 }
 
 /**
+ * Klawly: the runtime a package ships (issue 547), at
+ * `<appRoot>/node_modules.asar.unpacked/foundry-local-sdk/prebuilds/<target>`,
+ * when it is complete for `platformKey`; `undefined` in a build from source or
+ * a package without it. The SDK's default lookup points inside
+ * `node_modules.asar`, where the native libraries can't load from, so callers
+ * pass this directory as `libraryPath`.
+ */
+export async function bundledFoundryLocalRuntime(appRoot: string, platformKey: string | undefined): Promise<string | undefined> {
+	if (!platformKey) {
+		return undefined;
+	}
+	const dir = join(appRoot, 'node_modules.asar.unpacked', 'foundry-local-sdk', 'prebuilds', platformKey);
+	return await hasAllRuntimeFiles(dir, platformKey) ? dir : undefined;
+}
+
+/**
  * Atomically move the fully-staged directory `from` to `to`. If another process
  * already promoted the same payload (the destination exists), keep the existing
  * copy — the caller re-verifies completeness afterwards. Exported for tests.

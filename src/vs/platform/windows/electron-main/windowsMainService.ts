@@ -37,7 +37,7 @@ import product from '../../product/common/product.js';
 import { IProtocolMainService } from '../../protocol/electron-main/protocol.js';
 import { getRemoteAuthority } from '../../remote/common/remoteHosts.js';
 import { IStateService } from '../../state/node/state.js';
-import { AgentsWindowOpenSource, IAgentsWindowDraft, IAddRemoveFoldersRequest, INativeOpenFileRequest, INativeWindowConfiguration, IOpenEmptyWindowOptions, IPath, IPathsToWaitFor, isFileToOpen, isFolderToOpen, isWorkspaceToOpen, IWindowOpenable, IWindowSettings } from '../../window/common/window.js';
+import { AgentsWindowOpenSource, IAddRemoveFoldersRequest, INativeOpenFileRequest, INativeWindowConfiguration, IOpenEmptyWindowOptions, IPath, IPathsToWaitFor, isFileToOpen, isFolderToOpen, isWorkspaceToOpen, IWindowOpenable, IWindowSettings } from '../../window/common/window.js';
 import { CodeWindow } from './windowImpl.js';
 import { IOpenConfiguration, IOpenEmptyConfiguration, IWindowsCountChangedEvent, IWindowsMainService, OpenContext, getLastFocused } from './windows.js';
 import { findWindowOnExtensionDevelopmentPath, findWindowOnFile, findWindowOnWorkspaceOrFolder } from './windowsFinder.js';
@@ -58,8 +58,7 @@ import { IAuxiliaryWindowsMainService } from '../../auxiliaryWindow/electron-mai
 import { IAuxiliaryWindow } from '../../auxiliaryWindow/electron-main/auxiliaryWindow.js';
 import { ICSSDevelopmentService } from '../../cssDev/node/cssDevService.js';
 import { ResourceSet } from '../../../base/common/map.js';
-import { VSBuffer } from '../../../base/common/buffer.js';
-import { resolveAgentsWindowFolder, sendAgentsWindowOpenIntent } from './agentsWindow.js';
+import { resolveAgentsWindowFolder } from './agentsWindow.js';
 
 //#region Helper Interfaces
 
@@ -293,45 +292,33 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		this.handleChatRequest(openConfig, [window]);
 	}
 
-	async openAgentsWindow(openConfig: IOpenConfiguration, folderUri?: URI, reveal?: URI | 'new', source?: AgentsWindowOpenSource, folderUriIsDefault = false, draft?: IAgentsWindowDraft, onboardingSessionResource?: URI): Promise<ICodeWindow[]> {
+	async openAgentsWindow(openConfig: IOpenConfiguration, folderUri?: URI, reveal?: URI | 'new', source?: AgentsWindowOpenSource): Promise<ICodeWindow[]> {
 		this.logService.trace('windowsManager#openAgentsWindow');
 
-		const existingWindows = this.getWindows();
 		folderUri = await resolveAgentsWindowFolder(openConfig, folderUri, reveal === 'new' ? undefined : reveal, source, cli => this.doExtractPathsFromCLI(cli));
 
-		// Open in a new browser window with the agent sessions workspace
-		const windows = await this.open(await this.ensureAgentsWindow(openConfig));
-
-		if (windows.length > 0) {
-			sendAgentsWindowOpenIntent(windows[0], existingWindows.includes(windows[0]), openConfig, { folderUri, reveal, source, folderUriIsDefault, draft, onboardingSessionResource });
+		// Klawly's Agents window is a normal workbench window in an agents-only layout, so
+		// it outlives the IDE windows. A second request focuses the one that is open.
+		const existing = this.getWindows().find(window => window.config?.['agents-layout']);
+		if (existing) {
+			existing.focus();
+			return [existing];
 		}
 
-		return windows;
-	}
+		const openedWorkspace = this.getLastActiveWindow()?.openedWorkspace;
+		const folderToOpen = folderUri ?? (isSingleFolderWorkspaceIdentifier(openedWorkspace) ? openedWorkspace.uri : undefined);
 
-	private async ensureAgentsWindow(openConfig: IOpenConfiguration): Promise<IOpenConfiguration> {
-		const agentSessionsWorkspaceUri = this.environmentMainService.agentSessionsWorkspace;
-		if (!agentSessionsWorkspaceUri) {
-			throw new Error('Agents workspace is not configured');
-		}
-
-		// Ensure the workspace file exists
-		const workspaceExists = await this.fileService.exists(agentSessionsWorkspaceUri);
-		if (!workspaceExists) {
-			const emptyWorkspaceContent = JSON.stringify({ folders: [] }, null, '\t');
-			await this.fileService.writeFile(agentSessionsWorkspaceUri, VSBuffer.fromString(emptyWorkspaceContent));
-		}
-
-		return {
-			urisToOpen: [{ workspaceUri: agentSessionsWorkspaceUri }],
+		return this.open({
+			urisToOpen: folderToOpen ? [{ folderUri: folderToOpen }] : undefined,
+			forceEmpty: !folderToOpen,
 			userEnv: openConfig.userEnv,
-			cli: openConfig.cli,
+			cli: { ...openConfig.cli, _: [], 'agents-layout': true },
 			noRecentEntry: true,
 			context: openConfig.context,
 			contextWindowId: openConfig.contextWindowId,
 			initialStartup: openConfig.initialStartup,
 			forceNewWindow: true,
-		};
+		});
 	}
 
 	async open(openConfig: IOpenConfiguration): Promise<ICodeWindow[]> {
@@ -597,7 +584,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 				}
 
 				if (!windowToUseForFiles) {
-					windowToUseForFiles = this.doGetLastActiveWindow(windows);
+					windowToUseForFiles = this.doGetLastActiveWindow(windows.filter(window => !window.config?.['agents-layout']));
 				}
 			}
 
@@ -673,7 +660,8 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		if (allFoldersToOpen.length > 0) {
 
 			// Check for existing instances
-			const windowsOnFolderPath = coalesce(allFoldersToOpen.map(folderToOpen => findWindowOnWorkspaceOrFolder(this.getWindows(), folderToOpen.workspace.uri)));
+			// Klawly: the Agents window is a second window on the folder the IDE window already has open, so it never reuses that window (issue 1502).
+			const windowsOnFolderPath = openConfig.cli['agents-layout'] ? [] : coalesce(allFoldersToOpen.map(folderToOpen => findWindowOnWorkspaceOrFolder(this.getWindows(), folderToOpen.workspace.uri)));
 			if (windowsOnFolderPath.length > 0) {
 				const windowOnFolderPath = windowsOnFolderPath[0];
 				const filesToOpenInWindow = isEqualAuthority(filesToOpen?.remoteAuthority, windowOnFolderPath.remoteAuthority) ? filesToOpen : undefined;
@@ -771,7 +759,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 	private resolveContextWindow(openConfig: IOpenConfiguration, forceNewWindow: boolean): { windowToUse: ICodeWindow | undefined; forceNewWindow: boolean } {
 		if (!forceNewWindow && typeof openConfig.contextWindowId === 'number') {
 			const contextWindow = this.getWindowById(openConfig.contextWindowId);
-			if (contextWindow?.config?.isSessionsWindow) {
+			if (contextWindow?.config?.isSessionsWindow || contextWindow?.config?.['agents-layout']) {
 				return { windowToUse: undefined, forceNewWindow: true }; // do not replace the agents window
 			}
 			return { windowToUse: contextWindow, forceNewWindow };
@@ -1519,7 +1507,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 
 		let window: ICodeWindow | undefined;
 		if (!options.forceNewWindow && !options.forceNewTabbedWindow) {
-			window = options.windowToUse || (lastActiveWindow?.config?.isSessionsWindow ? undefined : lastActiveWindow);
+			window = options.windowToUse || ((lastActiveWindow?.config?.isSessionsWindow || lastActiveWindow?.config?.['agents-layout']) ? undefined : lastActiveWindow);
 			if (window) {
 				window.focus();
 			}

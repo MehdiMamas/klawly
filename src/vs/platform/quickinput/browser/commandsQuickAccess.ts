@@ -46,6 +46,25 @@ export interface ICommandsQuickAccessOptions extends IPickerQuickAccessProviderO
 	suggestedCommandIds?: Set<string>;
 }
 
+/**
+ * Whether the filter matches the command's label or alias at the start of a word. A command
+ * that matches only inside a word ranks below the ones that don't (issue 795).
+ */
+export function matchesCommandAtWordStart(filter: string, commandPick: Pick<ICommandQuickPick, 'label' | 'commandAlias'>): boolean {
+	return !!matchesWords(filter, commandPick.label) || (!!commandPick.commandAlias && !!matchesWords(filter, commandPick.commandAlias));
+}
+
+/**
+ * Whether the filter is one of the words listed in brackets at the end of the command's alias,
+ * as in "Pick Model (Model, Switch Model)". A command that names the word ranks first, so the
+ * main command for a word wins over others that only contain it (issue 903).
+ */
+export function matchesCommandAliasTerm(filter: string, commandPick: Pick<ICommandQuickPick, 'commandAlias'>): boolean {
+	const terms = commandPick.commandAlias?.match(/\((?<terms>[^()]*)\)\s*$/)?.groups?.terms;
+	const wanted = filter.trim().toLowerCase();
+	return !!terms && !!wanted && terms.split(',').some(term => term.trim().toLowerCase() === wanted);
+}
+
 export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAccessProvider<ICommandQuickPick> implements IDisposable {
 
 	static PREFIX = '>';
@@ -98,6 +117,7 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
 
 		// Filter
 		const filteredCommandPicks: ICommandQuickPick[] = [];
+		const midWordOnly = new Set<ICommandQuickPick>();
 		for (const commandPick of allCommandPicks) {
 			const labelHighlights = AbstractCommandsQuickAccessProvider.WORD_FILTER(filter, commandPick.label) ?? undefined;
 
@@ -114,6 +134,9 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
 				};
 
 				filteredCommandPicks.push(commandPick);
+				if (!matchesCommandAtWordStart(filter, commandPick)) {
+					midWordOnly.add(commandPick);
+				}
 			}
 
 			// Also add if we have a 100% command ID match
@@ -165,6 +188,12 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
 				return -1; // other command has a score but first doesn't so first wins
 			}
 
+			// Klawly: the command that lists the typed word among its alias words comes first (issue 903)
+			const aliasTermA = matchesCommandAliasTerm(filter, commandPickA);
+			if (aliasTermA !== matchesCommandAliasTerm(filter, commandPickB)) {
+				return aliasTermA ? -1 : 1;
+			}
+
 			const commandACounter = this.commandsHistory.peek(commandPickA.commandId);
 			const commandBCounter = this.commandsHistory.peek(commandPickB.commandId);
 
@@ -178,6 +207,11 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
 
 			if (commandBCounter) {
 				return 1; // other command was used so it wins over the command
+			}
+
+			// Klawly: a match at a word start ("Report a Bug") wins over one only inside a word ("Debug") (issue 795)
+			if (midWordOnly.has(commandPickA) !== midWordOnly.has(commandPickB)) {
+				return midWordOnly.has(commandPickA) ? 1 : -1;
 			}
 
 			if (this.options.suggestedCommandIds) {

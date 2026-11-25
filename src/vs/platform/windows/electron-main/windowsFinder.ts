@@ -8,7 +8,14 @@ import { URI } from '../../../base/common/uri.js';
 import { ICodeWindow } from '../../window/electron-main/window.js';
 import { IResolvedWorkspace, ISingleFolderWorkspaceIdentifier, isSingleFolderWorkspaceIdentifier, isWorkspaceIdentifier, IWorkspaceIdentifier } from '../../workspace/common/workspace.js';
 
+/** Klawly: the Agents window shares the folder with the IDE window but is never where files open (issue 1277). */
+function withoutAgentsWindows(windows: ICodeWindow[]): ICodeWindow[] {
+	return windows.filter(window => !window.config?.['agents-layout']);
+}
+
 export async function findWindowOnFile(windows: ICodeWindow[], fileUri: URI, localWorkspaceResolver: (workspace: IWorkspaceIdentifier) => Promise<IResolvedWorkspace | undefined>): Promise<ICodeWindow | undefined> {
+
+	windows = withoutAgentsWindows(windows);
 
 	// First check for windows with workspaces that have a parent folder of the provided path opened
 	for (const window of windows) {
@@ -43,7 +50,7 @@ export async function findWindowOnFile(windows: ICodeWindow[], fileUri: URI, loc
 
 export function findWindowOnWorkspaceOrFolder(windows: ICodeWindow[], folderOrWorkspaceConfigUri: URI): ICodeWindow | undefined {
 
-	for (const window of windows) {
+	for (const window of withoutAgentsWindows(windows)) {
 
 		// check for workspace config path
 		if (isWorkspaceIdentifier(window.openedWorkspace) && extUriBiasedIgnorePathCase.isEqual(window.openedWorkspace.configPath, folderOrWorkspaceConfigUri)) {

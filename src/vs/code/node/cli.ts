@@ -41,8 +41,66 @@ function shouldSpawnCliProcess(argv: NativeParsedArgs): boolean {
 		|| !!argv['telemetry'];
 }
 
+/** `klawly review ...`: runs the review in the terminal and exits (issue 1376). Loaded on demand so other commands start as before. */
+async function runReviewCommand(rest: string[]): Promise<void> {
+	const { runClaudeReviewCli } = await import('../../platform/claude/node/claudeReviewCli.js');
+	const { createClaudeReviewToolHost } = await import('../../platform/claude/node/claudeReviewHost.js');
+	const { createClaudeCliQuery } = await import('../../platform/claude/node/claudeCliQuery.js');
+	const env: Record<string, string> = {};
+	for (const [key, value] of Object.entries(process.env)) {
+		if (typeof value === 'string') {
+			env[key] = value;
+		}
+	}
+	const queryFactory = createClaudeCliQuery;
+	const store = createClaudeReviewToolHost({ cwd: process.cwd(), env, queryFactory });
+	process.exitCode = await runClaudeReviewCli(rest, {
+		cwd: process.cwd(),
+		env,
+		stdoutIsTerminal: !!process.stdout.isTTY,
+		queryFactory,
+		readStored: store.read,
+		persist: store.store,
+		write: text => {
+			process.stdout.write(`${text}\n`);
+		},
+		writeError: text => {
+			process.stderr.write(`${text}\n`);
+		},
+	});
+}
+
+/** `klawly automations run ...`: what the system scheduler starts while Klawly is closed (issue 463). Loaded on demand. */
+async function runAutomationsCommand(args: string[]): Promise<void> {
+	const { runClaudeAutomationCli } = await import('../../platform/claude/node/claudeAutomationCli.js');
+	const { createClaudeCliQuery } = await import('../../platform/claude/node/claudeCliQuery.js');
+	const env: Record<string, string> = {};
+	for (const [key, value] of Object.entries(process.env)) {
+		if (typeof value === 'string') {
+			env[key] = value;
+		}
+	}
+	process.exitCode = await runClaudeAutomationCli(args, {
+		env,
+		queryFactory: createClaudeCliQuery,
+		write: text => { process.stdout.write(`${text}\n`); },
+		writeError: text => { process.stderr.write(`${text}\n`); },
+	});
+}
+
 export async function main(argv: string[]): Promise<void> {
 	let args: NativeParsedArgs;
+
+	// argv is [node, script, ...args]; a development run has the app path before the arguments.
+	const reviewAt = argv.slice(2, process.env['VSCODE_DEV'] ? 4 : 3).indexOf('review');
+	if (reviewAt >= 0) {
+		return runReviewCommand(argv.slice(3 + reviewAt));
+	}
+
+	const automationsAt = argv.slice(2, process.env['VSCODE_DEV'] ? 4 : 3).indexOf('automations');
+	if (automationsAt >= 0) {
+		return runAutomationsCommand(argv.slice(2 + automationsAt));
+	}
 
 	try {
 		args = parseCLIProcessArgv(argv);
@@ -586,7 +644,7 @@ function getAppRoot() {
 }
 
 function eventuallyExit(code: number): void {
-	setTimeout(() => process.exit(code), 0);
+	setTimeout(() => process.exit(code || process.exitCode || 0), 0);
 }
 
 main(process.argv)

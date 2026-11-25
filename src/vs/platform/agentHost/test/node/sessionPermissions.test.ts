@@ -8,7 +8,7 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync } from 'fs';
 import { homedir, tmpdir } from 'os';
 import { DisposableStore } from '../../../../base/common/lifecycle.js';
 import { Schemas } from '../../../../base/common/network.js';
-import { join } from '../../../../base/common/path.js';
+import { join, relative } from '../../../../base/common/path.js';
 import { isLinux, isWindows } from '../../../../base/common/platform.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
@@ -79,7 +79,10 @@ suite('SessionPermissionManager', () => {
 		// the short-path fallback can't be repaired afterwards. `realpathSync`
 		// keeps macOS `/var` -> `/private/var` consistent so the symlink-resolution
 		// checks compare like-for-like.
-		const baseTmp = process.env.AGENT_TEMPDIRECTORY || process.env.RUNNER_TEMP || tmpdir();
+		// Klawly: a self-hosted runner can live in a home dot-folder (`~/.gh-runners`), whose
+		// files are never auto-approved, so its temp dir is skipped for `os.tmpdir()` there.
+		const inHomeDotFolder = (dir: string) => /^\.[^.]/.test(relative(homedir(), dir));
+		const baseTmp = [process.env.AGENT_TEMPDIRECTORY, process.env.RUNNER_TEMP].find(dir => dir && !inHomeDotFolder(dir)) || tmpdir();
 		workDir = realpathSync(mkdtempSync(join(baseTmp, 'sesperm-work-')));
 		workDir2 = realpathSync(mkdtempSync(join(baseTmp, 'sesperm-work2-')));
 		outsideDir = realpathSync(mkdtempSync(join(baseTmp, 'sesperm-out-')));
