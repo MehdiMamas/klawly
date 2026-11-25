@@ -30,7 +30,8 @@ export function registerClaudeViewDescriptors(
 		storageId: CLAUDE_VIEW_CONTAINER_ID,
 		// With `claude.agent.enabled` off every view is hidden, and so is the container.
 		hideIfEmpty: true,
-	}, ViewContainerLocation.AuxiliaryBar);
+	// The default for the agent pane, so a new window opens it rather than upstream's empty Chat container.
+	}, ViewContainerLocation.AuxiliaryBar, { isDefault: true });
 
 	const views: IViewDescriptor[] = [
 		{
