@@ -90,6 +90,7 @@ jobs:
       - name: Windows installer
         if: runner.os == 'Windows'
         run: |
+          npm run gulp vscode-win32-x64-inno-updater
           npm run gulp vscode-win32-x64-user-setup
           cp .build/win32-x64/user-setup/KlawlySetup.exe .build/package/KlawlySetup.exe
 
