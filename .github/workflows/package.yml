@@ -1,0 +1,395 @@
+name: Package
+
+# Builds the Klawly app for one platform on a GitHub-hosted runner (free for this public repo) and uploads it
+# as an artifact: on macOS the app is signed with the runner's Developer ID and notarized (or ad-hoc
+# signed when the runner has no Developer ID, build/klawly/sign-darwin.ts), then zipped with ditto
+# (keeps the framework symlinks) and put in a dmg by build/darwin/create-dmg.ts (dmgbuild), which is
+# signed and notarized too; on Windows an unsigned zip
+# plus the user and system setups (Inno Setup), which in-app updates install.
+# The packaged product.json gets `quality: "alpha"`, which turns on update checks against the relay
+# (docs/relay.md). With a release tag (`v<version>-alpha.<n>` or `-beta.<n>`) it also gets `klawlyRelease`, the
+# file names carry the version, and the files go to that release with their lines in SHA256SUMS.txt;
+# they go only to the release, not to workflow artifacts: upload-artifact crawls on macOS (issue 324)
+# and a full artifact quota blocked the Alpha 12 Windows build.
+# Started by hand only; docs/relay.md says how to publish an alpha or a beta.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit to package
+        required: true
+        default: main
+      os:
+        description: Which runner builds it
+        type: choice
+        options: [macOS, Windows, Linux]
+        default: macOS
+      release-tag:
+        description: Release to attach the files to, such as v1.141.0-alpha.8 or v1.141.0-beta.1 (empty = workflow artifact only)
+        required: false
+        default: ''
+      mac-signing:
+        description: 'macOS: auto = Developer ID when the runner has one, else ad-hoc with a warning; developer-id = fail without it; ad-hoc = skip signing and notarization'
+        type: choice
+        options: [auto, developer-id, ad-hoc]
+        default: auto
+
+permissions:
+  contents: read
+
+# Run steps are Node scripts, as in heavy-tests.yml: no OS shell is assumed on the runner.
+defaults:
+  run:
+    shell: node {0}
+
+jobs:
+  package:
+    name: Package ${{ inputs.ref }} (${{ inputs.os }})
+    # GitHub-hosted runners carry no Developer ID, so macOS builds here are ad-hoc signed (mac-signing auto);
+    # the signed and notarized macOS release is built on the owner's Mac, which keeps the key off the cloud.
+    runs-on: ${{ inputs.os == 'Windows' && 'windows-latest' || inputs.os == 'Linux' && 'ubuntu-latest' || 'macos-latest' }}
+    timeout-minutes: 240
+    # Write access only for the release upload and its notes; the checkout does not keep the token in .git/config.
+    # Issues and PRs are read for the Thanks section.
+    permissions:
+      contents: write
+      issues: read
+      pull-requests: read
+    steps:
+      # upstream-watch's self-hosted job once checked out sparsely (and blobless) at the root of the
+      # workspace every workflow on a runner shares. checkout keeps that repo's skip-worktree bits and
+      # filter, so most files (.nvmrc first) stay missing. Such a repo is dropped for a fresh clone.
+      - name: Drop a sparse checkout left in the workspace
+        run: |
+          const { execSync } = process.getBuiltinModule('node:child_process');
+          const fs = process.getBuiltinModule('node:fs');
+          const read = command => { try { return execSync(command, { encoding: 'utf8', maxBuffer: 2 ** 28, stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return ''; } };
+          if (fs.existsSync('.git')) {
+            const partial = read('git config --get remote.origin.partialclonefilter') || read('git config --get extensions.partialclone');
+            const sparse = read('git config --get core.sparseCheckout') === 'true' || read('git ls-files -v -z').split('\0').some(entry => entry.startsWith('S '));
+            if (partial || sparse) {
+              console.log(`Removing the workspace repository (partial: ${Boolean(partial)}, sparse: ${sparse})`);
+              fs.rmSync('.git', { recursive: true, force: true });
+            }
+          }
+
+      # A runner registered by gh-runners works in a deeper folder, and some snapshot names then pass
+      # Windows' 260-character limit, so checkout fails with "Filename too long".
+      - name: Allow long paths in git on Windows
+        if: runner.os == 'Windows'
+        run: |
+          process.getBuiltinModule('node:child_process').execSync('git config --global core.longpaths true', { stdio: 'inherit' });
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      # The update feed tells builds apart by commit, so a release gets only the tag's commit.
+      - name: Check the release
+        if: inputs.release-tag != ''
+        run: |
+          const { execFileSync, spawnSync } = process.getBuiltinModule('node:child_process');
+          const fs = process.getBuiltinModule('node:fs');
+          const { RELEASE_TAG: tag, GITHUB_REPOSITORY: repo, GITHUB_ENV: env, GH_TOKEN: token } = process.env;
+          // curl, not gh: the GitHub CLI is not on every runner (the Windows one has none).
+          const api = (route, accept = 'application/vnd.github+json') => {
+            const result = spawnSync('curl', ['--silent', '--show-error', '--fail-with-body', '--location',
+              '-H', `Authorization: Bearer ${token}`, '-H', `Accept: ${accept}`, '-H', 'X-GitHub-Api-Version: 2022-11-28',
+              `https://api.github.com/${route}`], { encoding: 'utf8', maxBuffer: 64 * 2 ** 20 });
+            if (result.status !== 0) {
+              throw new Error(`GitHub API ${route}: curl exit ${result.status} ${(result.stdout || '').trim()} ${(result.stderr || '').trim()}`);
+            }
+            return result.stdout;
+          };
+
+          // Same pattern as parseReleaseTag in src/vs/platform/claude/common/claudeRelease.ts.
+          const groups = /^v(?<version>\d+\.\d+\.\d+)-(?<stage>alpha|beta)\.(?<number>\d+)$/.exec(tag)?.groups;
+          if (!groups) {
+            throw new Error(`Release tags look like v1.141.0-alpha.8 or v1.141.0-beta.1, not ${tag}`);
+          }
+          const version = JSON.parse(fs.readFileSync('package.json', 'utf8')).version;
+          if (groups.version !== version) {
+            throw new Error(`${tag} is not for this version: package.json says ${version}`);
+          }
+          if (!JSON.parse(api(`repos/${repo}/releases?per_page=100`)).some(r => r.tag_name === tag)) {
+            throw new Error(`No release with tag ${tag}`);
+          }
+          let tagCommit;
+          try {
+            // Only the SHA: a merge commit's JSON lists every changed file.
+            tagCommit = api(`repos/${repo}/commits/${encodeURIComponent(tag)}`, 'application/vnd.github.sha').trim();
+          } catch {
+            throw new Error(`Tag ${tag} does not exist yet; push it first (docs/relay.md, Publishing an alpha)`);
+          }
+          const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+          if (head !== tagCommit) {
+            throw new Error(`${tag} is commit ${tagCommit}, but ${head} is checked out; run with ref ${tag}`);
+          }
+          const release = `${groups.stage}.${Number(groups.number)}`;
+          fs.appendFileSync(env, `KLAWLY_RELEASE=${release}\nKLAWLY_FILE_VERSION=${version}-${release}\n`);
+          console.log(`Packaging ${version} ${release} from ${head}`);
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release-tag }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      # An alpha's "What's new" bullets each end with their issues, such as (#1190); a note that
+      # lacks them stops the publish (build/klawly/check-release-notes.ts, docs/relay.md).
+      - name: Check the release notes
+        if: inputs.release-tag != '' && contains(inputs.release-tag, '-alpha.')
+        run: |
+          const { execFileSync } = process.getBuiltinModule('node:child_process');
+          execFileSync(process.execPath, ['build/klawly/check-release-notes.ts', process.env.RELEASE_TAG], { stdio: 'inherit' });
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release-tag }}
+
+      # Held features (#1183) are excluded from release builds: held code in the tree stops the
+      # publish (build/klawly/check-held.ts, docs/rules).
+      - name: Check no held feature code
+        if: inputs.release-tag != ''
+        run: |
+          const { execFileSync } = process.getBuiltinModule('node:child_process');
+          execFileSync(process.execPath, ['build/klawly/check-held.ts', 'src'], { stdio: 'inherit' });
+
+      # Before the long build: picks Developer ID or ad-hoc and checks the notary profile. The
+      # identity and the notary credentials stay in the runner's keychain (docs/relay.md).
+      - name: Check macOS signing
+        if: inputs.os == 'macOS'
+        run: |
+          process.getBuiltinModule('node:child_process').execFileSync(process.execPath, ['build/klawly/sign-darwin.ts', 'detect'], { stdio: 'inherit' });
+        env:
+          KLAWLY_MAC_SIGNING: ${{ inputs.mac-signing }}
+
+      - name: System libraries
+        if: runner.os == 'Linux'
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y libxkbfile-dev libx11-dev libx11-xcb-dev libsecret-1-dev libkrb5-dev
+
+      - name: Install dependencies
+        run: |
+          process.getBuiltinModule('node:fs').rmSync('node_modules', { recursive: true, force: true, maxRetries: 5, retryDelay: 2000 });
+          process.getBuiltinModule('node:child_process').execSync('npm ci', { stdio: 'inherit' });
+        env:
+          npm_config_cache: ${{ runner.workspace }}/../.npm-cache-${{ runner.name }}
+          npm_config_devdir: ${{ runner.workspace }}/../.node-gyp-${{ runner.name }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
+      - name: Package
+        run: |
+          const { execSync } = process.getBuiltinModule('node:child_process');
+          const fs = process.getBuiltinModule('node:fs');
+          const path = process.getBuiltinModule('node:path');
+          const target = `${process.platform}-${process.arch}`;
+          execSync(`npm run gulp klawly-${target}-min`, { stdio: 'inherit' });
+
+          // The gulp task writes ../Klawly-<platform>-<arch>, next to the checkout.
+          const built = path.resolve('..', `Klawly-${target}`);
+          const out = path.resolve('.build', 'package');
+          fs.rmSync(out, { recursive: true, force: true });
+          fs.mkdirSync(out, { recursive: true });
+          const { KLAWLY_RELEASE: release, KLAWLY_FILE_VERSION: fileVersion } = process.env;
+          const fileName = (base, extension) => `${base}${fileVersion ? `-${fileVersion}` : ''}.${extension}`;
+
+          // Source maps never ship (the klawly gulp task strips them and fails on any it finds). They
+          // become a private release asset for decoding stack traces: build/klawly/sourcemaps.ts.
+          execSync(`node build/klawly/sourcemaps.ts collect out-vscode-min "${path.join(out, fileName(`klawly-sourcemaps-${target}`, 'zip'))}"`, { stdio: 'inherit' });
+
+          // Stamped into the built app, not the repo's product.json: gulp appends a non-stable
+          // quality to the version (1.141.0-alpha), and extensions and the feed need the plain one.
+          const productJson = [path.join(built, 'Klawly.app', 'Contents', 'Resources', 'app', 'product.json'), path.join(built, 'resources', 'app', 'product.json')].find(file => fs.existsSync(file));
+          if (!productJson) {
+            throw new Error(`No product.json in ${built}`);
+          }
+          const product = JSON.parse(fs.readFileSync(productJson, 'utf8'));
+          product.quality = 'alpha';
+          if (release) {
+            product.klawlyRelease = release;
+          }
+          fs.writeFileSync(productJson, JSON.stringify(product, undefined, '\t'));
+          console.log(`${productJson}: quality ${product.quality}, release ${product.klawlyRelease ?? 'none'}, commit ${product.commit}`);
+
+          if (process.platform === 'darwin') {
+            // Developer ID: hardened runtime, notarized and stapled; ad-hoc when Check macOS signing chose it.
+            const app = path.join(built, 'Klawly.app');
+            const sign = (...args) => execSync(`"${process.execPath}" build/klawly/sign-darwin.ts ${args.map(arg => `"${arg}"`).join(' ')}`, { stdio: 'inherit' });
+            sign('app', app);
+            execSync(`ditto -c -k --sequesterRsrc --keepParent "${app}" "${path.join(out, fileName(`Klawly-${target}`, 'zip'))}"`, { stdio: 'inherit' });
+            // Upstream's dmgbuild script: Klawly background, Applications shortcut, fixed window layout.
+            execSync(`node build/darwin/create-dmg.ts "${path.dirname(built)}" "${out}"`, { stdio: 'inherit', env: { ...process.env, VSCODE_ARCH: process.arch, VSCODE_QUALITY: 'stable' } });
+            const dmg = path.join(out, fileName(`Klawly-${target}`, 'dmg'));
+            fs.renameSync(path.join(out, `Klawly-${target}.dmg`), dmg);
+            sign('dmg', dmg);
+          } else if (process.platform === 'win32') {
+            // Windows' own bsdtar writes the zip, for trying a build without installing it.
+            execSync(`"${path.join(process.env.SystemRoot, 'System32', 'tar.exe')}" -a -cf "${path.join(out, fileName(`Klawly-${target}`, 'zip'))}" -C "${path.dirname(built)}" "${path.basename(built)}"`, { stdio: 'inherit' });
+            // In-app updates install a setup: the user setup for user installs, the system setup
+            // otherwise. Both name their output KlawlySetup.exe. They copy the stamped product.json.
+            // ISCC cannot open paths over 260 characters, and the deepest node_modules files pass
+            // that under the runner's work folder, so the setups run from a drive letter mapped to
+            // it: the gulp tasks find the build next to the checkout, now a short path. subst, not
+            // a junction, because Node resolves junctions back to the long path.
+            const { execFileSync } = process.getBuiltinModule('node:child_process');
+            const drive = 'KLMNOPQRSTUVWXYZ'.split('').map(letter => `${letter}:`).find(letter => !fs.existsSync(`${letter}\\`));
+            if (!drive) {
+              throw new Error('No free drive letter for the setup build');
+            }
+            execFileSync('subst', [drive, path.dirname(built)], { stdio: 'inherit' });
+            try {
+              const cwd = path.join(`${drive}\\`, path.basename(process.cwd()));
+              execSync(`npm run gulp klawly-win32-${process.arch}-inno-updater`, { stdio: 'inherit', cwd });
+              for (const [setup, base] of [['user', `KlawlyUserSetup-${process.arch}`], ['system', `KlawlySetup-${process.arch}`]]) {
+                execSync(`npm run gulp klawly-win32-${process.arch}-${setup}-setup`, { stdio: 'inherit', cwd });
+                fs.copyFileSync(path.resolve('.build', `win32-${process.arch}`, `${setup}-setup`, 'KlawlySetup.exe'), path.join(out, fileName(base, 'exe')));
+              }
+            } finally {
+              execFileSync('subst', [drive, '/D'], { stdio: 'inherit' });
+            }
+          } else {
+            execSync(`tar -czf "${path.join(out, fileName(`Klawly-${target}`, 'tar.gz'))}" -C "${path.dirname(built)}" "${path.basename(built)}"`, { stdio: 'inherit' });
+          }
+          for (const file of fs.readdirSync(out)) {
+            console.log(`${file}: ${Math.round(fs.statSync(path.join(out, file)).size / 2 ** 20)} MB`);
+          }
+
+      # The signed, hardened app must still run: CLI, native modules, node-pty, claude, workbench.
+      - name: Check the signed app runs
+        if: inputs.os == 'macOS'
+        timeout-minutes: 10
+        run: |
+          const path = process.getBuiltinModule('node:path');
+          const app = path.resolve('..', `Klawly-${process.platform}-${process.arch}`, 'Klawly.app');
+          process.getBuiltinModule('node:child_process').execFileSync(process.execPath, ['build/klawly/sign-darwin.ts', 'check', app], { stdio: 'inherit' });
+
+      - name: Upload app
+        if: inputs.release-tag == ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: klawly-${{ inputs.os }}-${{ github.run_id }}
+          path: .build/package/*
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: inputs.release-tag != ''
+        timeout-minutes: 200
+        run: |
+          const { spawnSync } = process.getBuiltinModule('node:child_process');
+          const crypto = process.getBuiltinModule('node:crypto');
+          const fs = process.getBuiltinModule('node:fs');
+          const os = process.getBuiltinModule('node:os');
+          const path = process.getBuiltinModule('node:path');
+          const { RELEASE_TAG: tag, GITHUB_REPOSITORY: repo, GH_TOKEN: token } = process.env;
+          const out = path.resolve('.build', 'package');
+          // curl, not gh: the GitHub CLI is not on every runner (the Windows one has none).
+          const api = (route, accept = 'application/vnd.github+json', method = 'GET') => {
+            const result = spawnSync('curl', ['--silent', '--show-error', '--fail-with-body', '--location', '-X', method,
+              '-H', `Authorization: Bearer ${token}`, '-H', `Accept: ${accept}`, '-H', 'X-GitHub-Api-Version: 2022-11-28',
+              `https://api.github.com/${route}`], { encoding: 'utf8', maxBuffer: 64 * 2 ** 20 });
+            if (result.status !== 0) {
+              throw new Error(`GitHub API ${method} ${route}: curl exit ${result.status} ${(result.stdout || '').trim()} ${(result.stderr || '').trim()}`);
+            }
+            return result.stdout;
+          };
+
+          // The tags endpoint does not list drafts, so look the release up in the list.
+          const release = JSON.parse(api(`repos/${repo}/releases?per_page=100`)).find(r => r.tag_name === tag);
+          if (!release) {
+            throw new Error(`No release with tag ${tag}`);
+          }
+          const assets = () => JSON.parse(api(`repos/${repo}/releases/${release.id}/assets?per_page=100`));
+          const removeAsset = name => {
+            for (const asset of assets().filter(a => a.name === name)) {
+              api(`repos/${repo}/releases/assets/${asset.id}`, 'application/vnd.github+json', 'DELETE');
+            }
+          };
+
+          // curl, not gh, so each attempt reports its speed and gives up when the upload stalls
+          // (under 10 KB/s for two minutes) instead of hanging (issue 324).
+          const upload = (file, family, extra = []) => {
+            const name = path.basename(file);
+            removeAsset(name);
+            const started = Date.now();
+            const result = spawnSync('curl', [family, '--silent', '--show-error', '--fail-with-body',
+              '--speed-limit', '10240', '--speed-time', '120', ...extra,
+              '-H', `Authorization: Bearer ${token}`, '-H', 'Content-Type: application/octet-stream',
+              '-X', 'POST', '-T', file, '-o', os.devNull, '-w', '%{http_code} %{speed_upload}',
+              `https://uploads.github.com/repos/${repo}/releases/${release.id}/assets?name=${encodeURIComponent(name)}`], { encoding: 'utf8' });
+            const [code, speed] = (result.stdout || '').trim().split(' ');
+            const ok = result.status === 0 && code === '201';
+            console.log(`${name} over ${family === '-4' ? 'IPv4' : 'IPv6'}: ${ok ? 'done' : `failed (curl exit ${result.status}, HTTP ${code ?? '-'}) ${(result.stderr || '').trim()}`}, ${Math.round(Number(speed || 0) / 1024)} KB/s, ${Math.round((Date.now() - started) / 1000)} s`);
+            return { ok, speed: ok ? Number(speed) : 0 };
+          };
+
+          // A 4 MB probe on each address family picks the faster route; some networks stall large
+          // uploads on one of them.
+          const probe = path.join(os.tmpdir(), `upload-probe-${process.pid}.bin`);
+          fs.writeFileSync(probe, crypto.randomBytes(4 * 2 ** 20));
+          const families = ['-4', '-6'].map(family => ({ family, ...upload(probe, family, ['--max-time', '180']) }));
+          removeAsset(path.basename(probe));
+          fs.rmSync(probe);
+          const best = families.filter(f => f.ok).sort((a, b) => b.speed - a.speed)[0];
+          if (!best) {
+            throw new Error('A 4 MB test upload failed over both IPv4 and IPv6; this runner cannot reach uploads.github.com.');
+          }
+
+          // On macOS the dmg (downloads) and the zip (in-place updates by Squirrel.Mac, issue 1212) go up, plus the source maps.
+          const files = fs.readdirSync(out).filter(file => process.platform !== 'darwin' || file.endsWith('.dmg') || file.endsWith('.zip') || file.startsWith('klawly-sourcemaps-'));
+          const uploadWithRetries = file => {
+            const size = fs.statSync(path.join(out, file)).size;
+            console.log(`Uploading ${file} (${Math.round(size / 2 ** 20)} MB) to ${tag}; the probe expects about ${Math.ceil(size / best.speed / 60)} min`);
+            for (let attempt = 1; ; attempt++) {
+              if (upload(path.join(out, file), best.family).ok) {
+                break;
+              }
+              if (attempt === 3) {
+                throw new Error(`Upload of ${file} failed three times`);
+              }
+              console.log(`::warning::Upload of ${file} failed, retrying (attempt ${attempt + 1} of 3)`);
+            }
+          };
+          for (const file of files) {
+            uploadWithRetries(file);
+          }
+
+          // SHA256SUMS.txt lists the release's files; each OS run adds its own lines. The relay sends
+          // these hashes with an update, and GitHub's digest when two runs raced and a line is lost.
+          const sumsName = 'SHA256SUMS.txt';
+          const sums = new Map();
+          const existing = assets().find(a => a.name === sumsName);
+          if (existing) {
+            const text = api(`repos/${repo}/releases/assets/${existing.id}`, 'application/octet-stream');
+            for (const line of text.split(/\r?\n/)) {
+              const match = /^(?<hash>[0-9a-f]{64}) [ *](?<name>.+)$/i.exec(line.trim());
+              if (match) {
+                sums.set(match.groups.name, match.groups.hash.toLowerCase());
+              }
+            }
+          }
+          for (const file of files) {
+            sums.set(file, crypto.createHash('sha256').update(fs.readFileSync(path.join(out, file))).digest('hex'));
+          }
+          fs.writeFileSync(path.join(out, sumsName), [...sums].sort(([a], [b]) => a.localeCompare(b)).map(([name, hash]) => `${hash}  ${name}\n`).join(''));
+          uploadWithRetries(sumsName);
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release-tag }}
+
+      # Every release thanks the GitHub users who reported what it fixes, duplicates included, with
+      # links to their profiles (build/klawly/release-thanks.ts). Both OS runs write the same section.
+      - name: Thank the reporters
+        if: inputs.release-tag != ''
+        continue-on-error: true
+        run: |
+          const { execFileSync } = process.getBuiltinModule('node:child_process');
+          execFileSync(process.execPath, ['build/klawly/release-thanks.ts', process.env.RELEASE_TAG, '--write'], { stdio: 'inherit' });
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release-tag }}
