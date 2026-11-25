@@ -45,7 +45,9 @@ export interface IClaudeUsage {
  * stream-json lines of the Claude Code CLI.
  */
 export type ClaudeEvent =
-	| { readonly type: 'started'; readonly sessionId: string; readonly model?: string }
+	| { readonly type: 'started'; readonly sessionId: string; readonly model?: string; readonly cwd?: string }
+	/** The permission mode the CLI is in now: it changes when a plan is approved or the mode is switched. */
+	| { readonly type: 'mode'; readonly sessionId: string; readonly mode: NonNullable<IClaudeSendRequest['permissionMode']> }
 	| { readonly type: 'text'; readonly sessionId: string; readonly text: string }
 	| { readonly type: 'toolUse'; readonly sessionId: string; readonly toolUseId: string; readonly name: string; readonly input: Record<string, unknown> }
 	| { readonly type: 'toolResult'; readonly sessionId: string; readonly toolUseId: string; readonly output: string; readonly isError: boolean }
@@ -62,6 +64,8 @@ export interface IClaudeSessionInfo {
 	readonly title: string;
 	/** Last change, in milliseconds since the epoch. */
 	readonly modified: number;
+	/** How many files the session edited or wrote. */
+	readonly files: number;
 }
 
 /** One message of a stored session. */

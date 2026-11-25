@@ -5,6 +5,7 @@
 
 import { Emitter, Event } from '../../../base/common/event.js';
 import { Disposable } from '../../../base/common/lifecycle.js';
+import { LcsDiff } from '../../../base/common/diff/diff.js';
 import { ClaudeEvent, IClaudeTranscriptMessage } from './claudeRuntime.js';
 
 export type ClaudeToolStatus = 'running' | 'done' | 'failed';
@@ -60,10 +61,6 @@ export interface IClaudeFileChange {
 
 const FILE_TOOLS = new Set(['Edit', 'MultiEdit', 'Write']);
 
-function countLines(text: unknown): number {
-	return typeof text === 'string' && text.length > 0 ? text.split('\n').length : 0;
-}
-
 /** The tool input field that names what a tool acts on, so a row reads as "Edit total.ts" (v5-S12, D17). */
 export function claudeToolTarget(input: Record<string, unknown>): string {
 	const value = input.file_path ?? input.path ?? input.command ?? input.pattern ?? input.url ?? '';
@@ -109,48 +106,69 @@ export function claudeToolSummary(tool: IClaudeToolItem): IClaudeToolSummary | u
 	}
 }
 
-function claudeFileChange(toolName: string, input: Record<string, unknown>): { added: number; removed: number } {
-	const change = { added: 0, removed: 0 };
-	if (toolName === 'Write') {
-		change.added = countLines(input.content);
-	} else if (toolName === 'Edit') {
-		change.added = countLines(input.new_string);
-		change.removed = countLines(input.old_string);
-	} else if (Array.isArray(input.edits)) {
-		for (const edit of input.edits as Record<string, unknown>[]) {
-			change.added += countLines(edit?.new_string);
-			change.removed += countLines(edit?.old_string);
+/** One line of an edit: removed, added, or unchanged context. */
+export interface IClaudeDiffLine {
+	readonly sign: '+' | '-' | ' ';
+	readonly text: string;
+}
+
+function textLines(text: unknown): string[] {
+	return typeof text === 'string' && text.length > 0 ? text.replace(/\n$/, '').split('\n') : [];
+}
+
+/** A real line diff (the editor's LCS diff), so a line that stays is not shown as removed and added again. */
+function diffRows(before: unknown, after: unknown): IClaudeDiffLine[] {
+	const a = textLines(before);
+	const b = textLines(after);
+	const rows: IClaudeDiffLine[] = [];
+	let at = 0;
+	for (const change of new LcsDiff({ getElements: () => a }, { getElements: () => b }).ComputeDiff(false).changes) {
+		for (; at < change.originalStart; at++) {
+			rows.push({ sign: ' ', text: a[at] });
 		}
+		for (let i = 0; i < change.originalLength; i++) {
+			rows.push({ sign: '-', text: a[change.originalStart + i] });
+		}
+		for (let i = 0; i < change.modifiedLength; i++) {
+			rows.push({ sign: '+', text: b[change.modifiedStart + i] });
+		}
+		at = change.originalStart + change.originalLength;
 	}
-	return change;
+	for (; at < a.length; at++) {
+		rows.push({ sign: ' ', text: a[at] });
+	}
+	return rows;
+}
+
+/** The lines an Edit, MultiEdit or Write changes, for the expanded tool row. */
+export function claudeDiffLines(toolName: string, input: Record<string, unknown>): IClaudeDiffLine[] {
+	if (toolName === 'Write') {
+		return textLines(input.content).map(text => ({ sign: '+', text }));
+	}
+	if (toolName === 'Edit') {
+		return diffRows(input.old_string, input.new_string);
+	}
+	return Array.isArray(input.edits) ? (input.edits as Record<string, unknown>[]).flatMap(edit => diffRows(edit?.old_string, edit?.new_string)) : [];
+}
+
+function claudeFileChange(toolName: string, input: Record<string, unknown>): { added: number; removed: number } {
+	const lines = claudeDiffLines(toolName, input);
+	return { added: lines.filter(l => l.sign === '+').length, removed: lines.filter(l => l.sign === '-').length };
 }
 
 /** A question the agent asks with the AskUserQuestion tool: the first question and its answer options. */
-export function claudeQuestion(input: Record<string, unknown>): { question: string; options: string[] } | undefined {
+export function claudeQuestion(input: Record<string, unknown>): { question: string; options: { label: string; description?: string }[] } | undefined {
 	const first = Array.isArray(input.questions) ? input.questions[0] as { question?: unknown; options?: unknown } | undefined : undefined;
 	if (typeof first?.question !== 'string') {
 		return undefined;
 	}
-	const options = Array.isArray(first.options) ? first.options.map(o => (o as { label?: unknown })?.label).filter((l): l is string => typeof l === 'string') : [];
-	return { question: first.question, options };
-}
-
-/** The lines an Edit, MultiEdit or Write changes, as a simple removed/added list for the expanded tool row. */
-export function claudeDiffLines(toolName: string, input: Record<string, unknown>): { sign: '+' | '-'; text: string }[] {
-	const lines: { sign: '+' | '-'; text: string }[] = [];
-	const add = (sign: '+' | '-', text: unknown) => typeof text === 'string' && text.length > 0 && text.split('\n').forEach(line => lines.push({ sign, text: line }));
-	if (toolName === 'Write') {
-		add('+', input.content);
-	} else if (toolName === 'Edit') {
-		add('-', input.old_string);
-		add('+', input.new_string);
-	} else if (Array.isArray(input.edits)) {
-		for (const edit of input.edits as Record<string, unknown>[]) {
-			add('-', edit?.old_string);
-			add('+', edit?.new_string);
+	const options: { label: string; description?: string }[] = [];
+	for (const raw of Array.isArray(first.options) ? first.options as { label?: unknown; description?: unknown }[] : []) {
+		if (typeof raw?.label === 'string') {
+			options.push({ label: raw.label, description: typeof raw.description === 'string' && raw.description ? raw.description : undefined });
 		}
 	}
-	return lines;
+	return { question: first.question, options };
 }
 
 /**
@@ -185,6 +203,10 @@ export class ClaudeConversation extends Disposable {
 	sessionId: string | undefined;
 	/** The model the CLI reported when the session started. */
 	model: string | undefined;
+	/** The permission mode the CLI reported last, `undefined` until it does. */
+	mode: string | undefined;
+	/** The folder the CLI works in; files outside it never count as changes. */
+	private root: string | undefined;
 	working = false;
 	/** Input tokens of the last turn, an estimate of how full the context is. */
 	contextTokens = 0;
@@ -278,6 +300,11 @@ export class ClaudeConversation extends Disposable {
 		switch (event.type) {
 			case 'started':
 				this.model = event.model ?? this.model;
+				this.root = event.cwd ?? this.root;
+				this._onDidChange.fire(undefined);
+				break;
+			case 'mode':
+				this.mode = event.mode;
 				this._onDidChange.fire(undefined);
 				break;
 			case 'text': {
@@ -340,6 +367,9 @@ export class ClaudeConversation extends Disposable {
 		const path = input.file_path;
 		if (!FILE_TOOLS.has(toolName) || typeof path !== 'string') {
 			return;
+		}
+		if (this.root && !(path.startsWith(this.root) && /[\\/]/.test(path[this.root.length] ?? ''))) {
+			return; // e.g. a plan file under ~/.claude/plans
 		}
 		const change = this.fileChanges.get(path) ?? { path, added: 0, removed: 0 };
 		const added = claudeFileChange(toolName, input);

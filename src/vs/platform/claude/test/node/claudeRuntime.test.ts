@@ -54,7 +54,8 @@ suite('Claude runtime', () => {
 		test('maps CLI lines to normalized events and does not repeat streamed text', () => {
 			const parser = new ClaudeStreamParser();
 			const lines = [
-				{ type: 'system', subtype: 'init', session_id: 's1', model: 'm' },
+				{ type: 'system', subtype: 'init', session_id: 's1', model: 'm', cwd: '/p' },
+				{ type: 'system', subtype: 'status', session_id: 's1', status: null, permissionMode: 'plan' },
 				{ type: 'stream_event', session_id: 's1', event: { type: 'message_start', message: { id: 'a' } } },
 				{ type: 'stream_event', session_id: 's1', event: { type: 'content_block_delta', delta: { type: 'text_delta', text: 'He' } } },
 				{ type: 'assistant', session_id: 's1', message: { id: 'a', content: [{ type: 'text', text: 'He' }, { type: 'tool_use', id: 'u1', name: 'Read', input: { file_path: 'a' } }] } },
@@ -64,7 +65,8 @@ suite('Claude runtime', () => {
 			];
 			const events = lines.flatMap(line => parser.parseLine(JSON.stringify(line)));
 			assert.deepStrictEqual(events, [
-				{ type: 'started', sessionId: 's1', model: 'm' },
+				{ type: 'started', sessionId: 's1', model: 'm', cwd: '/p' },
+				{ type: 'mode', sessionId: 's1', mode: 'plan' },
 				{ type: 'text', sessionId: 's1', text: 'He' },
 				{ type: 'toolUse', sessionId: 's1', toolUseId: 'u1', name: 'Read', input: { file_path: 'a' } },
 				{ type: 'toolResult', sessionId: 's1', toolUseId: 'u1', output: 'ok', isError: false },
@@ -200,9 +202,25 @@ suite('Claude runtime', () => {
 		});
 
 		test('question and diff helpers read the tool input', () => {
-			assert.deepStrictEqual(claudeQuestion({ questions: [{ question: 'Which?', options: [{ label: 'A' }, { label: 'B' }] }] }), { question: 'Which?', options: ['A', 'B'] });
+			assert.deepStrictEqual(claudeQuestion({ questions: [{ question: 'Which?', options: [{ label: 'A' }, { label: 'B' }] }] }), { question: 'Which?', options: [{ label: 'A', description: undefined }, { label: 'B', description: undefined }] });
+			assert.deepStrictEqual(claudeQuestion({ questions: [{ question: 'Q', options: [{ label: 'A', description: 'why' }] }] })?.options, [{ label: 'A', description: 'why' }]);
 			assert.strictEqual(claudeQuestion({}), undefined);
 			assert.deepStrictEqual(claudeDiffLines('Edit', { old_string: 'a\nb', new_string: 'c' }), [{ sign: '-', text: 'a' }, { sign: '-', text: 'b' }, { sign: '+', text: 'c' }]);
+			// a line that stays is context, not removed and added again
+			assert.deepStrictEqual(claudeDiffLines('Edit', { old_string: 'a\nb\nc', new_string: 'a\nB\nc' }).map(l => l.sign + l.text), [' a', '-b', '+B', ' c']);
+			assert.deepStrictEqual(claudeToolSummary({ kind: 'tool', id: 'x', name: 'Edit', target: '', startedAt: 0, status: 'done', input: { old_string: 'a\nb\nc', new_string: 'a\nB\nc' } } as IClaudeToolItem), { added: 1, removed: 1 });
+		});
+
+		test('the CLI reports its mode; files outside its folder never count as changes', () => {
+			const conversation = create();
+			conversation.addUser('Go');
+			conversation.handle({ type: 'started', sessionId: 's', cwd: '/p' });
+			conversation.handle({ type: 'mode', sessionId: 's', mode: 'default' });
+			for (const [id, file] of [['u1', '/p/a.ts'], ['u2', '/home/me/.claude/plans/x.md'], ['u3', '/pp/b.ts']]) {
+				conversation.handle({ type: 'toolUse', sessionId: 's', toolUseId: id, name: 'Write', input: { file_path: file, content: 'x' } });
+				conversation.handle({ type: 'toolResult', sessionId: 's', toolUseId: id, output: 'ok', isError: false });
+			}
+			assert.deepStrictEqual([conversation.mode, conversation.changes.map(c => c.path)], ['default', ['/p/a.ts']]);
 		});
 
 		test('an error shows as a notice and stops the turn', () => {
@@ -333,8 +351,11 @@ suite('Claude runtime', () => {
 			await waitFor(service, 'result');
 			assert.deepStrictEqual(await service.getBusySessions(), []);
 			const ended = waitFor(service, 'ended');
+			const errors: string[] = [];
+			store.add(service.onDidEvent(e => e.type === 'error' && errors.push(e.message)));
 			await service.stop(first.sessionId);
 			await ended;
+			assert.deepStrictEqual(errors, []); // a stop the person asked for is not an error
 			assert.deepStrictEqual(await service.getRunningSessions(), []);
 			service.dispose();
 		});
@@ -345,8 +366,8 @@ suite('Claude runtime', () => {
 			assert.deepStrictEqual(JSON.parse(await readFile(join(cwd, '.claude', 'settings.local.json'), 'utf8')), { permissions: { allow: ['Bash(npm test *)'] } });
 			const folder = join(dir, 'home', '.claude', 'projects', claudeProjectFolderName(await realpath(cwd)));
 			await mkdir(folder, { recursive: true });
-			await writeFile(join(folder, 'abc-1.jsonl'), JSON.stringify({ type: 'user', message: { content: 'Fix cart total' } }) + '\n' + JSON.stringify({ type: 'assistant', message: { content: [{ type: 'text', text: 'Done' }] } }));
-			assert.deepStrictEqual((await service.listSessions(cwd)).map(x => [x.id, x.title]), [['abc-1', 'Fix cart total']]);
+			await writeFile(join(folder, 'abc-1.jsonl'), JSON.stringify({ type: 'user', message: { content: 'Fix cart total' } }) + '\n' + JSON.stringify({ type: 'assistant', message: { content: [{ type: 'text', text: 'Done' }, { type: 'tool_use', name: 'Edit', input: { file_path: '/p/a.ts' } }] } }));
+			assert.deepStrictEqual((await service.listSessions(cwd)).map(x => [x.id, x.title, x.files]), [['abc-1', 'Fix cart total', 1]]);
 			assert.deepStrictEqual(await service.readTranscript(cwd, 'abc-1'), [{ role: 'user', text: 'Fix cart total' }, { role: 'assistant', text: 'Done' }]);
 			assert.deepStrictEqual(await service.readTranscript(cwd, '../../x'), []);
 			service.dispose();
