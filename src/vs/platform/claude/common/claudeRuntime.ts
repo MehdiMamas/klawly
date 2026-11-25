@@ -26,7 +26,7 @@ export interface IClaudeSendRequest {
 	readonly cwd: string;
 	readonly prompt: string;
 	readonly model?: string;
-	readonly permissionMode?: 'default' | 'acceptEdits' | 'plan';
+	readonly permissionMode?: 'default' | 'acceptEdits' | 'plan' | 'bypassPermissions';
 }
 
 export interface IClaudeSendResult {
@@ -55,6 +55,21 @@ export type ClaudeEvent =
 	| { readonly type: 'error'; readonly sessionId: string; readonly message: string }
 	| { readonly type: 'ended'; readonly sessionId: string; readonly exitCode: number | null };
 
+/** One session the CLI keeps on disk for a folder (the Recent list of v5-S07). */
+export interface IClaudeSessionInfo {
+	readonly id: string;
+	/** The first prompt of the session. */
+	readonly title: string;
+	/** Last change, in milliseconds since the epoch. */
+	readonly modified: number;
+}
+
+/** One message of a stored session. */
+export interface IClaudeTranscriptMessage {
+	readonly role: 'user' | 'assistant';
+	readonly text: string;
+}
+
 export interface IClaudeSettingsSource {
 	readonly scope: 'user' | 'project' | 'local';
 	readonly path: string;
@@ -79,13 +94,21 @@ export interface IClaudeRuntimeService {
 	/** Starts, resumes or follows a session and queues the prompt as its next turn. */
 	send(request: IClaudeSendRequest): Promise<IClaudeSendResult>;
 	/** Answers a `permission` event. */
-	answerPermission(sessionId: string, requestId: string, allow: boolean, message?: string): Promise<void>;
-	/** Interrupts the running turn; the session stays open. */
+	answerPermission(sessionId: string, requestId: string, allow: boolean, message?: string, updatedInput?: Record<string, unknown>): Promise<void>;
+	/** Interrupts the running turn and ends the CLI process when it does not stop by itself; the session can be resumed. */
 	stop(sessionId: string): Promise<void>;
 	/** Ends the session's CLI process. The session can be resumed later. */
 	close(sessionId: string): Promise<void>;
 	/** Ids of sessions that currently have a CLI process (the owners). */
 	getRunningSessions(): Promise<string[]>;
+	/** Ids of sessions that are working on a turn right now (a finished chat is not busy). */
+	getBusySessions(): Promise<string[]>;
 	/** Reads Claude Code settings with the documented precedence. */
 	readSettings(cwd: string): Promise<IClaudeSettings>;
+	/** Adds an allow rule such as `Bash(npm test *)` to the folder's `.claude/settings.local.json` (the "Always allow" button of v5-S13). */
+	addAllowRule(cwd: string, rule: string): Promise<void>;
+	/** Sessions the CLI stored for this folder, newest first. Read-only. */
+	listSessions(cwd: string): Promise<IClaudeSessionInfo[]>;
+	/** The messages of a stored session. Read-only. */
+	readTranscript(cwd: string, sessionId: string): Promise<IClaudeTranscriptMessage[]>;
 }

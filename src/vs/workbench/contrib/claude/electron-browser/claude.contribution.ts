@@ -6,7 +6,8 @@
 import { Codicon } from '../../../../base/common/codicons.js';
 import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
 import { localize, localize2 } from '../../../../nls.js';
-import { Action2, registerAction2 } from '../../../../platform/actions/common/actions.js';
+import { Action2, MenuId, registerAction2 } from '../../../../platform/actions/common/actions.js';
+import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
 import { CLAUDE_RUNTIME_CHANNEL, IClaudeRuntimeService } from '../../../../platform/claude/common/claudeRuntime.js';
 import { SyncDescriptor } from '../../../../platform/instantiation/common/descriptors.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
@@ -71,7 +72,13 @@ registerAction2(class FocusAgent extends Action2 {
 
 registerAction2(class NewAgent extends Action2 {
 	constructor() {
-		super({ id: 'claude.agent.new', title: localize2('claude.agent.new', "New Agent"), f1: true });
+		super({
+			id: 'claude.agent.new',
+			title: localize2('claude.agent.new', "New Agent"),
+			icon: Codicon.add,
+			f1: true,
+			menu: { id: MenuId.ViewTitle, when: ContextKeyExpr.equals('view', CLAUDE_AGENT_VIEW_ID), group: 'navigation' },
+		});
 	}
 	async run(accessor: ServicesAccessor): Promise<void> {
 		(await getAgentView(accessor))?.newAgent();

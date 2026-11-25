@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import { readFile } from 'fs/promises';
+import { mkdir, readdir, readFile, realpath, stat, writeFile } from 'fs/promises';
 import { homedir } from 'os';
 import { Emitter } from '../../../base/common/event.js';
 import { Disposable } from '../../../base/common/lifecycle.js';
@@ -12,9 +12,10 @@ import { join } from '../../../base/common/path.js';
 import { generateUuid } from '../../../base/common/uuid.js';
 import { localize } from '../../../nls.js';
 import { ILogService } from '../../log/common/log.js';
-import { ClaudeEvent, IClaudeCliStatus, IClaudeRuntimeService, IClaudeSendRequest, IClaudeSendResult, IClaudeSettings, IClaudeSettingsSource } from '../common/claudeRuntime.js';
+import { ClaudeEvent, IClaudeCliStatus, IClaudeRuntimeService, IClaudeSendRequest, IClaudeSendResult, IClaudeSessionInfo, IClaudeSettings, IClaudeSettingsSource, IClaudeTranscriptMessage } from '../common/claudeRuntime.js';
 import { ClaudeSessionOwners } from '../common/claudeSessionOwners.js';
-import { mergeClaudeSettings, parseClaudeSettingsFile } from '../common/claudeSettings.js';
+import { claudeProjectFolderName, parseClaudeTranscript } from '../common/claudeSessions.js';
+import { addAllowRuleToSettings, mergeClaudeSettings, parseClaudeSettingsFile } from '../common/claudeSettings.js';
 import { ClaudeStreamParser } from '../common/claudeStreamParser.js';
 import { checkClaudeCli } from './claudeCli.js';
 
@@ -23,7 +24,12 @@ interface IClaudeSession {
 	readonly process: ChildProcessWithoutNullStreams;
 	/** Permission requests waiting for an answer, request id to the tool input the CLI needs echoed back. */
 	readonly pendingPermissions: Map<string, Record<string, unknown>>;
+	/** True from a prompt until the CLI reports the result of the turn. */
+	busy: boolean;
 }
+
+/** How long the CLI gets to honour an interrupt before its process is ended. */
+const STOP_GRACE_MS = 1500;
 
 /**
  * Drives the user's installed, untouched `claude` command headless over stream-json.
@@ -56,6 +62,7 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 		if (!owner) {
 			throw new Error(failure);
 		}
+		owner.busy = true;
 		owner.process.stdin.write(JSON.stringify({ type: 'user', message: { role: 'user', content: request.prompt } }) + '\n');
 		return { sessionId, followed };
 	}
@@ -82,10 +89,13 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 			args.push('--model', request.model);
 		}
 		if (request.permissionMode) {
+			if (request.permissionMode === 'bypassPermissions') {
+				args.push('--allow-dangerously-skip-permissions');
+			}
 			args.push('--permission-mode', request.permissionMode);
 		}
 		const child = spawn(path, args, { cwd: request.cwd, env: this.env, windowsHide: true });
-		const session: IClaudeSession = { sessionId, process: child, pendingPermissions: new Map() };
+		const session: IClaudeSession = { sessionId, process: child, pendingPermissions: new Map(), busy: false };
 		const parser = new ClaudeStreamParser();
 		let buffer = '';
 		let stderr = '';
@@ -98,6 +108,9 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 				const line = buffer.slice(0, newline);
 				buffer = buffer.slice(newline + 1);
 				for (const event of parser.parseLine(line)) {
+					if (event.type === 'result') {
+						session.busy = false;
+					}
 					if (event.type === 'permission') {
 						session.pendingPermissions.set(event.requestId, event.input);
 					}
@@ -121,19 +134,32 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 		return session;
 	}
 
-	async answerPermission(sessionId: string, requestId: string, allow: boolean, message?: string): Promise<void> {
+	async answerPermission(sessionId: string, requestId: string, allow: boolean, message?: string, updatedInput?: Record<string, unknown>): Promise<void> {
 		const session = this.owners.get(sessionId);
 		const input = session?.pendingPermissions.get(requestId);
 		if (!session || !input) {
 			return;
 		}
 		session.pendingPermissions.delete(requestId);
-		const response = allow ? { behavior: 'allow', updatedInput: input } : { behavior: 'deny', message: message ?? 'The user denied this action.' };
+		const response = allow ? { behavior: 'allow', updatedInput: updatedInput ?? input } : { behavior: 'deny', message: message ?? 'The user denied this action.' };
 		session.process.stdin.write(JSON.stringify({ type: 'control_response', response: { subtype: 'success', request_id: requestId, response } }) + '\n');
 	}
 
 	async stop(sessionId: string): Promise<void> {
-		this.owners.get(sessionId)?.process.stdin.write(JSON.stringify({ type: 'control_request', request_id: generateUuid(), request: { subtype: 'interrupt' } }) + '\n');
+		const session = this.owners.get(sessionId);
+		if (!session) {
+			return;
+		}
+		session.busy = false;
+		session.pendingPermissions.clear();
+		session.process.stdin.write(JSON.stringify({ type: 'control_request', request_id: generateUuid(), request: { subtype: 'interrupt' } }) + '\n');
+		// a CLI that ignores the interrupt would keep working: end it, the session resumes on the next prompt
+		const timer = setTimeout(() => {
+			if (this.owners.get(sessionId) === session) {
+				session.process.kill();
+			}
+		}, STOP_GRACE_MS);
+		session.process.once('close', () => clearTimeout(timer));
 	}
 
 	async close(sessionId: string): Promise<void> {
@@ -142,6 +168,10 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 
 	async getRunningSessions(): Promise<string[]> {
 		return this.owners.ids();
+	}
+
+	async getBusySessions(): Promise<string[]> {
+		return this.owners.ids().filter(id => this.owners.get(id)?.busy);
 	}
 
 	/** Precedence: https://code.claude.com/docs/en/settings, lowest first here: user, project, project local. */
@@ -168,6 +198,60 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 			sources.push({ ...file, loaded: !!parsed.value, error: parsed.error });
 		}
 		return { settings: mergeClaudeSettings(layers), sources };
+	}
+
+	async addAllowRule(cwd: string, rule: string): Promise<void> {
+		const dir = join(cwd, '.claude');
+		const path = join(dir, 'settings.local.json');
+		let existing: string | undefined;
+		try {
+			existing = await readFile(path, 'utf8');
+		} catch {
+			// no file yet
+		}
+		await mkdir(dir, { recursive: true });
+		await writeFile(path, addAllowRuleToSettings(existing, rule));
+	}
+
+	/** The CLI names the folder after the real path of the working folder (`/tmp` is `/private/tmp` on macOS). */
+	private async sessionsFolder(cwd: string): Promise<string> {
+		const real = await realpath(cwd).catch(() => cwd);
+		return join(this.home, '.claude', 'projects', claudeProjectFolderName(real));
+	}
+
+	async listSessions(cwd: string): Promise<IClaudeSessionInfo[]> {
+		const folder = await this.sessionsFolder(cwd);
+		let names: string[];
+		try {
+			names = (await readdir(folder)).filter(name => name.endsWith('.jsonl'));
+		} catch {
+			return [];
+		}
+		const sessions: IClaudeSessionInfo[] = [];
+		for (const name of names) {
+			const path = join(folder, name);
+			try {
+				const first = parseClaudeTranscript(await readFile(path, 'utf8')).find(m => m.role === 'user');
+				if (first) {
+					sessions.push({ id: name.slice(0, -'.jsonl'.length), title: first.text.split('\n')[0].slice(0, 60), modified: (await stat(path)).mtimeMs });
+				}
+			} catch {
+				// unreadable file: not listed
+			}
+		}
+		return sessions.sort((a, b) => b.modified - a.modified || (a.id < b.id ? -1 : 1));
+	}
+
+	async readTranscript(cwd: string, sessionId: string): Promise<IClaudeTranscriptMessage[]> {
+		// an id is a file name inside the project folder, never a path
+		if (!/^[\w-]+$/.test(sessionId)) {
+			return [];
+		}
+		try {
+			return parseClaudeTranscript(await readFile(join(await this.sessionsFolder(cwd), `${sessionId}.jsonl`), 'utf8'));
+		} catch {
+			return [];
+		}
 	}
 
 	override dispose(): void {

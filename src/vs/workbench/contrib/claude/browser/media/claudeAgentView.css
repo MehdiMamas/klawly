@@ -3,136 +3,643 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-/* P1 layout of v5-S07 / v5-S12: 13px text, messages above, composer attached to the bottom. Full styling is P2. */
+/* The Agent pane of v5-S07 / S12 / S13 / S42. Sizes come from the Klawly tokens (three type sizes: 12, 13, 15), colours from the theme. */
 .claude-agent {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	font-size: 13px;
+	min-width: 0;
+	font-size: var(--vscode-klawly-fontSize-body);
+	line-height: var(--vscode-klawly-lineHeight-body);
 	color: var(--vscode-foreground);
 }
 
-.claude-agent .claude-messages {
+.claude-agent button {
+	font-family: inherit;
+	color: inherit;
+	cursor: pointer;
+}
+
+.claude-agent .claude-list {
 	flex: 1;
+	min-height: 0;
 	overflow-y: auto;
-	padding: 12px;
+	padding: var(--vscode-klawly-gap-large) var(--vscode-klawly-gap-xLarge);
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: var(--vscode-klawly-gap-medium);
 }
 
-.claude-agent .claude-empty {
-	margin: auto;
-	text-align: center;
-}
-
-.claude-agent .claude-empty-title {
-	font-size: 15px;
-	font-weight: 600;
-}
-
-.claude-agent .claude-message {
-	white-space: pre-wrap;
-	line-height: 1.5;
-	user-select: text;
-}
-
-.claude-agent .claude-message.claude-user {
+/* Messages */
+.claude-agent .claude-user {
 	align-self: flex-end;
 	max-width: 85%;
-	padding: 6px 10px;
-	border-radius: 6px;
-	background: var(--vscode-input-background);
 }
 
+.claude-agent .claude-bubble {
+	background: var(--vscode-input-background);
+	border: 1px solid var(--vscode-widget-border);
+	border-radius: var(--vscode-klawly-cornerRadius-large);
+	padding: var(--vscode-klawly-gap-medium) var(--vscode-klawly-gap-large);
+	color: var(--vscode-editor-foreground);
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.claude-agent .claude-assistant {
+	color: var(--vscode-foreground);
+	overflow-wrap: anywhere;
+	max-width: var(--vscode-klawly-plan-maxWidth);
+}
+
+/* Headings in replies stay at the heading size (VC02: only 12, 13 and 15) */
+.claude-agent .claude-assistant :is(h1, h2, h3, h4, h5, h6) {
+	margin: 0 0 var(--vscode-klawly-gap-medium);
+	font-size: var(--vscode-klawly-fontSize-heading);
+	line-height: var(--vscode-klawly-lineHeight-heading);
+	font-weight: 600;
+}
+
+.claude-agent .claude-streaming > :last-child::after {
+	content: '\2588';
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agent .claude-assistant p {
+	margin: 0 0 var(--vscode-klawly-gap-medium);
+}
+
+.claude-agent .claude-assistant code {
+	font-family: var(--monaco-monospace-font);
+	font-size: var(--vscode-klawly-fontSize-meta);
+	background: var(--vscode-textCodeBlock-background);
+	border-radius: var(--vscode-klawly-cornerRadius-small);
+	padding: 0 var(--vscode-klawly-gap-xSmall);
+}
+
+.claude-agent .claude-assistant pre {
+	background: var(--vscode-textCodeBlock-background);
+	border-radius: var(--vscode-klawly-cornerRadius);
+	padding: var(--vscode-klawly-gap-medium);
+	overflow-x: auto;
+}
+
+.claude-agent .claude-assistant pre code {
+	background: none;
+	padding: 0;
+}
+
+.claude-agent .claude-assistant a {
+	color: var(--vscode-textLink-foreground);
+}
+
+/* Tool rows: collapsed, one line, verb and target kept (VC12) */
 .claude-agent .claude-tool {
 	display: flex;
-	gap: 6px;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-medium);
+	width: 100%;
+	height: var(--vscode-klawly-button-height-compact);
+	padding: 0;
+	border: 0;
+	background: none;
+	text-align: left;
+	font-size: var(--vscode-klawly-fontSize-meta);
 	color: var(--vscode-descriptionForeground);
 }
 
-.claude-agent .claude-tool-name {
-	font-weight: 600;
+.claude-agent .claude-tool:hover .claude-tool-verb {
+	text-decoration: underline;
 }
 
-.claude-agent .claude-tool-target {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+.claude-agent .claude-tool-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: none;
+	width: calc(var(--vscode-klawly-button-height-compact) - var(--vscode-klawly-gap-small));
+	height: calc(var(--vscode-klawly-button-height-compact) - var(--vscode-klawly-gap-small));
+	border-radius: var(--vscode-klawly-cornerRadius-small);
+	background: var(--vscode-toolbar-hoverBackground);
 }
 
-.claude-agent .claude-permission {
-	padding: 8px 10px;
-	border: 1px solid var(--vscode-focusBorder);
-	border-radius: 6px;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.claude-agent .claude-permission-title {
-	font-weight: 600;
-}
-
-.claude-agent .claude-permission-detail {
-	color: var(--vscode-descriptionForeground);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.claude-agent .claude-notice:not(:empty) {
-	padding: 6px 12px;
+.claude-agent .claude-failed .claude-tool-icon {
 	color: var(--vscode-errorForeground);
 }
 
-.claude-agent .claude-composer {
-	margin: 0 12px 12px;
-	padding: 8px;
-	border: 1px solid var(--vscode-input-border, var(--vscode-widget-border));
-	border-radius: 6px;
-	background: var(--vscode-input-background);
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
+.claude-agent .claude-done .claude-tool-icon {
+	color: var(--vscode-charts-green);
 }
 
-.claude-agent .claude-composer:focus-within {
+.claude-agent .claude-tool-verb {
+	flex: none;
+	font-weight: 600;
+	color: var(--vscode-editor-foreground);
+}
+
+.claude-agent .claude-tool-target {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.claude-agent .claude-output {
+	margin: var(--vscode-klawly-gap-xSmall) 0 0;
+	padding: var(--vscode-klawly-gap-medium);
+	max-height: 40vh;
+	overflow: auto;
+	background: var(--vscode-editorWidget-background);
+	border: 1px solid var(--vscode-widget-border);
+	border-radius: var(--vscode-klawly-cornerRadius-large);
+	font-family: var(--monaco-monospace-font);
+	font-size: var(--vscode-klawly-fontSize-meta);
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+/* Buttons: compact 24 high, large 28 high */
+.claude-agent .claude-button {
+	height: var(--vscode-klawly-button-height-compact);
+	padding: 0 var(--vscode-klawly-gap-large);
+	border: 1px solid transparent;
+	border-radius: var(--vscode-klawly-cornerRadius);
+	background: var(--vscode-button-secondaryBackground);
+	color: var(--vscode-button-secondaryForeground);
+	font-size: var(--vscode-klawly-fontSize-meta);
+}
+
+.claude-agent .claude-button:hover {
+	background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.claude-agent .claude-button.claude-primary {
+	background: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	font-weight: 600;
+}
+
+.claude-agent .claude-button.claude-primary:hover {
+	background: var(--vscode-button-hoverBackground);
+}
+
+.claude-agent .claude-button.claude-ghost {
+	background: none;
+}
+
+.claude-agent .claude-button.claude-ghost:hover {
+	background: var(--vscode-toolbar-hoverBackground);
+}
+
+.claude-agent .claude-button.claude-large {
+	height: var(--vscode-klawly-button-height-large);
+	font-size: var(--vscode-klawly-fontSize-body);
+}
+
+.claude-agent button:focus-visible {
+	outline: 1px solid var(--vscode-focusBorder);
+	outline-offset: 1px;
+}
+
+/* Permission card (S13, VC07): title row, then one row of buttons */
+.claude-agent .claude-permission {
+	display: flex;
+	flex-direction: column;
+	gap: var(--vscode-klawly-gap-medium);
+	padding: var(--vscode-klawly-gap-large);
+	background: var(--vscode-editorWidget-background);
+	border: 1px solid var(--vscode-button-background);
+	border-radius: var(--vscode-klawly-cornerRadius-large);
+}
+
+.claude-agent .claude-permission-title {
+	display: flex;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-medium);
+	font-weight: 600;
+	min-width: 0;
+}
+
+.claude-agent .claude-permission-title > .codicon {
+	color: var(--vscode-button-background);
+}
+
+.claude-agent .claude-permission-text {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.claude-agent .claude-permission-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--vscode-klawly-gap-medium);
+}
+
+.claude-agent .claude-permission-state {
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+}
+
+/* Empty pane (S07) */
+.claude-agent .claude-empty {
+	display: flex;
+	flex-direction: column;
+	gap: var(--vscode-klawly-gap-medium);
+	align-items: stretch;
+}
+
+.claude-agent .claude-section {
+	font-size: var(--vscode-klawly-fontSize-meta);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agent .claude-starter {
+	text-align: left;
+}
+
+.claude-agent .claude-notice {
+	display: none;
+	margin: 0 var(--vscode-klawly-gap-xLarge) var(--vscode-klawly-gap-medium);
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-errorForeground);
+}
+
+.claude-agent .claude-notice.visible {
+	display: block;
+}
+
+/* Composer (S12): changes bar attached on top, one box with chips and a fixed Send (VC06, VC09, VC10) */
+.claude-agent .claude-composer {
+	flex: none;
+	margin: 0 var(--vscode-klawly-gap-large) var(--vscode-klawly-gap-large);
+}
+
+.claude-agent .claude-changes {
+	display: none;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-medium);
+	height: var(--vscode-klawly-button-height-large);
+	padding: 0 var(--vscode-klawly-gap-small) 0 var(--vscode-klawly-gap-medium);
+	border: 1px solid var(--vscode-widget-border);
+	border-bottom: 0;
+	border-radius: var(--vscode-klawly-cornerRadius) var(--vscode-klawly-cornerRadius) 0 0;
+	background: var(--vscode-editorWidget-background);
+	font-size: var(--vscode-klawly-fontSize-meta);
+	overflow: hidden;
+}
+
+.claude-agent .claude-changes.visible {
+	display: flex;
+}
+
+.claude-agent .claude-changes-count {
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.claude-agent .claude-added {
+	color: var(--vscode-gitDecoration-addedResourceForeground);
+}
+
+.claude-agent .claude-removed {
+	color: var(--vscode-errorForeground);
+}
+
+.claude-agent .claude-spacer {
+	flex: 1;
+}
+
+.claude-agent .claude-box {
+	display: flex;
+	flex-direction: column;
+	gap: var(--vscode-klawly-gap-small);
+	padding: var(--vscode-klawly-gap-medium);
+	background: var(--vscode-input-background);
+	border: 1px solid var(--vscode-widget-border);
+	border-radius: var(--vscode-klawly-cornerRadius-large);
+}
+
+.claude-agent .claude-changes.visible + .claude-box {
+	border-radius: 0 0 var(--vscode-klawly-cornerRadius) var(--vscode-klawly-cornerRadius);
+}
+
+.claude-agent .claude-box:focus-within {
 	border-color: var(--vscode-focusBorder);
 }
 
 .claude-agent .claude-input {
+	width: 100%;
+	box-sizing: border-box;
+	min-height: calc(var(--vscode-klawly-button-height-large) + var(--vscode-klawly-gap-large));
+	max-height: 40vh;
 	resize: none;
-	border: none;
-	outline: none;
-	background: transparent;
+	border: 0;
+	outline: 0 !important;
+	box-shadow: none;
+	background: none;
 	color: var(--vscode-input-foreground);
-	font: inherit;
+	font-family: inherit;
+	font-size: var(--vscode-klawly-fontSize-body);
+	line-height: var(--vscode-klawly-lineHeight-body);
+	field-sizing: content;
 }
 
-.claude-agent .claude-composer-row {
+.claude-agent .claude-input::placeholder {
+	color: var(--vscode-input-placeholderForeground);
+}
+
+.claude-agent .claude-row {
 	display: flex;
-	justify-content: flex-end;
-	gap: 6px;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-xSmall);
+	min-width: 0;
 }
 
-.claude-agent .claude-button {
-	height: 24px;
-	padding: 0 12px;
-	border: none;
-	border-radius: 6px;
-	font: inherit;
-	cursor: pointer;
-	background: var(--vscode-button-secondaryBackground);
-	color: var(--vscode-button-secondaryForeground);
+.claude-agent .claude-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-xSmall);
+	min-width: 0;
+	height: var(--vscode-klawly-button-height-compact);
+	padding: 0 var(--vscode-klawly-gap-medium);
+	border: 0;
+	border-radius: var(--vscode-klawly-cornerRadius);
+	background: none;
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-.claude-agent .claude-button.claude-send {
+.claude-agent .claude-chip:hover {
+	background: var(--vscode-toolbar-hoverBackground);
+	color: var(--vscode-editor-foreground);
+}
+
+.claude-agent .claude-chevron {
+	flex: none;
+}
+
+.claude-agent .claude-ring {
+	margin-left: auto;
+	flex: none;
+	width: var(--vscode-klawly-gap-xLarge);
+	height: var(--vscode-klawly-gap-xLarge);
+	border-radius: 50%;
+	background: conic-gradient(var(--vscode-button-background) var(--claude-context, 0%), var(--vscode-widget-border) 0);
+	-webkit-mask: radial-gradient(circle, transparent 50%, #000 52%);
+	mask: radial-gradient(circle, transparent 50%, #000 52%);
+}
+
+.claude-agent .claude-send {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--vscode-klawly-button-height-large);
+	height: var(--vscode-klawly-button-height-large);
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
 	background: var(--vscode-button-background);
 	color: var(--vscode-button-foreground);
 }
 
-.claude-agent .claude-button:disabled {
-	opacity: 0.5;
+.claude-agent .claude-send:disabled {
+	background: var(--vscode-toolbar-hoverBackground);
+	color: var(--vscode-disabledForeground);
 	cursor: default;
+}
+
+.claude-agent .claude-send.claude-stop {
+	background: var(--vscode-editor-foreground);
+	color: var(--vscode-editor-background);
+}
+
+/* Tool row details (v5-S12): file chip, directory, right-aligned result, running-time pill */
+.claude-agent .claude-tool-target {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-small);
+}
+
+.claude-agent .claude-fchip,
+.claude-agent .claude-ctxc {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-xSmall);
+	min-width: 0;
+	border-radius: var(--vscode-klawly-cornerRadius-small);
+	font-size: var(--vscode-klawly-fontSize-meta);
+}
+
+.claude-agent .claude-fchip {
+	color: var(--vscode-editor-foreground);
+}
+
+.claude-agent .claude-ctxc {
+	height: var(--vscode-klawly-button-height-compact);
+	padding: 0 var(--vscode-klawly-gap-small);
+	background: var(--vscode-toolbar-hoverBackground);
+	color: var(--vscode-editor-foreground);
+}
+
+.claude-agent .claude-fti {
+	font-size: var(--vscode-klawly-fontSize-meta);
+	font-weight: 600;
+	color: var(--vscode-textLink-foreground);
+}
+
+.claude-agent .claude-dir {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: var(--vscode-disabledForeground);
+}
+
+.claude-agent .claude-tool-result {
+	margin-left: auto;
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-small);
+	padding-left: var(--vscode-klawly-gap-medium);
+}
+
+.claude-agent .claude-pill {
+	padding: 0 var(--vscode-klawly-gap-medium);
+	border-radius: var(--vscode-klawly-gap-large);
+	background: var(--vscode-toolbar-hoverBackground);
+	font-variant-numeric: tabular-nums;
+}
+
+.claude-agent .claude-ctx {
+	display: none;
+	flex-wrap: wrap;
+	gap: var(--vscode-klawly-gap-small);
+	margin-top: var(--vscode-klawly-gap-small);
+}
+
+.claude-agent .claude-box > .claude-ctx.visible,
+.claude-agent .claude-bubble > .claude-ctx {
+	display: flex;
+}
+
+.claude-agent .claude-remove {
+	display: inline-flex;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--vscode-descriptionForeground);
+}
+
+/* Permission card: hint at the right of the button row */
+.claude-agent .claude-kbd {
+	margin-left: auto;
+	align-self: center;
+	font-family: var(--monaco-monospace-font);
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+}
+
+/* Empty pane: Recent rows and the All agents link */
+.claude-agent .claude-recent {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0;
+	padding: var(--vscode-klawly-gap-small) var(--vscode-klawly-gap-medium);
+	border: 0;
+	border-radius: var(--vscode-klawly-cornerRadius);
+	background: none;
+	text-align: left;
+	min-width: 0;
+}
+
+.claude-agent .claude-recent:hover {
+	background: var(--vscode-toolbar-hoverBackground);
+}
+
+.claude-agent .claude-recent-title {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--vscode-editor-foreground);
+}
+
+.claude-agent .claude-recent-detail {
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agent .claude-link {
+	align-self: flex-start;
+	padding: 0 var(--vscode-klawly-gap-medium);
+	border: 0;
+	background: none;
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-textLink-foreground);
+}
+
+/* Composer chips: the plus button, the mode dot and the model square (v5-S12) */
+.claude-agent .claude-ib {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: none;
+	width: var(--vscode-klawly-button-height-compact);
+	height: var(--vscode-klawly-button-height-compact);
+	padding: 0;
+	border: 0;
+	border-radius: var(--vscode-klawly-cornerRadius);
+	background: none;
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agent .claude-ib:hover {
+	background: var(--vscode-toolbar-hoverBackground);
+	color: var(--vscode-editor-foreground);
+}
+
+.claude-agent .claude-dot {
+	flex: none;
+	width: var(--vscode-klawly-gap-medium);
+	height: var(--vscode-klawly-gap-medium);
+	border-radius: 50%;
+}
+
+.claude-agent .claude-mdl {
+	display: inline-flex;
+}
+
+.claude-agent .claude-md2 {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: calc(var(--vscode-klawly-gap-xLarge) - 2px);
+	height: calc(var(--vscode-klawly-gap-xLarge) - 2px);
+	border-radius: var(--vscode-klawly-cornerRadius-small);
+	background: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	font-size: var(--vscode-klawly-fontSize-meta);
+	font-weight: 600;
+}
+
+/* Permission card command, diff view, Stopped mark, queued prompt, answered cards */
+.claude-agent .claude-permission-command {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding: var(--vscode-klawly-gap-small) var(--vscode-klawly-gap-medium);
+	border-radius: var(--vscode-klawly-cornerRadius-small);
+	background: var(--vscode-textCodeBlock-background);
+	font-family: var(--monaco-monospace-font);
+	font-size: var(--vscode-klawly-fontSize-meta);
+}
+
+.claude-agent .claude-answered {
+	display: none;
+}
+
+.claude-agent .claude-stopped {
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agent .claude-queued {
+	display: none;
+	padding: 0 var(--vscode-klawly-gap-medium) var(--vscode-klawly-gap-small);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agent .claude-queued.visible {
+	display: block;
+}
+
+.claude-agent .claude-diff {
+	white-space: pre;
+}
+
+.claude-agent .claude-diff-path {
+	margin-bottom: var(--vscode-klawly-gap-small);
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agent .claude-diff-add {
+	color: var(--vscode-gitDecoration-addedResourceForeground);
+}
+
+.claude-agent .claude-diff-del {
+	color: var(--vscode-errorForeground);
 }
