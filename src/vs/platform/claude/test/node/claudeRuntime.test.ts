@@ -9,6 +9,7 @@ import { tmpdir } from 'os';
 import { join } from '../../../../base/common/path.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { NullLogService } from '../../../log/common/log.js';
+import { ClaudeConversation } from '../../common/claudeConversation.js';
 import { ClaudeEvent } from '../../common/claudeRuntime.js';
 import { ClaudeSessionOwners } from '../../common/claudeSessionOwners.js';
 import { mergeClaudeSettings } from '../../common/claudeSettings.js';
@@ -101,6 +102,51 @@ suite('Claude runtime', () => {
 		});
 	});
 
+	suite('conversation (pane state)', () => {
+		function create(): ClaudeConversation {
+			const conversation = store.add(new ClaudeConversation());
+			conversation.sessionId = 's';
+			return conversation;
+		}
+
+		test('streams text into one assistant item, tracks tool rows and the changes bar', () => {
+			const conversation = create();
+			conversation.addUser('Fix it');
+			const events: ClaudeEvent[] = [
+				{ type: 'text', sessionId: 's', text: 'Look' },
+				{ type: 'text', sessionId: 's', text: 'ing' },
+				{ type: 'toolUse', sessionId: 's', toolUseId: 'u1', name: 'Read', input: { file_path: '/p/a.ts' } },
+				{ type: 'toolUse', sessionId: 's', toolUseId: 'u2', name: 'Edit', input: { file_path: '/p/a.ts', old_string: 'a\nb', new_string: 'c\nd\ne' } },
+				{ type: 'toolUse', sessionId: 's', toolUseId: 'u3', name: 'Write', input: { file_path: '/p/b.ts', content: 'x\ny' } },
+				{ type: 'toolResult', sessionId: 's', toolUseId: 'u2', output: 'ok', isError: false },
+				{ type: 'toolResult', sessionId: 's', toolUseId: 'u3', output: 'no', isError: true },
+				{ type: 'text', sessionId: 'other', text: 'ignored' },
+				{ type: 'result', sessionId: 's', isError: false, text: 'done', usage: { inputTokens: 1000, outputTokens: 5 } },
+			];
+			events.forEach(e => conversation.handle(e));
+			assert.deepStrictEqual({
+				items: conversation.items.map(i => i.kind === 'tool' ? [i.kind, i.name, i.target, i.status] : i.kind === 'permission' ? [i.kind] : [i.kind, i.text]),
+				changes: conversation.changes,
+				working: conversation.working,
+				contextTokens: conversation.contextTokens,
+				title: conversation.title,
+			}, {
+				items: [['user', 'Fix it'], ['assistant', 'Looking'], ['tool', 'Read', '/p/a.ts', 'running'], ['tool', 'Edit', '/p/a.ts', 'done'], ['tool', 'Write', '/p/b.ts', 'failed']],
+				changes: [{ path: '/p/a.ts', added: 3, removed: 2 }, { path: '/p/b.ts', added: 2, removed: 0 }],
+				working: false,
+				contextTokens: 1000,
+				title: 'Fix it',
+			});
+		});
+
+		test('an error shows as a notice and stops the turn', () => {
+			const conversation = create();
+			conversation.addUser('hi');
+			conversation.handle({ type: 'error', sessionId: 's', message: 'offline' });
+			assert.deepStrictEqual([conversation.working, conversation.notice], [false, 'offline']);
+		});
+	});
+
 	suite('service with a fake CLI', () => {
 		let dir: string;
 		let cwd: string;
@@ -172,6 +218,31 @@ suite('Claude runtime', () => {
 			await service.answerPermission(sessionId, 'r1', false);
 			const toolResult = await result;
 			assert.strictEqual(toolResult.type === 'toolResult' && toolResult.isError, true);
+			await service.close(sessionId);
+			await waitFor(service, 'ended');
+			service.dispose();
+		});
+
+		test('permission card: Allow and Deny reach the CLI and update the card (S13)', async () => {
+			const service = create({ PATH: dir, KLAWLY_CLAUDE_BIN: '' });
+			const conversation = store.add(new ClaudeConversation());
+			store.add(service.onDidEvent(e => {
+				conversation.sessionId ??= e.sessionId;
+				conversation.handle(e);
+			}));
+			const asked = waitFor(service, 'permission');
+			const { sessionId } = await service.send({ cwd, prompt: 'touch x' });
+			conversation.addUser('touch x');
+			await asked;
+			const card = conversation.items.find(i => i.kind === 'permission');
+			assert.deepStrictEqual(card && card.kind === 'permission' ? [card.toolName, card.target, card.state] : undefined, ['Bash', 'touch x', 'pending']);
+			const done = waitFor(service, 'result');
+			await service.answerPermission(sessionId, 'r1', true);
+			if (card?.kind === 'permission') {
+				conversation.resolvePermission(card, true);
+			}
+			await done;
+			assert.deepStrictEqual([card?.kind === 'permission' && card.state, conversation.working], ['allowed', false]);
 			await service.close(sessionId);
 			await waitFor(service, 'ended');
 			service.dispose();
