@@ -36,7 +36,7 @@ function mergeObjects(low: ClaudeSettingsObject, high: ClaudeSettingsObject): Cl
 		if (key === '__proto__') {
 			continue;
 		}
-		result[key] = key in low ? mergeValue(low[key], high[key]) : high[key];
+		result[key] = Object.hasOwn(low, key) ? mergeValue(low[key], high[key]) : high[key];
 	}
 	return result;
 }

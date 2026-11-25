@@ -44,6 +44,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 	private sendButton!: HTMLButtonElement;
 	private stopButton!: HTMLButtonElement;
 	private notice!: HTMLElement;
+	private emptyState: HTMLElement | undefined;
 	private assistantBubble: HTMLElement | undefined;
 	private sessionId: string | undefined;
 	private working = false;
@@ -220,12 +221,13 @@ export class ClaudeAgentViewPane extends ViewPane {
 
 	private renderEmpty(): void {
 		clearNode(this.messages);
-		const empty = append(this.messages, $('.claude-empty'));
+		const empty = this.emptyState = append(this.messages, $('.claude-empty'));
 		append(empty, $('.claude-empty-title')).textContent = localize('claude.empty.title', "What should Claude work on?");
 	}
 
 	private clearEmpty(): void {
-		this.messages.querySelector('.claude-empty')?.remove();
+		this.emptyState?.remove();
+		this.emptyState = undefined;
 	}
 
 	private updateControls(): void {

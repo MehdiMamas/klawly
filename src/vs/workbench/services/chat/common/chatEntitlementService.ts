@@ -724,15 +724,8 @@ export class ChatEntitlementService extends Disposable implements IChatEntitleme
 		this.context?.value.update({ completed: true });
 	}
 
-	setForceHidden(hidden: boolean): void {
-		if (this.context) {
-			this.context.value.setForceHidden(hidden);
-		} else {
-			// No ChatEntitlementContext (e.g. no defaultChatAgent in product.json).
-			// Set the context key directly as a fallback.
-			ChatEntitlementContextKeys.Setup.hidden.bindTo(this.contextKeyService).set(hidden);
-		}
-	}
+	// Klawly D01 (one engine): policy gates cannot unhide the upstream Copilot chat UI.
+	setForceHidden(_hidden: boolean): void { }
 
 	async update(token: CancellationToken): Promise<void> {
 		await this.requests?.value.forceResolveEntitlement(token);
