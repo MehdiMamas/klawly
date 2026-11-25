@@ -19,6 +19,8 @@ function asNumber(value: unknown): number | undefined {
 	return typeof value === 'number' ? value : undefined;
 }
 
+const PERMISSION_MODES = ['default', 'acceptEdits', 'plan', 'bypassPermissions'];
+
 /** Turns tool_result content (a string or a list of blocks) into plain text. */
 function toolResultText(content: unknown): string {
 	if (typeof content === 'string') {
@@ -63,7 +65,13 @@ export class ClaudeStreamParser {
 
 		switch (message.type) {
 			case 'system':
-				return message.subtype === 'init' ? [{ type: 'started', sessionId, model: asString(message.model) }] : [];
+				if (message.subtype === 'init') {
+					return [{ type: 'started', sessionId, model: asString(message.model), cwd: asString(message.cwd) }];
+				}
+				if (message.subtype === 'status' && PERMISSION_MODES.includes(message.permissionMode as string)) {
+					return [{ type: 'mode', sessionId, mode: message.permissionMode as 'default' }];
+				}
+				return [];
 			case 'stream_event':
 				return this.parseStreamEvent(sessionId, asObject(message.event));
 			case 'assistant':

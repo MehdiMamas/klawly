@@ -643,3 +643,45 @@
 .claude-agent .claude-diff-del {
 	color: var(--vscode-errorForeground);
 }
+
+.claude-agent .claude-diff-ctx {
+	color: var(--vscode-descriptionForeground);
+}
+
+/* Plan card: the plan scrolls inside the card, the buttons stay in view */
+.claude-agent .claude-plan {
+	max-height: 40vh;
+	overflow: auto;
+}
+
+/* Question options: label with its description, wrapped */
+.claude-agent .claude-option {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	height: auto;
+	max-width: 100%;
+	text-align: left;
+	white-space: normal;
+}
+
+.claude-agent .claude-option-detail {
+	color: var(--vscode-descriptionForeground);
+	font-size: var(--vscode-klawly-fontSize-meta);
+}
+
+/* A command or path target ends in an ellipsis; a file chip keeps its own layout */
+.claude-agent .claude-tool-target:not(:has(.claude-fchip)) {
+	display: block;
+	flex: 0 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.claude-agent .claude-permission-text.claude-wrap {
+	overflow: visible;
+	text-overflow: clip;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}

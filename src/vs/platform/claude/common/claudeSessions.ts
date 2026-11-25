@@ -44,3 +44,24 @@ export function parseClaudeTranscript(text: string): IClaudeTranscriptMessage[] 
 	}
 	return messages;
 }
+
+/** The number of distinct files a stored session edited or wrote (Edit, MultiEdit and Write calls). */
+export function countClaudeEditedFiles(text: string): number {
+	const files = new Set<string>();
+	for (const line of text.split('\n')) {
+		if (!line.includes('"tool_use"')) {
+			continue;
+		}
+		try {
+			const content = JSON.parse(line)?.message?.content;
+			for (const block of Array.isArray(content) ? content : []) {
+				if (block?.type === 'tool_use' && ['Edit', 'MultiEdit', 'Write'].includes(block.name) && typeof block.input?.file_path === 'string') {
+					files.add(block.input.file_path);
+				}
+			}
+		} catch {
+			// a broken line is skipped
+		}
+	}
+	return files.size;
+}
