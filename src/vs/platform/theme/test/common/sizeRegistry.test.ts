@@ -7,6 +7,7 @@ import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { getSizeRegistry, registerSize, size, sizeForAllThemes, sizeValueToCss, asCssVariableName, asCssVariable } from '../../common/sizeRegistry.js';
 // Import baseSizes to ensure base size tokens are registered
+import { fontSizeMeta, fontSizeBody, fontSizeHeading, buttonHeightCompact, buttonHeightLarge, headerHeight, paneWidth, paneMinWidth } from '../../common/sizes/klawlySizes.js';
 import { bodyFontSize, bodyFontSizeSmall, codiconFontSize, cornerRadiusMedium, cornerRadiusSmall, cornerRadiusLarge, strokeThickness } from '../../common/sizes/baseSizes.js';
 
 suite('Size Registry', () => {
@@ -85,5 +86,22 @@ suite('Size Registry', () => {
 		assert.ok(testSize);
 
 		getSizeRegistry().deregisterSize('test.allThemes');
+	});
+
+	test('Klawly v5 tokens hold the design values', () => {
+		const values = [fontSizeMeta, fontSizeBody, fontSizeHeading, buttonHeightCompact, buttonHeightLarge, headerHeight, paneWidth, paneMinWidth].map(id => {
+			const found = getSizeRegistry().getSizes().find(s => s.id === id);
+			return [asCssVariableName(id), (found?.defaults as { dark: { value: number } }).dark.value];
+		});
+		assert.deepStrictEqual(values, [
+			['--vscode-klawly-fontSize-meta', 12],
+			['--vscode-klawly-fontSize-body', 13],
+			['--vscode-klawly-fontSize-heading', 15],
+			['--vscode-klawly-button-height-compact', 24],
+			['--vscode-klawly-button-height-large', 28],
+			['--vscode-klawly-header-height', 35],
+			['--vscode-klawly-pane-width', 400],
+			['--vscode-klawly-pane-minWidth', 320],
+		]);
 	});
 });
