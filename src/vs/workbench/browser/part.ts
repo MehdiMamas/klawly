@@ -219,7 +219,7 @@ class PartLayout {
 	private static readonly TITLE_HEIGHT = 35;
 	private static readonly FOOTER_HEIGHT = 35;
 	// KEEP IN SYNC WITH: modernUI/browser/media/padding.css
-	private static readonly AREA_HEIGHT_MODERN_UI = 32;
+	private static readonly AREA_HEIGHT_MODERN_UI = 35; // Klawly: klawly.header.height (VC04)
 
 	private headerVisible: boolean = false;
 	private footerVisible: boolean = false;

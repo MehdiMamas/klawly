@@ -325,7 +325,8 @@
 	max-height: 40vh;
 	resize: none;
 	border: 0;
-	outline: 0;
+	outline: 0 !important;
+	box-shadow: none;
 	background: none;
 	color: var(--vscode-input-foreground);
 	font-family: inherit;
