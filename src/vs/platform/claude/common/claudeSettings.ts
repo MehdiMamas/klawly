@@ -55,3 +55,24 @@ export function parseClaudeSettingsFile(text: string): { value?: ClaudeSettingsO
 		return { error: e instanceof Error ? e.message : String(e) };
 	}
 }
+
+/**
+ * Returns the text of a settings file with `rule` added to `permissions.allow` (https://code.claude.com/docs/en/settings,
+ * "Permission settings"). Keeps every other key; throws when the existing text is not a JSON object, so a broken file is never overwritten.
+ */
+export function addAllowRuleToSettings(existing: string | undefined, rule: string): string {
+	let settings: ClaudeSettingsObject = {};
+	if (existing?.trim()) {
+		const parsed = parseClaudeSettingsFile(existing);
+		if (!parsed.value) {
+			throw new Error(parsed.error);
+		}
+		settings = parsed.value;
+	}
+	const permissions = isObject(settings.permissions) ? settings.permissions : {};
+	const allow = Array.isArray(permissions.allow) ? permissions.allow : [];
+	if (!allow.includes(rule)) {
+		allow.push(rule);
+	}
+	return JSON.stringify({ ...settings, permissions: { ...permissions, allow } }, undefined, '\t') + '\n';
+}

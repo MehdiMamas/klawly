@@ -4,15 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from '../../../../base/common/path.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { NullLogService } from '../../../log/common/log.js';
-import { ClaudeConversation } from '../../common/claudeConversation.js';
+import { claudeAllowRule, ClaudeConversation, claudeToolSummary, IClaudeToolItem } from '../../common/claudeConversation.js';
 import { ClaudeEvent } from '../../common/claudeRuntime.js';
 import { ClaudeSessionOwners } from '../../common/claudeSessionOwners.js';
-import { mergeClaudeSettings } from '../../common/claudeSettings.js';
+import { claudeProjectFolderName, parseClaudeTranscript } from '../../common/claudeSessions.js';
+import { addAllowRuleToSettings, mergeClaudeSettings } from '../../common/claudeSettings.js';
 import { ClaudeStreamParser } from '../../common/claudeStreamParser.js';
 import { ClaudeRuntimeService } from '../../node/claudeRuntimeService.js';
 
@@ -99,6 +100,42 @@ suite('Claude runtime', () => {
 			const third = owners.claim('s', () => ({}));
 			owners.release('s', first.owner);
 			assert.strictEqual(owners.get('s'), third.owner);
+		});
+	});
+
+	suite('pane helpers (round 2)', () => {
+		test('allow rule: a command is allowed by its first words, other tools by name', () => {
+			assert.deepStrictEqual([
+				claudeAllowRule('Bash', { command: 'npm test -- total' }),
+				claudeAllowRule('Bash', { command: 'ls -la' }),
+				claudeAllowRule('Edit', { file_path: 'a.ts' }),
+			], [{ rule: 'Bash(npm test *)', label: 'npm test' }, { rule: 'Bash(ls *)', label: 'ls' }, { rule: 'Edit', label: 'Edit' }]);
+		});
+
+		test('allow rule is merged into settings without losing other keys', () => {
+			const first = addAllowRuleToSettings('{"model":"x","permissions":{"allow":["Read"],"deny":["Bash(rm *)"]}}', 'Bash(npm test *)');
+			assert.deepStrictEqual(JSON.parse(addAllowRuleToSettings(first, 'Bash(npm test *)')), { model: 'x', permissions: { allow: ['Read', 'Bash(npm test *)'], deny: ['Bash(rm *)'] } });
+			assert.deepStrictEqual(JSON.parse(addAllowRuleToSettings(undefined, 'Edit')), { permissions: { allow: ['Edit'] } });
+			assert.throws(() => addAllowRuleToSettings('{ broken', 'Edit'));
+		});
+
+		test('tool summaries: lines read, matches, and lines changed', () => {
+			const tool = (name: string, input: Record<string, unknown>, output: string): IClaudeToolItem => ({ kind: 'tool', id: 'a', name, target: '', input, startedAt: 0, status: 'done', output });
+			assert.deepStrictEqual([
+				claudeToolSummary(tool('Read', {}, '1\tx\n2\ty\n3\tz')),
+				claudeToolSummary(tool('Read', { offset: 6, limit: 3 }, '')),
+				claudeToolSummary(tool('Grep', {}, 'a.ts\nb.ts\nc.ts')),
+				claudeToolSummary(tool('Edit', { old_string: 'a\nb', new_string: 'c\nd\ne' }, '')),
+			], [{ text: 'L1–3' }, { text: 'L6–8' }, { text: '3 matches' }, { added: 3, removed: 2 }]);
+		});
+
+		test('a stored session is read from the CLI folder layout, newest first, titles from the first prompt', () => {
+			const line = (type: string, content: unknown) => JSON.stringify({ type, message: { content } });
+			assert.deepStrictEqual(parseClaudeTranscript([
+				line('user', 'Fix it'), line('assistant', [{ type: 'text', text: 'Done' }, { type: 'tool_use', name: 'Edit' }]),
+				line('user', [{ type: 'tool_result', content: 'x' }]), 'not json', line('user', '<command-name>/clear</command-name>'),
+			].join('\n')), [{ role: 'user', text: 'Fix it' }, { role: 'assistant', text: 'Done' }]);
+			assert.strictEqual(claudeProjectFolderName('/Users/a b/my.proj'), '-Users-a-b-my-proj');
 		});
 	});
 
@@ -258,6 +295,19 @@ suite('Claude runtime', () => {
 			assert.strictEqual((await readFile(join(dir, 'spawns.log'), 'utf8')).trim().split('\n').length, 1);
 			await service.close(first.sessionId);
 			await waitFor(service, 'ended');
+			service.dispose();
+		});
+
+		test('Always allow writes the rule into settings.local.json; sessions list and read back', async () => {
+			const service = create({});
+			await service.addAllowRule(cwd, 'Bash(npm test *)');
+			assert.deepStrictEqual(JSON.parse(await readFile(join(cwd, '.claude', 'settings.local.json'), 'utf8')), { permissions: { allow: ['Bash(npm test *)'] } });
+			const folder = join(dir, 'home', '.claude', 'projects', claudeProjectFolderName(await realpath(cwd)));
+			await mkdir(folder, { recursive: true });
+			await writeFile(join(folder, 'abc-1.jsonl'), JSON.stringify({ type: 'user', message: { content: 'Fix cart total' } }) + '\n' + JSON.stringify({ type: 'assistant', message: { content: [{ type: 'text', text: 'Done' }] } }));
+			assert.deepStrictEqual((await service.listSessions(cwd)).map(x => [x.id, x.title]), [['abc-1', 'Fix cart total']]);
+			assert.deepStrictEqual(await service.readTranscript(cwd, 'abc-1'), [{ role: 'user', text: 'Fix cart total' }, { role: 'assistant', text: 'Done' }]);
+			assert.deepStrictEqual(await service.readTranscript(cwd, '../../x'), []);
 			service.dispose();
 		});
 

@@ -26,7 +26,7 @@ export interface IClaudeSendRequest {
 	readonly cwd: string;
 	readonly prompt: string;
 	readonly model?: string;
-	readonly permissionMode?: 'default' | 'acceptEdits' | 'plan';
+	readonly permissionMode?: 'default' | 'acceptEdits' | 'plan' | 'bypassPermissions';
 }
 
 export interface IClaudeSendResult {
@@ -54,6 +54,21 @@ export type ClaudeEvent =
 	| { readonly type: 'result'; readonly sessionId: string; readonly isError: boolean; readonly text: string; readonly costUsd?: number; readonly usage?: IClaudeUsage }
 	| { readonly type: 'error'; readonly sessionId: string; readonly message: string }
 	| { readonly type: 'ended'; readonly sessionId: string; readonly exitCode: number | null };
+
+/** One session the CLI keeps on disk for a folder (the Recent list of v5-S07). */
+export interface IClaudeSessionInfo {
+	readonly id: string;
+	/** The first prompt of the session. */
+	readonly title: string;
+	/** Last change, in milliseconds since the epoch. */
+	readonly modified: number;
+}
+
+/** One message of a stored session. */
+export interface IClaudeTranscriptMessage {
+	readonly role: 'user' | 'assistant';
+	readonly text: string;
+}
 
 export interface IClaudeSettingsSource {
 	readonly scope: 'user' | 'project' | 'local';
@@ -88,4 +103,10 @@ export interface IClaudeRuntimeService {
 	getRunningSessions(): Promise<string[]>;
 	/** Reads Claude Code settings with the documented precedence. */
 	readSettings(cwd: string): Promise<IClaudeSettings>;
+	/** Adds an allow rule such as `Bash(npm test *)` to the folder's `.claude/settings.local.json` (the "Always allow" button of v5-S13). */
+	addAllowRule(cwd: string, rule: string): Promise<void>;
+	/** Sessions the CLI stored for this folder, newest first. Read-only. */
+	listSessions(cwd: string): Promise<IClaudeSessionInfo[]>;
+	/** The messages of a stored session. Read-only. */
+	readTranscript(cwd: string, sessionId: string): Promise<IClaudeTranscriptMessage[]>;
 }

@@ -33,6 +33,14 @@ export const cornerRadius = registerSize('klawly.cornerRadius',
 	sizeForAllThemes(6, 'px'),
 	nls.localize('cornerRadius', "Klawly corner radius for cards and buttons (VC21). Pills are for status only."));
 
+export const klawlyCornerRadiusLarge = registerSize('klawly.cornerRadius.large',
+	sizeForAllThemes(8, 'px'),
+	nls.localize('cornerRadiusLarge', "Klawly corner radius for the larger surfaces of the Agent pane: user messages, permission cards, the composer and tool output (frames v5-S12, v5-S13)."));
+
+export const klawlyCornerRadiusSmall = registerSize('klawly.cornerRadius.small',
+	sizeForAllThemes(4, 'px'),
+	nls.localize('cornerRadiusSmall', "Klawly corner radius for the small parts of the Agent pane: tool icons, file chips and inline code (frames v5-S12, v5-S13)."));
+
 export const buttonHeightCompact = registerSize('klawly.button.height.compact',
 	sizeForAllThemes(24, 'px'),
 	nls.localize('buttonHeightCompact', "Klawly compact button height (VC21)."));
