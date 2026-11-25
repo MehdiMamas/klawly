@@ -19,7 +19,7 @@ export type SizeIdentifier = string;
  * Size value unit types supported by the registry.
  * Use `''` for unitless values such as font weights.
  */
-export type SizeUnit = 'px' | 'rem' | 'em' | '%' | '';
+export type SizeUnit = 'px' | 'rem' | 'em' | 'ch' | '%' | '';
 
 /**
  * A size value with a numeric amount and unit
