@@ -44,7 +44,12 @@ export interface IClaudePermissionItem {
 	state: ClaudePermissionState;
 }
 
-export type ClaudeItem = IClaudeTextItem | IClaudeToolItem | IClaudePermissionItem;
+/** Marks where the person stopped the turn (Stop button or Esc). */
+export interface IClaudeStoppedItem {
+	readonly kind: 'stopped';
+}
+
+export type ClaudeItem = IClaudeTextItem | IClaudeToolItem | IClaudePermissionItem | IClaudeStoppedItem;
 
 /** Lines added and removed in one file, summed over the turn (the changes bar of v5-S19, VC09). */
 export interface IClaudeFileChange {
@@ -120,6 +125,34 @@ function claudeFileChange(toolName: string, input: Record<string, unknown>): { a
 	return change;
 }
 
+/** A question the agent asks with the AskUserQuestion tool: the first question and its answer options. */
+export function claudeQuestion(input: Record<string, unknown>): { question: string; options: string[] } | undefined {
+	const first = Array.isArray(input.questions) ? input.questions[0] as { question?: unknown; options?: unknown } | undefined : undefined;
+	if (typeof first?.question !== 'string') {
+		return undefined;
+	}
+	const options = Array.isArray(first.options) ? first.options.map(o => (o as { label?: unknown })?.label).filter((l): l is string => typeof l === 'string') : [];
+	return { question: first.question, options };
+}
+
+/** The lines an Edit, MultiEdit or Write changes, as a simple removed/added list for the expanded tool row. */
+export function claudeDiffLines(toolName: string, input: Record<string, unknown>): { sign: '+' | '-'; text: string }[] {
+	const lines: { sign: '+' | '-'; text: string }[] = [];
+	const add = (sign: '+' | '-', text: unknown) => typeof text === 'string' && text.length > 0 && text.split('\n').forEach(line => lines.push({ sign, text: line }));
+	if (toolName === 'Write') {
+		add('+', input.content);
+	} else if (toolName === 'Edit') {
+		add('-', input.old_string);
+		add('+', input.new_string);
+	} else if (Array.isArray(input.edits)) {
+		for (const edit of input.edits as Record<string, unknown>[]) {
+			add('-', edit?.old_string);
+			add('+', edit?.new_string);
+		}
+	}
+	return lines;
+}
+
 /**
  * The rule "Always allow" writes to `permissions.allow` and the name shown on its button (v5-S13):
  * a command is allowed by its first words (`Bash(npm test *)`), any other tool by its name.
@@ -157,6 +190,8 @@ export class ClaudeConversation extends Disposable {
 	contextTokens = 0;
 	/** A message for the notice line, or `undefined`. */
 	notice: string | undefined;
+	/** After a stop, until the CLI reports the end of the interrupted turn: its late events are dropped. */
+	private stopping = false;
 
 	get items(): readonly ClaudeItem[] {
 		return this._items;
@@ -188,8 +223,27 @@ export class ClaudeConversation extends Disposable {
 		const item: IClaudeTextItem = { kind: 'user', text, files };
 		this._items.push(item);
 		this.working = true;
+		this.stopping = false;
 		this.notice = undefined;
 		this._onDidChange.fire(item);
+	}
+
+	/** The person stopped the turn: tools still running end, a waiting card is denied, and a "Stopped" mark is added. */
+	stop(): void {
+		if (!this.working) {
+			return;
+		}
+		this.working = false;
+		this.stopping = true;
+		for (const item of this._items) {
+			if (item.kind === 'tool' && item.status === 'running') {
+				item.status = 'failed';
+			} else if (item.kind === 'permission' && item.state === 'pending') {
+				item.state = 'denied';
+			}
+		}
+		this._items.push({ kind: 'stopped' });
+		this._onDidChange.fire(undefined);
 	}
 
 	/** Marks a permission card as answered after the answer was sent to the runtime. */
@@ -213,6 +267,14 @@ export class ClaudeConversation extends Disposable {
 		if (!this.sessionId || event.sessionId !== this.sessionId) {
 			return;
 		}
+		if (this.stopping) {
+			if (event.type === 'result' || event.type === 'ended') {
+				this.stopping = false;
+			}
+			if (event.type !== 'error') {
+				return;
+			}
+		}
 		switch (event.type) {
 			case 'started':
 				this.model = event.model ?? this.model;
@@ -234,7 +296,6 @@ export class ClaudeConversation extends Disposable {
 				const item: IClaudeToolItem = { kind: 'tool', id: event.toolUseId, name: event.name, target: claudeToolTarget(event.input), input: event.input, startedAt: Date.now(), status: 'running' };
 				this.tools.set(item.id, item);
 				this._items.push(item);
-				this.recordChange(event.name, event.input);
 				this._onDidChange.fire(item);
 				break;
 			}
@@ -243,6 +304,10 @@ export class ClaudeConversation extends Disposable {
 				if (tool) {
 					tool.status = event.isError ? 'failed' : 'done';
 					tool.output = event.output;
+					if (!event.isError) {
+						// only an edit that was applied counts for the changes bar
+						this.recordChange(tool.name, tool.input);
+					}
 					this._onDidChange.fire(tool);
 				}
 				break;

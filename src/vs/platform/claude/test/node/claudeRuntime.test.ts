@@ -9,7 +9,7 @@ import { tmpdir } from 'os';
 import { join } from '../../../../base/common/path.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { NullLogService } from '../../../log/common/log.js';
-import { claudeAllowRule, ClaudeConversation, claudeToolSummary, IClaudeToolItem } from '../../common/claudeConversation.js';
+import { claudeAllowRule, ClaudeConversation, claudeDiffLines, claudeQuestion, claudeToolSummary, IClaudeToolItem } from '../../common/claudeConversation.js';
 import { ClaudeEvent } from '../../common/claudeRuntime.js';
 import { ClaudeSessionOwners } from '../../common/claudeSessionOwners.js';
 import { claudeProjectFolderName, parseClaudeTranscript } from '../../common/claudeSessions.js';
@@ -162,18 +162,47 @@ suite('Claude runtime', () => {
 			];
 			events.forEach(e => conversation.handle(e));
 			assert.deepStrictEqual({
-				items: conversation.items.map(i => i.kind === 'tool' ? [i.kind, i.name, i.target, i.status] : i.kind === 'permission' ? [i.kind] : [i.kind, i.text]),
+				items: conversation.items.map(i => i.kind === 'tool' ? [i.kind, i.name, i.target, i.status] : i.kind === 'permission' || i.kind === 'stopped' ? [i.kind] : [i.kind, i.text]),
 				changes: conversation.changes,
 				working: conversation.working,
 				contextTokens: conversation.contextTokens,
 				title: conversation.title,
 			}, {
 				items: [['user', 'Fix it'], ['assistant', 'Looking'], ['tool', 'Read', '/p/a.ts', 'running'], ['tool', 'Edit', '/p/a.ts', 'done'], ['tool', 'Write', '/p/b.ts', 'failed']],
-				changes: [{ path: '/p/a.ts', added: 3, removed: 2 }, { path: '/p/b.ts', added: 2, removed: 0 }],
+				changes: [{ path: '/p/a.ts', added: 3, removed: 2 }],
 				working: false,
 				contextTokens: 1000,
 				title: 'Fix it',
 			});
+		});
+
+		test('Stop ends running tools, denies a waiting card, marks Stopped and drops the late events of the turn', () => {
+			const conversation = create();
+			conversation.addUser('Go');
+			conversation.handle({ type: 'toolUse', sessionId: 's', toolUseId: 'u1', name: 'Bash', input: { command: 'sleep 9' } });
+			conversation.handle({ type: 'permission', sessionId: 's', requestId: 'r', toolName: 'Bash', input: { command: 'sleep 9' } });
+			conversation.stop();
+			conversation.handle({ type: 'text', sessionId: 's', text: 'late' });
+			conversation.handle({ type: 'result', sessionId: 's', isError: true, text: 'interrupted' });
+			assert.deepStrictEqual({
+				items: conversation.items.map(i => i.kind === 'tool' ? [i.kind, i.status] : i.kind === 'permission' ? [i.kind, i.state] : [i.kind]),
+				working: conversation.working, notice: conversation.notice,
+			}, { items: [['user'], ['tool', 'failed'], ['permission', 'denied'], ['stopped']], working: false, notice: undefined });
+		});
+
+		test('the changes bar counts an edit only after it was applied', () => {
+			const conversation = create();
+			conversation.addUser('Go');
+			conversation.handle({ type: 'toolUse', sessionId: 's', toolUseId: 'u1', name: 'Edit', input: { file_path: '/p/a.ts', old_string: 'a', new_string: 'b' } });
+			const waiting = conversation.changes.length;
+			conversation.handle({ type: 'toolResult', sessionId: 's', toolUseId: 'u1', output: 'ok', isError: false });
+			assert.deepStrictEqual([waiting, conversation.changes.length], [0, 1]);
+		});
+
+		test('question and diff helpers read the tool input', () => {
+			assert.deepStrictEqual(claudeQuestion({ questions: [{ question: 'Which?', options: [{ label: 'A' }, { label: 'B' }] }] }), { question: 'Which?', options: ['A', 'B'] });
+			assert.strictEqual(claudeQuestion({}), undefined);
+			assert.deepStrictEqual(claudeDiffLines('Edit', { old_string: 'a\nb', new_string: 'c' }), [{ sign: '-', text: 'a' }, { sign: '-', text: 'b' }, { sign: '+', text: 'c' }]);
 		});
 
 		test('an error shows as a notice and stops the turn', () => {
@@ -295,6 +324,18 @@ suite('Claude runtime', () => {
 			assert.strictEqual((await readFile(join(dir, 'spawns.log'), 'utf8')).trim().split('\n').length, 1);
 			await service.close(first.sessionId);
 			await waitFor(service, 'ended');
+			service.dispose();
+		});
+
+		test('Stop ends a CLI that ignores the interrupt, and a finished chat is not busy', async () => {
+			const service = create({ PATH: dir, KLAWLY_CLAUDE_BIN: '' });
+			const first = await service.send({ cwd, prompt: 'one' });
+			await waitFor(service, 'result');
+			assert.deepStrictEqual(await service.getBusySessions(), []);
+			const ended = waitFor(service, 'ended');
+			await service.stop(first.sessionId);
+			await ended;
+			assert.deepStrictEqual(await service.getRunningSessions(), []);
 			service.dispose();
 		});
 

@@ -24,7 +24,12 @@ interface IClaudeSession {
 	readonly process: ChildProcessWithoutNullStreams;
 	/** Permission requests waiting for an answer, request id to the tool input the CLI needs echoed back. */
 	readonly pendingPermissions: Map<string, Record<string, unknown>>;
+	/** True from a prompt until the CLI reports the result of the turn. */
+	busy: boolean;
 }
+
+/** How long the CLI gets to honour an interrupt before its process is ended. */
+const STOP_GRACE_MS = 1500;
 
 /**
  * Drives the user's installed, untouched `claude` command headless over stream-json.
@@ -57,6 +62,7 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 		if (!owner) {
 			throw new Error(failure);
 		}
+		owner.busy = true;
 		owner.process.stdin.write(JSON.stringify({ type: 'user', message: { role: 'user', content: request.prompt } }) + '\n');
 		return { sessionId, followed };
 	}
@@ -89,7 +95,7 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 			args.push('--permission-mode', request.permissionMode);
 		}
 		const child = spawn(path, args, { cwd: request.cwd, env: this.env, windowsHide: true });
-		const session: IClaudeSession = { sessionId, process: child, pendingPermissions: new Map() };
+		const session: IClaudeSession = { sessionId, process: child, pendingPermissions: new Map(), busy: false };
 		const parser = new ClaudeStreamParser();
 		let buffer = '';
 		let stderr = '';
@@ -102,6 +108,9 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 				const line = buffer.slice(0, newline);
 				buffer = buffer.slice(newline + 1);
 				for (const event of parser.parseLine(line)) {
+					if (event.type === 'result') {
+						session.busy = false;
+					}
 					if (event.type === 'permission') {
 						session.pendingPermissions.set(event.requestId, event.input);
 					}
@@ -125,19 +134,32 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 		return session;
 	}
 
-	async answerPermission(sessionId: string, requestId: string, allow: boolean, message?: string): Promise<void> {
+	async answerPermission(sessionId: string, requestId: string, allow: boolean, message?: string, updatedInput?: Record<string, unknown>): Promise<void> {
 		const session = this.owners.get(sessionId);
 		const input = session?.pendingPermissions.get(requestId);
 		if (!session || !input) {
 			return;
 		}
 		session.pendingPermissions.delete(requestId);
-		const response = allow ? { behavior: 'allow', updatedInput: input } : { behavior: 'deny', message: message ?? 'The user denied this action.' };
+		const response = allow ? { behavior: 'allow', updatedInput: updatedInput ?? input } : { behavior: 'deny', message: message ?? 'The user denied this action.' };
 		session.process.stdin.write(JSON.stringify({ type: 'control_response', response: { subtype: 'success', request_id: requestId, response } }) + '\n');
 	}
 
 	async stop(sessionId: string): Promise<void> {
-		this.owners.get(sessionId)?.process.stdin.write(JSON.stringify({ type: 'control_request', request_id: generateUuid(), request: { subtype: 'interrupt' } }) + '\n');
+		const session = this.owners.get(sessionId);
+		if (!session) {
+			return;
+		}
+		session.busy = false;
+		session.pendingPermissions.clear();
+		session.process.stdin.write(JSON.stringify({ type: 'control_request', request_id: generateUuid(), request: { subtype: 'interrupt' } }) + '\n');
+		// a CLI that ignores the interrupt would keep working: end it, the session resumes on the next prompt
+		const timer = setTimeout(() => {
+			if (this.owners.get(sessionId) === session) {
+				session.process.kill();
+			}
+		}, STOP_GRACE_MS);
+		session.process.once('close', () => clearTimeout(timer));
 	}
 
 	async close(sessionId: string): Promise<void> {
@@ -146,6 +168,10 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 
 	async getRunningSessions(): Promise<string[]> {
 		return this.owners.ids();
+	}
+
+	async getBusySessions(): Promise<string[]> {
+		return this.owners.ids().filter(id => this.owners.get(id)?.busy);
 	}
 
 	/** Precedence: https://code.claude.com/docs/en/settings, lowest first here: user, project, project local. */
@@ -213,7 +239,7 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 				// unreadable file: not listed
 			}
 		}
-		return sessions.sort((a, b) => b.modified - a.modified);
+		return sessions.sort((a, b) => b.modified - a.modified || (a.id < b.id ? -1 : 1));
 	}
 
 	async readTranscript(cwd: string, sessionId: string): Promise<IClaudeTranscriptMessage[]> {

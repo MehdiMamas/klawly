@@ -6,6 +6,7 @@
 import './media/claudeAgentView.css';
 import { $, append, clearNode, EventType, addDisposableListener } from '../../../../base/browser/dom.js';
 import { getDefaultHoverDelegate } from '../../../../base/browser/ui/hover/hoverDelegateFactory.js';
+import { AnchorAlignment } from '../../../../base/browser/ui/contextview/contextview.js';
 import { Action, IAction, Separator } from '../../../../base/common/actions.js';
 import { IntervalTimer } from '../../../../base/common/async.js';
 import { fromNow } from '../../../../base/common/date.js';
@@ -26,7 +27,7 @@ import { IMarkdownRendererService } from '../../../../platform/markdown/browser/
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
 import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
-import { claudeAllowRule, ClaudeConversation, ClaudeItem, claudeToolSummary, IClaudePermissionItem, IClaudeTextItem, IClaudeToolItem } from '../../../../platform/claude/common/claudeConversation.js';
+import { claudeAllowRule, ClaudeConversation, claudeDiffLines, ClaudeItem, claudeQuestion, claudeToolSummary, IClaudePermissionItem, IClaudeTextItem, IClaudeToolItem } from '../../../../platform/claude/common/claudeConversation.js';
 import { ClaudeEvent, IClaudeRuntimeService, IClaudeSendRequest, IClaudeSessionInfo } from '../../../../platform/claude/common/claudeRuntime.js';
 import { ViewPane } from '../../../browser/parts/views/viewPane.js';
 import { IViewletViewOptions } from '../../../browser/parts/views/viewsViewlet.js';
@@ -45,10 +46,10 @@ const CONTEXT_WINDOW_TOKENS = 200000;
 /** The modes of the menu in v5-S10, with the dot colour the chip shows. */
 function modes(): { readonly id: PermissionMode; readonly label: string; readonly detail: string; readonly dot: string }[] {
 	return [
-		{ id: 'default', label: localize('claude.mode.default', "Ask before edits"), detail: localize('claude.mode.default.detail', "Claude asks before each edit and command"), dot: 'var(--vscode-descriptionForeground)' },
-		{ id: 'acceptEdits', label: localize('claude.mode.acceptEdits', "Edit automatically"), detail: localize('claude.mode.acceptEdits.detail', "Edits apply; commands still ask"), dot: 'var(--vscode-button-background)' },
-		{ id: 'plan', label: localize('claude.mode.plan', "Plan first"), detail: localize('claude.mode.plan.detail', "Read-only until you approve a plan"), dot: 'var(--vscode-charts-blue)' },
-		{ id: 'bypassPermissions', label: localize('claude.mode.bypass', "Bypass permissions"), detail: localize('claude.mode.bypass.detail', "Nothing asks. Use in a sandbox only"), dot: 'var(--vscode-errorForeground)' },
+		{ id: 'default', label: localize('claude.mode.default', "Ask before edits"), detail: localize('claude.mode.default.detail', "Asks before each edit"), dot: 'var(--vscode-descriptionForeground)' },
+		{ id: 'acceptEdits', label: localize('claude.mode.acceptEdits', "Edit automatically"), detail: localize('claude.mode.acceptEdits.detail', "Commands still ask"), dot: 'var(--vscode-button-background)' },
+		{ id: 'plan', label: localize('claude.mode.plan', "Plan first"), detail: localize('claude.mode.plan.detail', "Read-only until approved"), dot: 'var(--vscode-charts-blue)' },
+		{ id: 'bypassPermissions', label: localize('claude.mode.bypass', "Bypass permissions"), detail: localize('claude.mode.bypass.detail', "Nothing asks; sandbox only"), dot: 'var(--vscode-errorForeground)' },
 	];
 }
 
@@ -59,9 +60,9 @@ function modes(): { readonly id: PermissionMode; readonly label: string; readonl
  */
 function models(): { readonly id: string; readonly label: string; readonly detail: string }[] {
 	return [
-		{ id: 'opus', label: 'Opus 4.5', detail: localize('claude.model.opus.detail', "Hardest tasks · uses limits faster") },
-		{ id: 'sonnet', label: 'Sonnet 4.5', detail: localize('claude.model.sonnet.detail', "Default for coding") },
-		{ id: 'haiku', label: 'Haiku 4.5', detail: localize('claude.model.haiku.detail', "Fast, light tasks") },
+		{ id: 'opus', label: 'Opus 4.5', detail: localize('claude.model.opus.detail', "Hardest tasks") },
+		{ id: 'sonnet', label: 'Sonnet 4.5', detail: localize('claude.model.sonnet.detail', "Everyday coding") },
+		{ id: 'haiku', label: 'Haiku 4.5', detail: localize('claude.model.haiku.detail', "Fast and light") },
 	];
 }
 
@@ -78,7 +79,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 
 	private conversation = new ClaudeConversation();
 	private readonly conversationListener = this._register(new MutableDisposable<DisposableStore>());
-	private readonly markdownDisposables = this._register(new DisposableMap<IClaudeTextItem>());
+	private readonly markdownDisposables = this._register(new DisposableMap<ClaudeItem>());
 	private readonly rendered = new Map<ClaudeItem, HTMLElement>();
 	private readonly expanded = new WeakSet<IClaudeToolItem>();
 	private pendingEvents: ClaudeEvent[] | undefined;
@@ -88,6 +89,8 @@ export class ClaudeAgentViewPane extends ViewPane {
 	private recent: IClaudeSessionInfo[] = [];
 	private showAllRecent = false;
 	private running = new Set<string>();
+	private queue: string[] = [];
+	private stopHover: { dispose(): void } | undefined;
 	private readonly ticker = this._register(new IntervalTimer());
 
 	private list!: HTMLElement;
@@ -102,6 +105,8 @@ export class ClaudeAgentViewPane extends ViewPane {
 	private ring!: HTMLElement;
 	private ringHover: { dispose(): void } | undefined;
 	private sendButton!: HTMLButtonElement;
+	private sendIcon!: HTMLElement;
+	private queued!: HTMLElement;
 
 	constructor(
 		options: IViewletViewOptions,
@@ -128,18 +133,29 @@ export class ClaudeAgentViewPane extends ViewPane {
 	private watch(conversation: ClaudeConversation): void {
 		const store = new DisposableStore();
 		store.add(conversation);
-		store.add(conversation.onDidChange(item => item ? this.renderItem(item) : this.renderAll()));
+		store.add(conversation.onDidChange(item => {
+			if (item) {
+				this.renderItem(item);
+			} else {
+				this.renderAll();
+				if (!conversation.working && this.queue.length) {
+					this.sendQueued();
+				}
+			}
+		}));
 		this.conversationListener.value = store;
 	}
 
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
 		const root = append(container, $('.claude-agent'));
+		root.tabIndex = -1; // a click anywhere in the pane keeps focus inside it, so Enter and Esc reach the pane
 		this.list = append(root, $('.claude-list'));
 		this.notice = append(root, $('.claude-notice'));
 		this.notice.setAttribute('role', 'status');
 		const composer = append(root, $('.claude-composer'));
 		this.changesBar = append(composer, $('.claude-changes'));
+		this.queued = append(composer, $('.claude-queued'));
 		const box = append(composer, $('.claude-box'));
 		this.attachmentsRow = append(box, $('.claude-ctx'));
 		this.input = append(box, $('textarea.claude-input')) as HTMLTextAreaElement;
@@ -155,16 +171,16 @@ export class ClaudeAgentViewPane extends ViewPane {
 		this.ring = append(row, $('.claude-ring'));
 		this.ring.setAttribute('role', 'img');
 		this.sendButton = append(row, $('button.claude-send')) as HTMLButtonElement;
-		append(this.sendButton, $('span' + ThemeIcon.asCSSSelector(Codicon.arrowUp)));
+		this.sendIcon = append(this.sendButton, $('span'));
 
 		const store = this._register(new DisposableStore());
 		store.add(addDisposableListener(this.sendButton, EventType.CLICK, () => this.conversation.working ? this.stop() : this.send()));
 		store.add(addDisposableListener(this.plusButton, EventType.CLICK, () => this.showPlusMenu()));
-		store.add(addDisposableListener(this.modeChip, EventType.CLICK, () => this.showMenu(this.modeChip, modes().map(m => this.menuAction(`${m.label} — ${m.detail}`, m.detail, m.id === this.mode, () => { this.mode = m.id; this.renderComposer(); })))));
+		store.add(addDisposableListener(this.modeChip, EventType.CLICK, () => this.showMenu(this.modeChip, modes().map(m => this.menuAction(`${m.label} — ${m.detail}`, m.id === this.mode, () => { this.mode = m.id; this.renderComposer(); })))));
 		store.add(addDisposableListener(this.modelChip, EventType.CLICK, () => this.showModelMenu()));
 		// Enter allows and Esc denies while a permission card waits (v5-S13); the composer keeps Enter while it holds text
 		store.add(addDisposableListener(root, EventType.KEY_DOWN, (e: KeyboardEvent) => this.onRootKey(e), true));
-		store.add(addDisposableListener(this.input, EventType.INPUT, () => this.renderComposer()));
+		store.add(addDisposableListener(this.input, EventType.INPUT, () => { this.renderComposer(); this.list.scrollTop = this.list.scrollHeight; }));
 		store.add(addDisposableListener(this.input, EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
 				e.preventDefault();
@@ -183,15 +199,16 @@ export class ClaudeAgentViewPane extends ViewPane {
 	}
 
 	/** An entry of the mode and model menus: the label, its explanation, and a check on the current one. */
-	private menuAction(label: string, detail: string, checked: boolean, run: () => void): IAction {
-		const action = new Action(label, `${label}. ${detail}`, undefined, true, async () => run());
+	private menuAction(label: string, checked: boolean, run: () => void): IAction {
+		const action = new Action(`claude.menu.${label}`, label, undefined, true, async () => run());
 		action.checked = checked;
-		action.tooltip = detail;
 		return action;
 	}
 
 	private showMenu(anchor: HTMLElement, actions: IAction[]): void {
-		this.contextMenuService.showContextMenu({ getAnchor: () => anchor, getActions: () => actions });
+		// anchored to the composer box, so the menu starts at the pane's left edge and stays inside the pane width
+		const box = anchor.closest('.claude-box') ?? anchor;
+		this.contextMenuService.showContextMenu({ getAnchor: () => box as HTMLElement, getActions: () => actions, anchorAlignment: AnchorAlignment.LEFT });
 	}
 
 	private get cwd(): string | undefined {
@@ -207,9 +224,9 @@ export class ClaudeAgentViewPane extends ViewPane {
 		const cwd = this.cwd;
 		const available = cwd ? (await this.runtime.readSettings(cwd)).settings.availableModels : undefined;
 		const listed = models().filter(m => !Array.isArray(available) || available.some(a => typeof a === 'string' && a.toLowerCase().includes(m.id)));
-		const actions: IAction[] = listed.map(m => this.menuAction(`${m.label} — ${m.detail}`, m.detail, m.id === this.model, () => { this.model = m.id; this.renderComposer(); }));
+		const actions: IAction[] = listed.map(m => this.menuAction(`${m.label} — ${m.detail}`, m.id === this.model, () => { this.model = m.id; this.renderComposer(); }));
 		if (this.conversation.items.length) {
-			actions.push(new Separator(), new Action('claude.model.cost', localize('claude.model.cost', "Switching now re-reads the whole chat: the next turn costs about 6× a normal turn."), undefined, false));
+			actions.push(new Separator(), new Action('claude.model.cost', localize('claude.model.cost', "Switching re-reads the chat: next turn costs ~6×"), undefined, false));
 		}
 		actions.push(new Separator(), new Action('claude.model.manage', localize('claude.model.manage', "Manage models"), undefined, true, async () => { await this.commandService.executeCommand('workbench.action.openSettings', 'claude model'); }));
 		this.showMenu(this.modelChip, actions);
@@ -233,40 +250,40 @@ export class ClaudeAgentViewPane extends ViewPane {
 			});
 			return action;
 		});
-		if (actions.length) {
-			actions.push(new Separator());
-		}
-		for (const label of [
-			localize('claude.plus.git', "Git changes"),
-			localize('claude.plus.terminal', "Terminal output — last 200 lines"),
-			localize('claude.plus.problems', "Problems"),
-			localize('claude.plus.web', "Web page — paste a URL"),
-			localize('claude.plus.image', "Image — paste or drop"),
-		]) {
-			actions.push(new Action(`claude.plus.${label}`, label, undefined, false));
+		if (!actions.length) {
+			actions.push(new Action('claude.plus.none', localize('claude.plus.none', "Open a file in the editor to attach it"), undefined, false));
 		}
 		this.showMenu(this.plusButton, actions);
 	}
 
+	/** Enter allows and Esc denies a waiting card; with no card, Esc stops a running turn. Works anywhere inside the pane. */
 	private onRootKey(e: KeyboardEvent): void {
 		const card = this.conversation.items.find((item): item is IClaudePermissionItem => item.kind === 'permission' && item.state === 'pending');
-		if (!card || (e.target as HTMLElement).tagName === 'BUTTON') {
+		if (e.isComposing) {
 			return;
 		}
-		if (e.key === 'Escape' || (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !this.input.value.trim())) {
+		if (e.key === 'Escape' && (card || this.conversation.working)) {
 			e.preventDefault();
 			e.stopPropagation();
-			this.answerPermission(card, e.key === 'Enter');
+			if (card) {
+				this.answerPermission(card, false);
+			} else {
+				this.stop();
+			}
+		} else if (card && e.key === 'Enter' && !e.shiftKey && (e.target as HTMLElement).tagName !== 'BUTTON' && !this.input.value.trim() && !claudeQuestion(card.input)) {
+			e.preventDefault();
+			e.stopPropagation();
+			this.answerPermission(card, true);
 		}
 	}
 
-	private answerPermission(card: IClaudePermissionItem, allow: boolean, always = false): void {
+	private answerPermission(card: IClaudePermissionItem, allow: boolean, always = false, updatedInput?: Record<string, unknown>): void {
 		const cwd = this.cwd;
 		if (always && cwd) {
 			const { rule } = claudeAllowRule(card.toolName, card.input);
 			this.runtime.addAllowRule(cwd, rule).catch(error => this.conversation.setNotice(localize('claude.allowRule.failed', "Could not save the rule: {0}", error instanceof Error ? error.message : String(error))));
 		}
-		this.runtime.answerPermission(card.sessionId, card.requestId, allow);
+		this.runtime.answerPermission(card.sessionId, card.requestId, allow, undefined, updatedInput);
 		this.conversation.resolvePermission(card, allow);
 	}
 
@@ -296,7 +313,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 			return;
 		}
 		this.recent = await this.runtime.listSessions(cwd);
-		this.running = new Set(await this.runtime.getRunningSessions());
+		this.running = new Set(await this.runtime.getBusySessions());
 		if (this.conversation.items.length === 0) {
 			this.renderAll();
 		}
@@ -320,7 +337,14 @@ export class ClaudeAgentViewPane extends ViewPane {
 	send(prompt: string = this.input.value): void {
 		const text = prompt.trim();
 		const cwd = this.cwd;
-		if (!text || this.conversation.working) {
+		if (!text) {
+			return;
+		}
+		if (this.conversation.working) {
+			// the turn is running: keep the text as the next prompt instead of dropping it
+			this.queue.push(text);
+			this.input.value = '';
+			this.renderComposer();
 			return;
 		}
 		if (!cwd) {
@@ -346,9 +370,23 @@ export class ClaudeAgentViewPane extends ViewPane {
 		});
 	}
 
+	/** Stops the running turn at once. Queued prompts go back into the composer, so nothing is lost or sent. */
 	stop(): void {
 		if (this.conversation.sessionId && this.conversation.working) {
 			this.runtime.stop(this.conversation.sessionId);
+			if (this.queue.length) {
+				this.input.value = [...this.queue, this.input.value].filter(Boolean).join('\n');
+				this.queue = [];
+			}
+			this.conversation.stop();
+		}
+	}
+
+	/** Sends the next queued prompt once the turn has ended. */
+	private sendQueued(): void {
+		const next = this.queue.shift();
+		if (next && !this.conversation.working) {
+			this.send(next);
 		}
 	}
 
@@ -383,6 +421,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 		this.updateTitle(this.conversation.title ?? localize('claude.title.new', "New agent"));
 		this.renderChanges();
 		this.renderComposer();
+		this.list.scrollTop = this.list.scrollHeight;
 	}
 
 	/** Renders or updates one item in place; later items keep their elements. */
@@ -395,6 +434,8 @@ export class ClaudeAgentViewPane extends ViewPane {
 			this.rendered.set(item, element);
 		}
 		clearNode(element);
+		const disposables = new DisposableStore();
+		this.markdownDisposables.set(item, disposables);
 		switch (item.kind) {
 			case 'user': {
 				element.className = 'claude-item claude-user';
@@ -408,16 +449,30 @@ export class ClaudeAgentViewPane extends ViewPane {
 			}
 			case 'assistant':
 				element.className = 'claude-item claude-assistant';
-				this.renderMarkdown(element, item);
+				this.renderMarkdown(element, item, disposables);
 				break;
 			case 'tool':
 				element.className = 'claude-item claude-tool-item';
-				this.renderTool(element, item);
+				this.renderTool(element, item, disposables);
 				break;
 			case 'permission':
 				element.className = 'claude-item claude-permission';
-				this.renderPermission(element, item);
+				this.renderPermission(element, item, disposables);
 				break;
+			case 'stopped':
+				element.className = 'claude-item claude-stopped';
+				element.textContent = localize('claude.stopped', "Stopped");
+				break;
+		}
+		// the text before this item is complete now: show it whole, not cut at a word
+		const index = this.conversation.items.indexOf(item);
+		const before = index > 0 ? this.conversation.items[index - 1] : undefined;
+		if (before?.kind === 'assistant' && this.rendered.has(before)) {
+			const previous = this.rendered.get(before)!;
+			clearNode(previous);
+			const store = new DisposableStore();
+			this.markdownDisposables.set(before, store);
+			this.renderMarkdown(previous, before, store);
 		}
 		this.notice.textContent = this.conversation.notice ?? '';
 		this.notice.classList.toggle('visible', !!this.conversation.notice);
@@ -427,10 +482,18 @@ export class ClaudeAgentViewPane extends ViewPane {
 		this.list.scrollTop = this.list.scrollHeight;
 	}
 
-	private renderMarkdown(element: HTMLElement, item: IClaudeTextItem): void {
-		const rendered = this.markdownRenderer.render(new MarkdownString(item.text));
+	private renderMarkdown(element: HTMLElement, item: IClaudeTextItem, disposables: DisposableStore): void {
+		// while the text streams, the last unfinished word is held back so a word never shows cut in half
+		const streaming = this.conversation.working && this.conversation.items[this.conversation.items.length - 1] === item;
+		element.classList.toggle('claude-streaming', streaming);
+		const text = streaming ? item.text.replace(/\S+$/, '') : item.text;
+		const rendered = disposables.add(this.markdownRenderer.render(new MarkdownString(text)));
 		element.appendChild(rendered.element);
-		this.markdownDisposables.set(item, rendered);
+	}
+
+	/** Shows `text` in full as a hover on `element` when it is cut off. */
+	private hover(element: HTMLElement, text: string, disposables: DisposableStore): void {
+		disposables.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), element, text));
 	}
 
 	/** A file chip: type badge and name (v5-S12 `TS total.ts`). */
@@ -441,7 +504,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 		return chip;
 	}
 
-	private renderTool(element: HTMLElement, tool: IClaudeToolItem): void {
+	private renderTool(element: HTMLElement, tool: IClaudeToolItem, disposables: DisposableStore): void {
 		const row = append(element, $('button.claude-tool'));
 		row.setAttribute('aria-expanded', String(this.expanded.has(tool)));
 		const status = tool.status === 'running' ? Codicon.loading : tool.status === 'failed' ? Codicon.error : Codicon.check;
@@ -456,6 +519,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 			}
 		} else {
 			target.textContent = tool.target;
+			this.hover(target, tool.input.command === undefined ? tool.target : String(tool.input.command), disposables);
 		}
 		const summary = claudeToolSummary(tool);
 		const result = append(row, $('span.claude-tool-result'));
@@ -466,7 +530,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 			append(result, $('span.claude-added')).textContent = `+${summary.added}`;
 			append(result, $('span.claude-removed')).textContent = `−${summary.removed}`;
 		}
-		if (tool.status === 'running' && tool.name === 'Bash') {
+		if (tool.status === 'running') {
 			const pill = append(result, $('span.claude-pill'));
 			pill.dataset.start = String(tool.startedAt);
 			pill.textContent = this.elapsed(tool.startedAt);
@@ -482,8 +546,17 @@ export class ClaudeAgentViewPane extends ViewPane {
 			this.renderItem(tool);
 		});
 		if (this.expanded.has(tool)) {
-			const output = append(element, $('pre.claude-output'));
-			output.textContent = tool.output ?? tool.target;
+			const diff = claudeDiffLines(tool.name, tool.input);
+			if (diff.length && typeof tool.input.file_path === 'string') {
+				const box = append(element, $('.claude-output.claude-diff'));
+				append(box, $('.claude-diff-path')).textContent = this.relative(tool.input.file_path);
+				for (const line of diff) {
+					const row = append(box, $(line.sign === '+' ? '.claude-diff-add' : '.claude-diff-del'));
+					row.textContent = `${line.sign} ${line.text}`;
+				}
+			} else {
+				append(element, $('pre.claude-output')).textContent = tool.output ?? tool.target;
+			}
 		}
 	}
 
@@ -502,26 +575,46 @@ export class ClaudeAgentViewPane extends ViewPane {
 		}
 	}
 
-	private renderPermission(element: HTMLElement, card: IClaudePermissionItem): void {
-		const title = append(element, $('.claude-permission-title'));
-		append(title, $('span' + ThemeIcon.asCSSSelector(Codicon.shield)));
-		const label = card.toolName === 'Bash'
-			? localize('claude.permission.run', "Run {0}?", card.target)
-			: localize('claude.permission.use', "Use {0} on {1}?", card.toolName, card.target);
-		append(title, $('span.claude-permission-text')).textContent = label;
+	private renderPermission(element: HTMLElement, card: IClaudePermissionItem, disposables: DisposableStore): void {
 		if (card.state !== 'pending') {
-			append(element, $('.claude-permission-state')).textContent = card.state === 'allowed' ? localize('claude.permission.allowed', "Allowed") : localize('claude.permission.denied', "Denied");
+			// an answered card folds into its tool row, which shows the result
+			element.className = 'claude-item claude-answered';
 			return;
 		}
+		element.setAttribute('role', 'group');
+		const question = claudeQuestion(card.input);
+		const title = append(element, $('.claude-permission-title'));
+		append(title, $('span' + ThemeIcon.asCSSSelector(question ? Codicon.question : Codicon.shield)));
+		const isBash = card.toolName === 'Bash';
+		const label = question ? question.question
+			: isBash ? localize('claude.permission.run', "Run Command?")
+				: localize('claude.permission.use', "Allow {0}?", card.toolName);
+		append(title, $('span.claude-permission-text')).textContent = label;
+		element.setAttribute('aria-label', label);
+		const detail = isBash && typeof card.input.command === 'string' ? card.input.command : card.target ? this.relative(card.target) : '';
+		if (!question && detail) {
+			const code = append(element, $('code.claude-permission-command'));
+			code.textContent = detail;
+			this.hover(code, detail, disposables);
+		}
 		const buttons = append(element, $('.claude-permission-buttons'));
-		const add = (label: string, className: string, allow: boolean, always = false) => {
+		const add = (text: string, className: string, onClick: () => void) => {
 			const button = append(buttons, $('button.claude-button' + className)) as HTMLButtonElement;
-			button.textContent = label;
-			button.addEventListener('click', () => this.answerPermission(card, allow, always));
+			button.tabIndex = 0;
+			button.textContent = text;
+			button.addEventListener('click', onClick);
 		};
-		add(localize('claude.permission.allow', "Allow once"), '.claude-primary', true);
-		add(localize('claude.permission.always', "Always allow {0}", claudeAllowRule(card.toolName, card.input).label), '', true, true);
-		add(localize('claude.permission.deny', "Deny"), '.claude-ghost', false);
+		if (question) {
+			for (const option of question.options) {
+				add(option, '', () => this.answerPermission(card, true, false, { ...card.input, answers: { [question.question]: option } }));
+			}
+			add(localize('claude.permission.skip', "Skip"), '.claude-ghost', () => this.answerPermission(card, false));
+			append(buttons, $('span.claude-kbd')).textContent = localize('claude.question.keys', "Esc");
+			return;
+		}
+		add(localize('claude.permission.allow', "Allow once"), '.claude-primary', () => this.answerPermission(card, true));
+		add(localize('claude.permission.always', "Always allow {0}", claudeAllowRule(card.toolName, card.input).label), '', () => this.answerPermission(card, true, true));
+		add(localize('claude.permission.deny', "Deny"), '.claude-ghost', () => this.answerPermission(card, false));
 		append(buttons, $('span.claude-kbd')).textContent = localize('claude.permission.keys', "Enter · Esc");
 	}
 
@@ -570,7 +663,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 		}
 		const added = changes.reduce((sum, c) => sum + c.added, 0);
 		const removed = changes.reduce((sum, c) => sum + c.removed, 0);
-		append(this.changesBar, $('span.claude-changes-count')).textContent = localize('claude.changes.files', "{0} files", changes.length);
+		append(this.changesBar, $('span.claude-changes-count')).textContent = changes.length === 1 ? localize('claude.changes.file', "1 file") : localize('claude.changes.files', "{0} files", changes.length);
 		append(this.changesBar, $('span.claude-added')).textContent = `+${added}`;
 		append(this.changesBar, $('span.claude-removed')).textContent = `−${removed}`;
 		append(this.changesBar, $('span.claude-spacer'));
@@ -614,12 +707,18 @@ export class ClaudeAgentViewPane extends ViewPane {
 		this.ringHover = this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), this.ring, label);
 		this.sendButton.classList.toggle('claude-stop', working);
 		this.sendButton.disabled = !working && !this.input.value.trim();
+		this.sendIcon.className = ThemeIcon.asClassName(working ? Codicon.stopCircle : Codicon.arrowUp);
 		const sendLabel = working ? localize('claude.stop', "Stop") : localize('claude.send', "Send");
 		this.sendButton.setAttribute('aria-label', sendLabel);
+		this.stopHover?.dispose();
+		this.stopHover = this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), this.sendButton, working ? localize('claude.stop.hover', "Stop (Esc)") : sendLabel);
+		this.queued.textContent = this.queue.length ? localize('claude.queued', "Queued: {0}", this.queue[this.queue.length - 1]) : '';
+		this.queued.classList.toggle('visible', this.queue.length > 0);
 	}
 
 	override dispose(): void {
 		this.ringHover?.dispose();
+		this.stopHover?.dispose();
 		super.dispose();
 	}
 }

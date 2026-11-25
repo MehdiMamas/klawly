@@ -49,6 +49,20 @@
 .claude-agent .claude-assistant {
 	color: var(--vscode-foreground);
 	overflow-wrap: anywhere;
+	max-width: var(--vscode-klawly-plan-maxWidth);
+}
+
+/* Headings in replies stay at the heading size (VC02: only 12, 13 and 15) */
+.claude-agent .claude-assistant :is(h1, h2, h3, h4, h5, h6) {
+	margin: 0 0 var(--vscode-klawly-gap-medium);
+	font-size: var(--vscode-klawly-fontSize-heading);
+	line-height: var(--vscode-klawly-lineHeight-heading);
+	font-weight: 600;
+}
+
+.claude-agent .claude-streaming > :last-child::after {
+	content: '\2588';
+	color: var(--vscode-descriptionForeground);
 }
 
 .claude-agent .claude-assistant p {
@@ -575,4 +589,57 @@
 	color: var(--vscode-button-foreground);
 	font-size: var(--vscode-klawly-fontSize-meta);
 	font-weight: 600;
+}
+
+/* Permission card command, diff view, Stopped mark, queued prompt, answered cards */
+.claude-agent .claude-permission-command {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding: var(--vscode-klawly-gap-small) var(--vscode-klawly-gap-medium);
+	border-radius: var(--vscode-klawly-cornerRadius-small);
+	background: var(--vscode-textCodeBlock-background);
+	font-family: var(--monaco-monospace-font);
+	font-size: var(--vscode-klawly-fontSize-meta);
+}
+
+.claude-agent .claude-answered {
+	display: none;
+}
+
+.claude-agent .claude-stopped {
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agent .claude-queued {
+	display: none;
+	padding: 0 var(--vscode-klawly-gap-medium) var(--vscode-klawly-gap-small);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agent .claude-queued.visible {
+	display: block;
+}
+
+.claude-agent .claude-diff {
+	white-space: pre;
+}
+
+.claude-agent .claude-diff-path {
+	margin-bottom: var(--vscode-klawly-gap-small);
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agent .claude-diff-add {
+	color: var(--vscode-gitDecoration-addedResourceForeground);
+}
+
+.claude-agent .claude-diff-del {
+	color: var(--vscode-errorForeground);
 }

@@ -94,13 +94,15 @@ export interface IClaudeRuntimeService {
 	/** Starts, resumes or follows a session and queues the prompt as its next turn. */
 	send(request: IClaudeSendRequest): Promise<IClaudeSendResult>;
 	/** Answers a `permission` event. */
-	answerPermission(sessionId: string, requestId: string, allow: boolean, message?: string): Promise<void>;
-	/** Interrupts the running turn; the session stays open. */
+	answerPermission(sessionId: string, requestId: string, allow: boolean, message?: string, updatedInput?: Record<string, unknown>): Promise<void>;
+	/** Interrupts the running turn and ends the CLI process when it does not stop by itself; the session can be resumed. */
 	stop(sessionId: string): Promise<void>;
 	/** Ends the session's CLI process. The session can be resumed later. */
 	close(sessionId: string): Promise<void>;
 	/** Ids of sessions that currently have a CLI process (the owners). */
 	getRunningSessions(): Promise<string[]>;
+	/** Ids of sessions that are working on a turn right now (a finished chat is not busy). */
+	getBusySessions(): Promise<string[]>;
 	/** Reads Claude Code settings with the documented precedence. */
 	readSettings(cwd: string): Promise<IClaudeSettings>;
 	/** Adds an allow rule such as `Bash(npm test *)` to the folder's `.claude/settings.local.json` (the "Always allow" button of v5-S13). */
