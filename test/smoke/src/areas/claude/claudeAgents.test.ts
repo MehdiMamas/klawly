@@ -107,7 +107,13 @@ export function setup(logger: Logger) {
 			await code.waitAndClick('.claude-new-agent');
 			await send(application, 'say hello');
 			await application.workbench.quickaccess.runCommand('claude.layout.toggle');
-			await code.waitForElements('.claude-agent-row', false, els => els.length >= 3);
+			try {
+				await code.waitForElements('.claude-agent-row', false, els => els.length >= 3);
+			} catch (error) {
+				await shoot(application, 'S25-failed');
+				const lists = await code.driver.getElements('.claude-agents-list', false);
+				throw new Error(`${error}; list: ${JSON.stringify(lists?.map(el => el.textContent))}`);
+			}
 			await code.waitForElements('.claude-agent-row', false, els => els.some(el => el.textContent.includes('Permission')));
 			await shoot(application, 'S25-agents-list');
 
