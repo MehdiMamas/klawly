@@ -799,8 +799,7 @@ export class CodeApplication extends Disposable {
 			await Promise.all([
 				...windows.map(window => window.ready()),
 				sharedProcessReady,
-				appInstantiationService.invokeFunction(accessor => accessor.get(ILocalPtyService).getLatency()),
-				agentHostProcessManager.start()
+				appInstantiationService.invokeFunction(accessor => accessor.get(ILocalPtyService).getLatency())
 			]);
 		}
 
