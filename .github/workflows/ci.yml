@@ -98,7 +98,7 @@ jobs:
       - name: Run the state tests
         env:
           KLAWLY_SCREENSHOTS: ${{ github.workspace }}/state-screenshots
-        run: xvfb-run -a npm run smoketest -- -f "Claude first run and edge states" --electronArgs="--no-sandbox"
+        run: xvfb-run -a npm run smoketest -- -f "Claude first run and edge states|Claude agents layout" --electronArgs="--no-sandbox"
 
       - name: Screenshots
         if: always()

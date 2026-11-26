@@ -12,13 +12,15 @@ import { join } from '../../../base/common/path.js';
 import { generateUuid } from '../../../base/common/uuid.js';
 import { localize } from '../../../nls.js';
 import { ILogService } from '../../log/common/log.js';
-import { ClaudeEvent, IClaudeAuthStatus, IClaudeCliStatus, IClaudeGitStatus, IClaudeRuntimeService, IClaudeSendRequest, IClaudeSendResult, IClaudeSessionInfo, IClaudeSettings, IClaudeSettingsSource, IClaudeTranscriptMessage } from '../common/claudeRuntime.js';
+import { ClaudeEvent, IClaudeAuthStatus, IClaudeCleanupResult, IClaudeCliStatus, IClaudeGitStatus, IClaudeRuntimeService, IClaudeSendRequest, IClaudeSendResult, IClaudeSessionInfo, IClaudeSettings, IClaudeSettingsSource, IClaudeTranscriptMessage, IClaudeWorktree, IClaudeWorktreeDiff } from '../common/claudeRuntime.js';
 import { ClaudeSessionOwners } from '../common/claudeSessionOwners.js';
 import { claudeProjectFolderName, countClaudeEditedFiles, parseClaudeTranscript } from '../common/claudeSessions.js';
 import { addAllowRuleToSettings, mergeClaudeSettings, parseClaudeSettingsFile } from '../common/claudeSettings.js';
 import { ClaudeStreamParser } from '../common/claudeStreamParser.js';
+import { sameWorktreeName } from '../common/claudeWorktrees.js';
 import { checkClaudeCli, checkClaudeSignIn } from './claudeCli.js';
 import { checkGitFolder, initGitFolder, trustGitFolder } from './claudeGit.js';
+import { applyClaudeWorktree, claudeWorktreeDiff, cleanupClaudeWorktrees, listClaudeWorktrees, removeClaudeWorktree } from './claudeWorktrees.js';
 
 interface IClaudeSession {
 	readonly sessionId: string;
@@ -31,6 +33,10 @@ interface IClaudeSession {
 	mode: string | undefined;
 	/** Set when the person asked to stop: the CLI then exits on a signal, which is not an error. */
 	stopRequested: boolean;
+	/** The `--worktree` name this session started with. */
+	readonly worktree: string | undefined;
+	/** The folder the CLI reported when it started; inside the worktree for a worktree session. */
+	cwd: string | undefined;
 }
 
 /** How long the CLI gets to honour an interrupt before its process is ended. */
@@ -120,8 +126,11 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 		if (request.permissionMode) {
 			args.push('--permission-mode', request.permissionMode);
 		}
+		if (request.worktree && !request.sessionId) {
+			args.push('--worktree', request.worktree);
+		}
 		const child = spawn(path, args, { cwd: request.cwd, env: this.env, windowsHide: true });
-		const session: IClaudeSession = { sessionId, process: child, pendingPermissions: new Map(), busy: false, mode: request.permissionMode, stopRequested: false };
+		const session: IClaudeSession = { sessionId, process: child, pendingPermissions: new Map(), busy: false, mode: request.permissionMode, stopRequested: false, worktree: request.sessionId ? undefined : request.worktree, cwd: undefined };
 		const parser = new ClaudeStreamParser();
 		let buffer = '';
 		let stderr = '';
@@ -139,6 +148,9 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 					}
 					if (event.type === 'mode') {
 						session.mode = event.mode;
+					}
+					if (event.type === 'started') {
+						session.cwd = event.cwd;
 					}
 					if (event.type === 'permission') {
 						session.pendingPermissions.set(event.requestId, event.input);
@@ -202,6 +214,32 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 
 	async getBusySessions(): Promise<string[]> {
 		return this.owners.ids().filter(id => this.owners.get(id)?.busy);
+	}
+
+	/** Whether a live session works in the worktree: by the folder it reported, or by the `--worktree` name it started with. */
+	private readonly isWorktreeRunning = (path: string, name: string): boolean => this.owners.ids().some(id => {
+		const session = this.owners.get(id);
+		return !!session && (session.worktree !== undefined && sameWorktreeName(session.worktree, name) || session.cwd !== undefined && (session.cwd === path || session.cwd.startsWith(path + '/')));
+	});
+
+	listWorktrees(cwd: string): Promise<IClaudeWorktree[]> {
+		return listClaudeWorktrees(cwd, this.env, this.isWorktreeRunning);
+	}
+
+	removeWorktree(cwd: string, name: string): Promise<void> {
+		return removeClaudeWorktree(cwd, name, this.env, this.isWorktreeRunning);
+	}
+
+	cleanupWorktrees(cwd: string, days: number): Promise<IClaudeCleanupResult> {
+		return cleanupClaudeWorktrees(cwd, days, this.env, this.isWorktreeRunning);
+	}
+
+	worktreeDiff(cwd: string, name: string): Promise<IClaudeWorktreeDiff> {
+		return claudeWorktreeDiff(cwd, name, this.env, this.isWorktreeRunning);
+	}
+
+	applyWorktree(cwd: string, name: string): Promise<void> {
+		return applyClaudeWorktree(cwd, name, this.env, this.isWorktreeRunning);
 	}
 
 	/** Precedence: https://code.claude.com/docs/en/settings, lowest first here: user, project, project local. */

@@ -8,7 +8,7 @@ import { $, append, clearNode, EventType, addDisposableListener } from '../../..
 import { getDefaultHoverDelegate } from '../../../../base/browser/ui/hover/hoverDelegateFactory.js';
 import { AnchorAlignment } from '../../../../base/browser/ui/contextview/contextview.js';
 import { Action, IAction, Separator } from '../../../../base/common/actions.js';
-import { disposableTimeout, IntervalTimer } from '../../../../base/common/async.js';
+import { disposableTimeout, IntervalTimer, RunOnceScheduler } from '../../../../base/common/async.js';
 import { fromNow } from '../../../../base/common/date.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { MarkdownString } from '../../../../base/common/htmlContent.js';
@@ -31,11 +31,15 @@ import { IThemeService } from '../../../../platform/theme/common/themeService.js
 import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
 import { IWorkspaceTrustManagementService } from '../../../../platform/workspace/common/workspaceTrust.js';
 import { claudeAllowRule, ClaudeConversation, claudeDiffLines, ClaudeItem, claudeQuestion, claudeToolSummary, IClaudePermissionItem, IClaudeTextItem, IClaudeToolItem } from '../../../../platform/claude/common/claudeConversation.js';
-import { ClaudeEvent, IClaudeCliStatus, IClaudeGitStatus, IClaudeRuntimeService, IClaudeSendRequest, IClaudeSessionInfo } from '../../../../platform/claude/common/claudeRuntime.js';
+import { IClaudeCliStatus, IClaudeGitStatus, IClaudeRuntimeService, IClaudeSendRequest, IClaudeSessionInfo } from '../../../../platform/claude/common/claudeRuntime.js';
 import { ViewPane } from '../../../browser/parts/views/viewPane.js';
 import { IViewletViewOptions } from '../../../browser/parts/views/viewsViewlet.js';
 import { IViewDescriptorService } from '../../../common/views.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
+import { IClaudeAgentsService } from '../../../services/claude/browser/claudeAgentsService.js';
+import { claudeGroupTitle, IClaudeMultitask } from '../../../../platform/claude/common/claudeAgents.js';
+import { ClaudeAgentsList } from './claudeAgentsList.js';
+import { ClaudeAttemptsView } from './claudeAttemptsView.js';
 
 export const CLAUDE_AGENT_VIEW_CONTAINER_ID = 'workbench.view.claudeAgent';
 export const CLAUDE_AGENT_VIEW_ID = 'workbench.view.claudeAgent.view';
@@ -96,12 +100,11 @@ function fileTypeLabel(path: string): string {
  */
 export class ClaudeAgentViewPane extends ViewPane {
 
-	private conversation = new ClaudeConversation();
+	private watched: ClaudeConversation | undefined;
 	private readonly conversationListener = this._register(new MutableDisposable<DisposableStore>());
 	private readonly markdownDisposables = this._register(new DisposableMap<ClaudeItem>());
 	private readonly rendered = new Map<ClaudeItem, HTMLElement>();
 	private readonly expanded = new WeakSet<IClaudeToolItem>();
-	private pendingEvents: ClaudeEvent[] | undefined;
 	private mode: PermissionMode = 'default';
 	/** The last mode the CLI reported; the chip follows the CLI when it changes (e.g. a plan was approved). */
 	private reportedMode: string | undefined;
@@ -110,7 +113,6 @@ export class ClaudeAgentViewPane extends ViewPane {
 	private recent: IClaudeSessionInfo[] = [];
 	private showAllRecent = false;
 	private running = new Set<string>();
-	private queue: string[] = [];
 	private setup: ISetup = { kind: 'checking', checks: [] };
 	private setupDismissed = false;
 	private gitState: IClaudeGitStatus['state'] = 'ok';
@@ -118,6 +120,12 @@ export class ClaudeAgentViewPane extends ViewPane {
 	private stopHover: { dispose(): void } | undefined;
 	private readonly ticker = this._register(new IntervalTimer());
 
+	private agentsList!: ClaudeAgentsList;
+	private attempts!: ClaudeAttemptsView;
+	private shownGroup: IClaudeMultitask | undefined;
+	private readonly attemptsDisposables = this._register(new MutableDisposable<DisposableStore>());
+	private readonly refreshScheduler = this._register(new RunOnceScheduler(() => this.onAgentsChanged(), 50));
+	private root!: HTMLElement;
 	private list!: HTMLElement;
 	private emptyState: HTMLElement | undefined;
 	private notice!: HTMLElement;
@@ -145,6 +153,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 		@IThemeService themeService: IThemeService,
 		@IHoverService hoverService: IHoverService,
 		@IClaudeRuntimeService private readonly runtime: IClaudeRuntimeService,
+		@IClaudeAgentsService private readonly agents: IClaudeAgentsService,
 		@IWorkspaceContextService private readonly workspaceContext: IWorkspaceContextService,
 		@IMarkdownRendererService private readonly markdownRenderer: IMarkdownRendererService,
 		@IEditorService private readonly editorService: IEditorService,
@@ -152,15 +161,52 @@ export class ClaudeAgentViewPane extends ViewPane {
 		@IWorkspaceTrustManagementService private readonly trust: IWorkspaceTrustManagementService,
 	) {
 		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, hoverService);
-		this._register(this.runtime.onDidEvent(event => this.onRuntimeEvent(event)));
+		this.attempts = new ClaudeAttemptsView(this.agents, () => this.renderAll());
 		this._register(this.trust.onDidChangeTrust(() => this.renderAll()));
+		this._register(this.agents.onDidChange(() => this.onAgentsChange()));
+		this._register(this.agents.onDidChangeLayout(() => this.renderLayout()));
 		this.watch(this.conversation);
+	}
+
+	/** The conversation of the selected agent; the agents service owns it, the pane only shows it. */
+	private get conversation(): ClaudeConversation {
+		return this.agents.selected.conversation;
+	}
+
+	/** Prompts typed while the selected agent's turn runs. */
+	private get queue(): string[] {
+		return this.agents.selected.queue;
+	}
+
+	private set queue(queue: string[]) {
+		this.agents.selected.queue = queue;
+	}
+
+	/** A change of any agent: the list refreshes (batched); another selection swaps the chat at once. */
+	private onAgentsChange(): void {
+		if (this.list && (this.watched !== this.conversation || this.shownGroup !== this.agents.selectedGroup)) {
+			this.refreshScheduler.cancel();
+			this.rendered.clear();
+			this.markdownDisposables.clearAndDisposeAll();
+			this.watch(this.conversation);
+			this.renderAll();
+			this.agentsList.render();
+			return;
+		}
+		this.refreshScheduler.schedule();
+	}
+
+	private onAgentsChanged(): void {
+		this.agentsList.render();
+		if (this.agents.selectedGroup) {
+			this.renderAll();
+		}
 	}
 
 	private watch(conversation: ClaudeConversation): void {
 		this.reportedMode = undefined;
+		this.watched = conversation;
 		const store = new DisposableStore();
-		store.add(conversation);
 		store.add(conversation.onDidChange(item => {
 			if (item) {
 				this.renderItem(item);
@@ -184,7 +230,9 @@ export class ClaudeAgentViewPane extends ViewPane {
 
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
-		const root = append(container, $('.claude-agent'));
+		const shell = append(container, $('.claude-shell'));
+		this.agentsList = this._register(new ClaudeAgentsList(append(shell, $('.claude-agents-list')), this.agents, this.hoverService, () => this.focus()));
+		const root = this.root = append(shell, $('.claude-agent'));
 		root.tabIndex = -1; // a click anywhere in the pane keeps focus inside it, so Enter and Esc reach the pane
 		this.list = append(root, $('.claude-list'));
 		this.notice = append(root, $('.claude-notice'));
@@ -224,6 +272,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 			}
 		}));
 		this.renderAll();
+		this.renderLayout();
 		this.detect();
 		this.refreshRecent();
 	}
@@ -314,13 +363,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 	}
 
 	private answerPermission(card: IClaudePermissionItem, allow: boolean, always = false, updatedInput?: Record<string, unknown>, denyMessage?: string): void {
-		const cwd = this.cwd;
-		if (always && cwd) {
-			const { rule } = claudeAllowRule(card.toolName, card.input);
-			this.runtime.addAllowRule(cwd, rule).catch(error => this.conversation.setNotice(localize('claude.allowRule.failed', "Could not save the rule: {0}", error instanceof Error ? error.message : String(error))));
-		}
-		this.runtime.answerPermission(card.sessionId, card.requestId, allow, denyMessage, updatedInput);
-		this.conversation.resolvePermission(card, allow);
+		this.agents.answerPermission(this.agents.selected, card, allow, { always, updatedInput, denyMessage });
 	}
 
 	override focus(): void {
@@ -330,13 +373,10 @@ export class ClaudeAgentViewPane extends ViewPane {
 
 	/** Starts a fresh conversation; the previous session stays resumable in the CLI. */
 	newAgent(): void {
-		this.rendered.clear();
-		this.markdownDisposables.clearAndDisposeAll();
-		this.pendingEvents = undefined;
-		this.conversation = new ClaudeConversation();
 		this.attachments = [];
 		this.showAllRecent = false;
-		this.watch(this.conversation);
+		this.agents.create();
+		this.onAgentsChange();
 		this.renderAll();
 		this.focus();
 		this.refreshRecent();
@@ -362,10 +402,9 @@ export class ClaudeAgentViewPane extends ViewPane {
 			return;
 		}
 		const messages = await this.runtime.readTranscript(cwd, session.id);
-		this.pendingEvents = undefined;
-		this.conversation = new ClaudeConversation();
-		this.watch(this.conversation);
-		this.conversation.restore(session.id, messages);
+		this.agents.open(session, messages);
+		this.onAgentsChange();
+		this.renderAll();
 		this.focus();
 	}
 
@@ -387,34 +426,21 @@ export class ClaudeAgentViewPane extends ViewPane {
 			this.conversation.setNotice(localize('claude.noFolder', "Open a folder first, so Claude knows which project to work in."));
 			return;
 		}
-		const conversation = this.conversation;
 		const files = this.attachments;
 		this.attachments = [];
 		this.input.value = '';
-		this.pendingEvents = [];
-		conversation.addUser(text, files);
 		const mentions = files.length ? '\n\n' + files.map(file => `@${file}`).join(' ') : '';
-		this.runtime.send({ cwd, prompt: text + mentions, sessionId: conversation.sessionId, model: this.model, permissionMode: this.trust.isWorkspaceTrusted() ? this.mode : 'plan' }).then(result => {
-			conversation.sessionId = result.sessionId;
-			const early = this.pendingEvents ?? [];
-			this.pendingEvents = undefined;
-			early.forEach(event => conversation.handle(event));
-		}, error => {
-			this.pendingEvents = undefined;
-			conversation.setWorking(false);
-			conversation.setNotice(error instanceof Error ? error.message : String(error));
-		});
+		this.agents.send(this.agents.selected, { text, files, mentions, model: this.model, permissionMode: this.trust.isWorkspaceTrusted() ? this.mode : 'plan' }, cwd);
 	}
 
 	/** Stops the running turn at once. Queued prompts go back into the composer, so nothing is lost or sent. */
 	stop(): void {
 		if (this.conversation.sessionId && this.conversation.working) {
-			this.runtime.stop(this.conversation.sessionId);
 			if (this.queue.length) {
 				this.input.value = [...this.queue, this.input.value].filter(Boolean).join('\n');
 				this.queue = [];
 			}
-			this.conversation.stop();
+			this.agents.stop(this.agents.selected);
 		}
 	}
 
@@ -469,20 +495,32 @@ export class ClaudeAgentViewPane extends ViewPane {
 		this.send(this.queue.shift() ?? localize('claude.resume.prompt', "Continue where you stopped."));
 	}
 
-	private onRuntimeEvent(event: ClaudeEvent): void {
-		if (this.pendingEvents && !this.conversation.sessionId) {
-			this.pendingEvents.push(event);
-			return;
-		}
-		this.conversation.handle(event);
-	}
-
 	// --- Rendering
+
+	/** The list left of the chat follows the layout switch and Toggle Agents Sidebar. */
+	private renderLayout(): void {
+		this.agentsList.render();
+		this.root.classList.toggle('claude-agents-layout', this.agents.layout === 'agents');
+	}
 
 	private renderAll(): void {
 		clearNode(this.list);
 		this.rendered.clear();
 		this.markdownDisposables.clearAndDisposeAll();
+		const group = this.shownGroup = this.agents.selectedGroup;
+		this.root.classList.toggle('claude-group', !!group);
+		if (group) {
+			const store = this.attemptsDisposables.value = new DisposableStore();
+			this.attempts.render(this.list, group, store);
+			this.updateTitle(claudeGroupTitle(group));
+			return;
+		}
+		const attemptOf = this.agents.groupOf(this.agents.selected);
+		if (attemptOf) {
+			const back = append(this.list, $('button.claude-button.claude-ghost.claude-back')) as HTMLButtonElement;
+			back.textContent = localize('claude.attempt.back', "Back to attempts");
+			back.addEventListener('click', () => this.agents.selectGroup(attemptOf));
+		}
 		const empty = this.conversation.items.length === 0;
 		if (!this.trust.isWorkspaceTrusted() && this.cwd && (!empty || this.setupDismissed || this.setup.kind !== 'ready')) {
 			this.renderRestricted();
@@ -503,6 +541,9 @@ export class ClaudeAgentViewPane extends ViewPane {
 
 	/** Renders or updates one item in place; later items keep their elements. */
 	private renderItem(item: ClaudeItem): void {
+		if (this.shownGroup) {
+			return; // the attempts show instead of this chat
+		}
 		this.emptyState?.remove();
 		this.emptyState = undefined;
 		let element = this.rendered.get(item);

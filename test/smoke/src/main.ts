@@ -21,6 +21,7 @@ import { setup as setupNotebookTests } from './areas/notebook/notebook.test';
 import { setup as setupLanguagesTests } from './areas/languages/languages.test';
 import { setup as setupStatusbarTests } from './areas/statusbar/statusbar.test';
 import { setup as setupClaudeStatesTests } from './areas/claude/claudeStates.test';
+import { setup as setupClaudeAgentsTests } from './areas/claude/claudeAgents.test';
 import { setup as setupExtensionTests } from './areas/extensions/extensions.test';
 import { setup as setupExtensionHostRestartTests } from './areas/extensions/extension-host-restart.test';
 import { setup as setupMultirootTests } from './areas/multiroot/multiroot.test';
@@ -435,7 +436,7 @@ describe(`VSCode Smoke Tests (${opts.web ? 'Web' : 'Electron'})`, () => {
 	setupTerminalTests(logger);
 	setupTaskTests(logger);
 	setupStatusbarTests(logger);
-	if (!opts.web && !opts.remote) { setupClaudeStatesTests(logger); }
+	if (!opts.web && !opts.remote) { setupClaudeStatesTests(logger); setupClaudeAgentsTests(logger); }
 	if (quality !== Quality.Dev && quality !== Quality.OSS) { setupExtensionTests(logger); }
 	if (!opts.web && !opts.remote) { setupExtensionHostRestartTests(logger); }
 	if (!(opts.web && process.platform === 'win32' /* TODO@bpasero flaky */)) { setupMultirootTests(logger); }
