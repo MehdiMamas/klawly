@@ -12,6 +12,13 @@ import { ClaudeAgent, claudeCompare, claudeGroupTitle, IClaudeMultitask } from '
 import { IClaudeAgentsService } from '../../../services/claude/browser/claudeAgentsService.js';
 
 /** The chat of a Run Parallel Agents task: one card per attempt (v5-S28) and the Compare view (v5-S30). */
+/** "+3 \u22120 · 1 file" or "· 2 files". */
+function filesStat(diff: { added: number; removed: number; files: number }): string {
+	return diff.files === 1
+		? localize('claude.attempt.stat.one', "+{0} \u2212{1} · 1 file", diff.added, diff.removed)
+		: localize('claude.attempt.stat.many', "+{0} \u2212{1} · {2} files", diff.added, diff.removed, diff.files);
+}
+
 export class ClaudeAttemptsView {
 
 	private compare = false;
@@ -65,7 +72,7 @@ export class ClaudeAttemptsView {
 			} else if (attempt.status === 'done') {
 				const diff = attempt.diff;
 				append(card, $('.claude-attempt-stat')).textContent = diff
-					? localize('claude.attempt.stat', "+{0} \u2212{1} · {2} files", diff.added, diff.removed, diff.files)
+					? filesStat(diff)
 					: localize('claude.attempt.reading', "Reading the changes");
 				this.button(buttons, localize('claude.attempt.compare', "Compare"), '.claude-primary', store, () => { this.compare = true; this.onChange(); }, !passed);
 			} else {
@@ -86,7 +93,7 @@ export class ClaudeAttemptsView {
 			card.classList.toggle('smallest', attempt === smallest);
 			append(card, $('.claude-attempt-title')).textContent = localize('claude.compare.attempt', "Attempt {0}", attempt.attempt);
 			const diff = attempt.diff;
-			append(card, $('.claude-attempt-stat')).textContent = diff ? localize('claude.compare.stat', "+{0} \u2212{1} · {2} files", diff.added, diff.removed, diff.files) : '';
+			append(card, $('.claude-attempt-stat')).textContent = diff ? filesStat(diff) : '';
 			if (diff?.firstLine) {
 				append(card, $('code.claude-attempt-line')).textContent = diff.firstLine;
 			}

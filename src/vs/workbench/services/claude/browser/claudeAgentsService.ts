@@ -119,7 +119,7 @@ export class ClaudeAgentsService extends ClaudeAgents {
 		this.layoutService.setPartHidden(true, Parts.PANEL_PART);
 		this.layoutService.setPartHidden(false, Parts.AUXILIARYBAR_PART);
 		const size = this.layoutService.getSize(Parts.AUXILIARYBAR_PART);
-		this.layoutService.setSize(Parts.AUXILIARYBAR_PART, { width: Math.round(mainWindow.innerWidth * 0.6), height: size.height });
+		this.layoutService.setSize(Parts.AUXILIARYBAR_PART, { width: Math.round(mainWindow.innerWidth * 0.7), height: size.height });
 	}
 
 	private restoreParts(): void {

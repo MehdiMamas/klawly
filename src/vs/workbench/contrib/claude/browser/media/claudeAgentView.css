@@ -838,6 +838,20 @@
 	color: var(--vscode-descriptionForeground);
 }
 
+.claude-needs-back {
+	align-self: flex-start;
+	display: inline-flex;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-small, 4px);
+	padding-left: 0;
+}
+
+.claude-needs-back > span {
+	display: inline-flex;
+	align-items: center;
+	line-height: 1;
+}
+
 .claude-needs-title {
 	font-weight: 600;
 }
@@ -964,7 +978,15 @@
 	white-space: nowrap;
 }
 
+.claude-bg-action button:disabled {
+	pointer-events: none;
+}
+
 .claude-bg-footer {
+	position: sticky;
+	bottom: 0;
+	padding: var(--vscode-klawly-gap-medium) 0;
+	background: var(--vscode-panel-background);
 	margin-top: var(--vscode-klawly-gap-large);
 	font-size: var(--vscode-klawly-fontSize-meta);
 	color: var(--vscode-descriptionForeground);

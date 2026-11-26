@@ -133,6 +133,9 @@ export function setup(logger: Logger) {
 			await code.dispatchKeybinding('enter', async () => { });
 			await application.workbench.quickinput.waitForQuickInputOpened();
 			await code.dispatchKeybinding('enter', async () => { });
+			// the Editor | Agents switch and the count label are there in the Editor layout too
+			await code.waitForElements('.claude-layout-switch .claude-layout-segment', false, els => els.length === 2 && els[0].attributes['aria-pressed'] === 'true');
+			await code.waitForElements('.claude-layout-label', false, els => els.some(el => /\d+ agents/.test(el.textContent)));
 			await code.waitForElements('.claude-attempt', false, els => els.some(el => el.textContent.includes('failed at turn')) && els.some(el => /\+\d+ −\d+/.test(el.textContent)));
 			await shoot(application, 'S28-attempts-one-failed');
 			await code.waitAndClick('.claude-attempts .claude-attempt button.claude-primary:not([disabled])');
@@ -149,6 +152,10 @@ export function setup(logger: Logger) {
 			const code = application.code;
 			await application.workbench.quickaccess.runCommand('claude.agents.background');
 			await code.waitForElements('.claude-background', false, els => els.some(el => el.textContent.includes('Worktree worktree-fix-zod-v4') && el.textContent.includes('Worktrees use')));
+			await application.workbench.quickaccess.runCommand('workbench.action.toggleMaximizedPanel');
+			await code.waitForElements('.claude-bg-footer', false, els => els.length === 1);
+			await code.driver.hoverSelector('.claude-bg-action:has(button:disabled)');
+			await code.waitForElements('.monaco-hover', false, els => els.some(el => el.textContent.includes('not committed')));
 			await shoot(application, 'S27-background');
 		});
 	});

@@ -20,7 +20,7 @@ import { IViewDescriptor, IViewsRegistry, IViewContainersRegistry, ViewContainer
 import { IViewsService } from '../../../services/views/common/viewsService.js';
 import { $, append, EventType, addDisposableListener } from '../../../../base/browser/dom.js';
 import { BaseActionViewItem, IBaseActionViewItemOptions } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
-import { IntervalTimer } from '../../../../base/common/async.js';
+import { disposableTimeout, IntervalTimer } from '../../../../base/common/async.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { IAction } from '../../../../base/common/actions.js';
 import { Extensions as ConfigurationExtensions, IConfigurationRegistry } from '../../../../platform/configuration/common/configurationRegistry.js';
@@ -313,7 +313,7 @@ class ClaudeAgentsContribution extends Disposable implements IWorkbenchContribut
 		// creating the service here also puts a saved Agents layout back at startup
 		void agents;
 		this._register(actionViewItems.register(MenuId.TitleBar, 'claude.layout.toggle', (action, options, instantiation) => instantiation.createInstance(LayoutSwitchItem, action, options)));
-		this.cleanup();
+		this._register(disposableTimeout(() => this.cleanup(), 30000));
 		this.timer.cancelAndSet(() => this.cleanup(), 24 * 60 * 60 * 1000);
 	}
 
@@ -331,4 +331,4 @@ class ClaudeAgentsContribution extends Disposable implements IWorkbenchContribut
 	}
 }
 
-registerWorkbenchContribution2(ClaudeAgentsContribution.ID, ClaudeAgentsContribution, WorkbenchPhase.Eventually);
+registerWorkbenchContribution2(ClaudeAgentsContribution.ID, ClaudeAgentsContribution, WorkbenchPhase.BlockStartup);
