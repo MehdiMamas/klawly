@@ -100,13 +100,13 @@ export function setup(logger: Logger) {
 			const application = await start('S25', this.defaultOptions);
 			const code = application.code;
 			await application.workbench.quickaccess.runCommand('claude.agent.focus');
+			await application.workbench.quickaccess.runCommand('claude.layout.toggle');
 			await send(application, 'ASK install zod');
 			await code.waitForElements('.claude-agent .claude-permission', false, els => els.some(el => el.textContent.includes('npm install zod@4')));
 			await code.waitAndClick('.claude-new-agent');
 			await send(application, 'WORK run the tests');
 			await code.waitAndClick('.claude-new-agent');
 			await send(application, 'say hello');
-			await application.workbench.quickaccess.runCommand('claude.layout.toggle');
 			try {
 				await code.waitForElements('.claude-agent-row', false, els => els.length >= 3);
 			} catch (error) {
