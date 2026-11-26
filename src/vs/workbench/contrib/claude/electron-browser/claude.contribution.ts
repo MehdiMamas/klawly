@@ -107,3 +107,21 @@ registerAction2(class StopAgent extends Action2 {
 		(await getAgentView(accessor))?.stop();
 	}
 });
+
+registerAction2(class DetectClaude extends Action2 {
+	constructor() {
+		super({ id: 'claude.agent.detect', title: localize2('claude.agent.detect', "Re-detect Claude Runtime"), f1: true });
+	}
+	async run(accessor: ServicesAccessor): Promise<void> {
+		await (await getAgentView(accessor))?.detect();
+	}
+});
+
+registerAction2(class InstallClaude extends Action2 {
+	constructor() {
+		super({ id: 'claude.agent.install', title: localize2('claude.agent.install', "Install Claude Code"), f1: true });
+	}
+	async run(accessor: ServicesAccessor): Promise<void> {
+		await (await getAgentView(accessor))?.install();
+	}
+});

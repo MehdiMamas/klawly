@@ -18,6 +18,20 @@ export interface IClaudeCliStatus {
 	/** For example `2.1.332`. */
 	readonly version?: string;
 	readonly error?: string;
+	/** Why `found` is false: no command (`missing`), a version below 2 (`tooOld`) or a command that would not run (`runFailed`). */
+	readonly reason?: 'missing' | 'tooOld' | 'runFailed';
+}
+
+/** Whether the CLI is signed in, read from `claude auth status`. Never carries credentials. */
+export interface IClaudeAuthStatus {
+	/** `unknown` when the check failed or took longer than 10 s, which is not the same as signed out. */
+	readonly state: 'signedIn' | 'signedOut' | 'unknown';
+	readonly error?: string;
+}
+
+/** What Git says about a folder: `notRepo` and `unsafe` (another user owns it) are the two states the pane explains. */
+export interface IClaudeGitStatus {
+	readonly state: 'ok' | 'notRepo' | 'unsafe' | 'unknown';
 }
 
 export interface IClaudeSendRequest {
@@ -95,6 +109,14 @@ export interface IClaudeRuntimeService {
 
 	/** Finds `claude` on PATH and reads its version. Resolves with `found: false` when it is missing. */
 	checkCli(): Promise<IClaudeCliStatus>;
+	/** Asks `claude auth status` whether the person is signed in. */
+	checkSignIn(): Promise<IClaudeAuthStatus>;
+	/** Asks Git about the folder. */
+	checkGit(cwd: string): Promise<IClaudeGitStatus>;
+	/** Runs `git init` in the folder. */
+	initGit(cwd: string): Promise<void>;
+	/** Runs `git config --global --add safe.directory <cwd>` after the person chose Trust Folder for Git. */
+	trustGitFolder(cwd: string): Promise<void>;
 	/** Starts, resumes or follows a session and queues the prompt as its next turn. */
 	send(request: IClaudeSendRequest): Promise<IClaudeSendResult>;
 	/** Answers a `permission` event. */

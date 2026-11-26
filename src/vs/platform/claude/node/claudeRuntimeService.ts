@@ -12,12 +12,13 @@ import { join } from '../../../base/common/path.js';
 import { generateUuid } from '../../../base/common/uuid.js';
 import { localize } from '../../../nls.js';
 import { ILogService } from '../../log/common/log.js';
-import { ClaudeEvent, IClaudeCliStatus, IClaudeRuntimeService, IClaudeSendRequest, IClaudeSendResult, IClaudeSessionInfo, IClaudeSettings, IClaudeSettingsSource, IClaudeTranscriptMessage } from '../common/claudeRuntime.js';
+import { ClaudeEvent, IClaudeAuthStatus, IClaudeCliStatus, IClaudeGitStatus, IClaudeRuntimeService, IClaudeSendRequest, IClaudeSendResult, IClaudeSessionInfo, IClaudeSettings, IClaudeSettingsSource, IClaudeTranscriptMessage } from '../common/claudeRuntime.js';
 import { ClaudeSessionOwners } from '../common/claudeSessionOwners.js';
 import { claudeProjectFolderName, countClaudeEditedFiles, parseClaudeTranscript } from '../common/claudeSessions.js';
 import { addAllowRuleToSettings, mergeClaudeSettings, parseClaudeSettingsFile } from '../common/claudeSettings.js';
 import { ClaudeStreamParser } from '../common/claudeStreamParser.js';
-import { checkClaudeCli } from './claudeCli.js';
+import { checkClaudeCli, checkClaudeSignIn } from './claudeCli.js';
+import { checkGitFolder, initGitFolder, trustGitFolder } from './claudeGit.js';
 
 interface IClaudeSession {
 	readonly sessionId: string;
@@ -57,6 +58,22 @@ export class ClaudeRuntimeService extends Disposable implements IClaudeRuntimeSe
 
 	checkCli(): Promise<IClaudeCliStatus> {
 		return checkClaudeCli(this.env);
+	}
+
+	checkSignIn(): Promise<IClaudeAuthStatus> {
+		return checkClaudeSignIn(this.env);
+	}
+
+	checkGit(cwd: string): Promise<IClaudeGitStatus> {
+		return checkGitFolder(cwd, this.env);
+	}
+
+	initGit(cwd: string): Promise<void> {
+		return initGitFolder(cwd, this.env);
+	}
+
+	trustGitFolder(cwd: string): Promise<void> {
+		return trustGitFolder(cwd, this.env);
 	}
 
 	async send(request: IClaudeSendRequest): Promise<IClaudeSendResult> {

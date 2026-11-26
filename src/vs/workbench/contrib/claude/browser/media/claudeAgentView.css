@@ -685,3 +685,37 @@
 	white-space: normal;
 	overflow-wrap: anywhere;
 }
+
+/* First-run and edge cards (S01 to S06, S35 to S39) reuse the permission card */
+.claude-agent .claude-card-text {
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+	overflow-wrap: anywhere;
+}
+
+.claude-agent .claude-card-file {
+	display: flex;
+	gap: var(--vscode-klawly-gap-medium);
+	font-family: var(--monaco-monospace-font);
+}
+
+.claude-agent .claude-card-file > :first-child {
+	flex: 1;
+	min-width: 0;
+	color: var(--vscode-foreground);
+}
+
+.claude-agent .claude-restricted {
+	display: flex;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-medium);
+	padding: var(--vscode-klawly-gap-medium) var(--vscode-klawly-gap-large);
+	border: 1px solid var(--vscode-widget-border);
+	border-radius: var(--vscode-klawly-cornerRadius);
+	font-size: var(--vscode-klawly-fontSize-meta);
+}
+
+.claude-agent .claude-restricted-text {
+	flex: 1;
+	min-width: 0;
+}

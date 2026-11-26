@@ -24,7 +24,7 @@ import { ROOT_STATE_URI } from '../../../../platform/agentHost/common/state/sess
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { IDefaultAccountService } from '../../../../platform/defaultAccount/common/defaultAccount.js';
 import { ManagedSettingsFreshnessState } from '../../../../platform/policy/common/managedSettingsFreshness.js';
-import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
+import { IWorkbenchContribution } from '../../../common/contributions.js';
 import { IWorkbenchAssignmentService } from '../../assignment/common/assignmentService.js';
 import { IWorkbenchEnvironmentService } from '../../environment/common/environmentService.js';
 import { AccountPolicyGateUnsatisfiedReason, IAccountPolicyGateService } from '../../policies/common/accountPolicyService.js';
@@ -153,4 +153,4 @@ registerSingleton(
 	InstantiationType.Delayed,
 );
 
-registerWorkbenchContribution2(AgentHostPrewarmContribution.ID, AgentHostPrewarmContribution, WorkbenchPhase.BlockRestore);
+// Not registered: Klawly does not start the Agent Host (the main process no longer spawns it), so nothing prewarms it.
