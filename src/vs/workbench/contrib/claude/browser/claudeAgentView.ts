@@ -8,12 +8,13 @@ import { $, append, clearNode, EventType, addDisposableListener } from '../../..
 import { getDefaultHoverDelegate } from '../../../../base/browser/ui/hover/hoverDelegateFactory.js';
 import { AnchorAlignment } from '../../../../base/browser/ui/contextview/contextview.js';
 import { Action, IAction, Separator } from '../../../../base/common/actions.js';
-import { IntervalTimer } from '../../../../base/common/async.js';
+import { disposableTimeout, IntervalTimer } from '../../../../base/common/async.js';
 import { fromNow } from '../../../../base/common/date.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { MarkdownString } from '../../../../base/common/htmlContent.js';
 import { DisposableMap, DisposableStore, MutableDisposable } from '../../../../base/common/lifecycle.js';
 import { basename, dirname, extname } from '../../../../base/common/path.js';
+import { isWindows } from '../../../../base/common/platform.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { localize, localize2 } from '../../../../nls.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
@@ -28,8 +29,9 @@ import { URI } from '../../../../base/common/uri.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
 import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
+import { IWorkspaceTrustManagementService } from '../../../../platform/workspace/common/workspaceTrust.js';
 import { claudeAllowRule, ClaudeConversation, claudeDiffLines, ClaudeItem, claudeQuestion, claudeToolSummary, IClaudePermissionItem, IClaudeTextItem, IClaudeToolItem } from '../../../../platform/claude/common/claudeConversation.js';
-import { ClaudeEvent, IClaudeRuntimeService, IClaudeSendRequest, IClaudeSessionInfo } from '../../../../platform/claude/common/claudeRuntime.js';
+import { ClaudeEvent, IClaudeCliStatus, IClaudeGitStatus, IClaudeRuntimeService, IClaudeSendRequest, IClaudeSessionInfo } from '../../../../platform/claude/common/claudeRuntime.js';
 import { ViewPane } from '../../../browser/parts/views/viewPane.js';
 import { IViewletViewOptions } from '../../../browser/parts/views/viewsViewlet.js';
 import { IViewDescriptorService } from '../../../common/views.js';
@@ -67,6 +69,22 @@ function models(): { readonly id: string; readonly label: string; readonly detai
 	];
 }
 
+/** The command the Claude Code documentation gives for installing it (https://code.claude.com/docs/en/setup). */
+const INSTALL_COMMAND = isWindows ? 'irm https://claude.ai/install.ps1 | iex' : 'curl -fsSL https://claude.ai/install.sh | bash';
+
+/** What the first-run checks found (v5-S01 to S06). */
+interface ISetup {
+	readonly kind: 'checking' | 'ready' | 'missing' | 'installing' | 'tooOld' | 'probeFailed' | 'signedOut';
+	readonly cli?: IClaudeCliStatus;
+	readonly error?: string;
+	/** When the same result was found, newest last (E02: Detect Again shows the time of each check). */
+	readonly checks: readonly number[];
+}
+
+function clock(ms: number): string {
+	return new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
 /** The two-letter type badge a file chip shows (v5-S12 `TS`). */
 function fileTypeLabel(path: string): string {
 	return (extname(path).slice(1) || 'txt').slice(0, 2).toUpperCase();
@@ -93,6 +111,10 @@ export class ClaudeAgentViewPane extends ViewPane {
 	private showAllRecent = false;
 	private running = new Set<string>();
 	private queue: string[] = [];
+	private setup: ISetup = { kind: 'checking', checks: [] };
+	private setupDismissed = false;
+	private gitState: IClaudeGitStatus['state'] = 'ok';
+	private readonly resumeTimer = this._register(new MutableDisposable());
 	private stopHover: { dispose(): void } | undefined;
 	private readonly ticker = this._register(new IntervalTimer());
 
@@ -127,9 +149,11 @@ export class ClaudeAgentViewPane extends ViewPane {
 		@IMarkdownRendererService private readonly markdownRenderer: IMarkdownRendererService,
 		@IEditorService private readonly editorService: IEditorService,
 		@ICommandService private readonly commandService: ICommandService,
+		@IWorkspaceTrustManagementService private readonly trust: IWorkspaceTrustManagementService,
 	) {
 		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, hoverService);
 		this._register(this.runtime.onDidEvent(event => this.onRuntimeEvent(event)));
+		this._register(this.trust.onDidChangeTrust(() => this.renderAll()));
 		this.watch(this.conversation);
 	}
 
@@ -150,7 +174,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 					}
 				}
 				this.renderAll();
-				if (!conversation.working && this.queue.length) {
+				if (!conversation.working && !conversation.edge && this.queue.length) {
 					this.sendQueued();
 				}
 			}
@@ -200,7 +224,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 			}
 		}));
 		this.renderAll();
-		this.checkCli();
+		this.detect();
 		this.refreshRecent();
 	}
 
@@ -352,8 +376,8 @@ export class ClaudeAgentViewPane extends ViewPane {
 		if (!text) {
 			return;
 		}
-		if (this.conversation.working) {
-			// the turn is running: keep the text as the next prompt instead of dropping it
+		if (this.conversation.working || this.conversation.edge?.kind === 'limited' || this.conversation.edge?.kind === 'offline') {
+			// the turn is running, or the chat waits for the limit reset or the network: keep the text as the next prompt
 			this.queue.push(text);
 			this.input.value = '';
 			this.renderComposer();
@@ -370,7 +394,7 @@ export class ClaudeAgentViewPane extends ViewPane {
 		this.pendingEvents = [];
 		conversation.addUser(text, files);
 		const mentions = files.length ? '\n\n' + files.map(file => `@${file}`).join(' ') : '';
-		this.runtime.send({ cwd, prompt: text + mentions, sessionId: conversation.sessionId, model: this.model, permissionMode: this.mode }).then(result => {
+		this.runtime.send({ cwd, prompt: text + mentions, sessionId: conversation.sessionId, model: this.model, permissionMode: this.trust.isWorkspaceTrusted() ? this.mode : 'plan' }).then(result => {
 			conversation.sessionId = result.sessionId;
 			const early = this.pendingEvents ?? [];
 			this.pendingEvents = undefined;
@@ -402,11 +426,47 @@ export class ClaudeAgentViewPane extends ViewPane {
 		}
 	}
 
-	private async checkCli(): Promise<void> {
-		const status = await this.runtime.checkCli();
-		if (!status.found) {
-			this.conversation.setNotice(status.error ?? localize('claude.missing', "Claude Code is not installed."));
+	/** Runs the three first-run checks together: the command, its version, and the sign-in (Detect Again, E02). */
+	async detect(): Promise<void> {
+		const previous = this.setup;
+		this.setup = { ...previous, kind: 'checking' };
+		const cli = await this.runtime.checkCli();
+		let kind: ISetup['kind'] = 'ready';
+		let error = cli.error;
+		if (!cli.found) {
+			kind = cli.reason === 'tooOld' ? 'tooOld' : cli.reason === 'runFailed' ? 'probeFailed' : 'missing';
+		} else {
+			const auth = await this.runtime.checkSignIn();
+			kind = auth.state === 'signedIn' ? 'ready' : auth.state === 'signedOut' ? 'signedOut' : 'probeFailed';
+			error = auth.error;
 		}
+		const checks = kind === previous.kind || (previous.kind === 'checking' && previous.checks.length) ? [...previous.checks, Date.now()] : [Date.now()];
+		this.setup = { kind, cli, error, checks };
+		const cwd = this.cwd;
+		this.gitState = cwd ? (await this.runtime.checkGit(cwd)).state : 'ok';
+		if (this.conversation.items.length === 0) {
+			this.renderAll();
+		}
+	}
+
+	/** Opens the integrated terminal and types a command, so the person sees what runs (install, update, sign in). */
+	private async runInTerminal(command: string): Promise<void> {
+		await this.commandService.executeCommand('workbench.action.terminal.new');
+		await this.commandService.executeCommand('workbench.action.terminal.sendSequence', { text: command + '\n' });
+	}
+
+	/** Install Claude Code: the documented installer, run in the terminal. */
+	async install(): Promise<void> {
+		this.setup = { ...this.setup, kind: 'installing' };
+		this.renderAll();
+		await this.runInTerminal(INSTALL_COMMAND);
+	}
+
+	/** Continues after a limit, an offline stop or a crash: the first queued prompt, or a plain "continue". */
+	private resume(): void {
+		this.resumeTimer.clear();
+		this.conversation.edge = undefined;
+		this.send(this.queue.shift() ?? localize('claude.resume.prompt', "Continue where you stopped."));
 	}
 
 	private onRuntimeEvent(event: ClaudeEvent): void {
@@ -423,10 +483,15 @@ export class ClaudeAgentViewPane extends ViewPane {
 		clearNode(this.list);
 		this.rendered.clear();
 		this.markdownDisposables.clearAndDisposeAll();
-		if (this.conversation.items.length === 0) {
+		const empty = this.conversation.items.length === 0;
+		if (!this.trust.isWorkspaceTrusted() && this.cwd && (!empty || this.setupDismissed || this.setup.kind !== 'ready')) {
+			this.renderRestricted();
+		}
+		if (empty) {
 			this.renderEmpty();
 		} else {
 			this.conversation.items.forEach(item => this.renderItem(item));
+			this.renderEdge();
 		}
 		this.notice.textContent = this.conversation.notice ?? '';
 		this.notice.classList.toggle('visible', !!this.conversation.notice);
@@ -663,9 +728,198 @@ export class ClaudeAgentViewPane extends ViewPane {
 		append(buttons, $('span.claude-kbd')).textContent = localize('claude.permission.keys', "Enter · Esc");
 	}
 
+	/** One card in the style of the permission card: icon and title, text, optional rows, then buttons. */
+	private card(parent: HTMLElement, icon: ThemeIcon, title: string, text: string | undefined, buttons: readonly { label: string; kind?: 'primary' | 'ghost'; run: () => void }[], fill?: (card: HTMLElement) => void): HTMLElement {
+		const card = append(parent, $('.claude-permission.claude-card'));
+		card.setAttribute('role', 'group');
+		card.setAttribute('aria-label', title);
+		const head = append(card, $('.claude-permission-title'));
+		append(head, $('span' + ThemeIcon.asCSSSelector(icon)));
+		append(head, $('span.claude-permission-text.claude-wrap')).textContent = title;
+		if (text) {
+			append(card, $('.claude-card-text')).textContent = text;
+		}
+		fill?.(card);
+		if (buttons.length) {
+			const row = append(card, $('.claude-permission-buttons'));
+			for (const button of buttons) {
+				const element = append(row, $('button.claude-button' + (button.kind ? `.claude-${button.kind}` : ''))) as HTMLButtonElement;
+				element.textContent = button.label;
+				element.addEventListener('click', button.run);
+			}
+		}
+		return card;
+	}
+
+	private openLogs(): Promise<void> {
+		return this.commandService.executeCommand('workbench.action.showLogs');
+	}
+
+	/** The first-run card of v5-S01 to S05, or nothing once everything is ready. Returns `true` while it holds the pane back. */
+	private renderSetup(parent: HTMLElement): boolean {
+		const setup = this.setup;
+		const detect = () => this.detect();
+		const dismiss = { label: localize('claude.setup.without', "Continue Without AI"), kind: 'ghost' as const, run: () => { this.setupDismissed = true; this.renderAll(); } };
+		const checked = (): string => {
+			const first = clock(setup.checks[0]);
+			return setup.checks.length > 1 ? localize('claude.setup.checked.again', "Last checked {0} · Detect Again ran {1}, same result", first, clock(setup.checks[setup.checks.length - 1])) : localize('claude.setup.checked', "Last checked {0}", first);
+		};
+		if (setup.kind === 'checking') {
+			return false;
+		}
+		if (setup.kind === 'ready') {
+			const cwd = this.cwd;
+			if (!cwd || this.trust.isWorkspaceTrusted() || this.setupDismissed) {
+				return false;
+			}
+			this.card(parent, Codicon.sparkle, localize('claude.first.title', "Klawly Runs on Your Claude Code"), undefined, [
+				{ label: localize('claude.first.trust', "Trust Folder and Start"), kind: 'primary', run: () => this.trust.setWorkspaceTrust(true) },
+				{ label: localize('claude.first.restricted', "Start Without Trusting"), run: () => { this.setupDismissed = true; this.renderAll(); } },
+			], card => {
+				for (const line of [
+					localize('claude.first.cli', "Claude Code {0} · found on PATH", setup.cli?.version ?? ''),
+					localize('claude.first.signedIn', "Signed in · used for every chat"),
+					localize('claude.first.folder', "{0} · Claude may read and edit files here", basename(cwd)),
+				]) {
+					append(card, $('.claude-card-text')).textContent = line;
+				}
+			});
+			return true;
+		}
+		if (this.setupDismissed) {
+			return false;
+		}
+		switch (setup.kind) {
+			case 'missing':
+				this.card(parent, Codicon.warning, localize('claude.missing.title', "Claude Code Is Not Installed"), localize('claude.missing.text', "Klawly needs the Claude Code CLI. Install it once; your Claude plan pays for the chats."), [
+					{ label: localize('claude.missing.install', "Install Claude Code"), kind: 'primary', run: () => this.install() },
+					{ label: localize('claude.setup.detect', "Detect Again"), run: detect },
+					dismiss,
+				], card => {
+					append(card, $('code.claude-permission-command')).textContent = INSTALL_COMMAND;
+					append(card, $('.claude-card-text')).textContent = checked();
+				});
+				break;
+			case 'installing':
+				this.card(parent, Codicon.cloudDownload, localize('claude.installing.title', "Installing Claude Code"), localize('claude.installing.text', "The installer runs in the terminal. When it finishes, run Detect Again: next come the version check and the sign-in check."), [
+					{ label: localize('claude.setup.detect', "Detect Again"), kind: 'primary', run: detect },
+					{ label: localize('claude.installing.cancel', "Cancel"), run: () => { this.setup = { ...setup, kind: 'missing' }; this.renderAll(); } },
+				]);
+				break;
+			case 'tooOld':
+				this.card(parent, Codicon.warning, localize('claude.old.title', "Claude Code {0} Is Too Old", setup.cli?.version ?? ''), localize('claude.old.text', "Klawly needs 2.0 or newer for checkpoints and questions. Updating keeps your sign-in and settings."), [
+					{ label: localize('claude.old.update', "Update Claude Code"), kind: 'primary', run: () => this.runInTerminal('claude update') },
+					{ label: localize('claude.setup.detect', "Detect Again"), run: detect },
+				], card => append(card, $('.claude-card-text')).textContent = checked());
+				break;
+			case 'probeFailed':
+				this.card(parent, Codicon.warning, localize('claude.probe.title', "Couldn't Check Your Claude Sign-In"), setup.error ?? localize('claude.probe.text', "The check gave no answer. This is usually a slow network or proxy, not your account."), [
+					{ label: localize('claude.probe.retry', "Retry"), kind: 'primary', run: detect },
+					{ label: localize('claude.probe.logs', "Open Logs"), run: () => this.openLogs() },
+					dismiss,
+				], card => append(card, $('.claude-card-text')).textContent = checked());
+				break;
+			case 'signedOut':
+				this.card(parent, Codicon.account, localize('claude.signin.title', "Sign In to Claude Code"), localize('claude.signin.text', "Klawly uses your Claude plan. Sign-in runs in the terminal; the CLI keeps your credentials and Klawly never reads them."), [
+					{ label: localize('claude.signin.button', "Sign In"), kind: 'primary', run: () => this.runInTerminal('claude auth login') },
+					{ label: localize('claude.setup.detect', "Detect Again"), run: detect },
+					dismiss,
+				], card => append(card, $('.claude-card-text')).textContent = checked());
+				break;
+		}
+		return true;
+	}
+
+	/** v5-S38 and S39: Git cases that need a word or a button before the person can go on. */
+	private renderGit(parent: HTMLElement): void {
+		const cwd = this.cwd;
+		if (!cwd || (this.gitState !== 'notRepo' && this.gitState !== 'unsafe')) {
+			return;
+		}
+		const recheck = async () => { this.gitState = (await this.runtime.checkGit(cwd)).state; this.renderAll(); };
+		const fail = (error: unknown) => this.conversation.setNotice(error instanceof Error ? error.message : String(error));
+		if (this.gitState === 'unsafe') {
+			this.card(parent, Codicon.repo, localize('claude.git.unsafe.title', "Git Won't Open This Folder"), localize('claude.git.unsafe.text', "The folder belongs to another user, so Git treats it as unsafe. Trusting it runs: git config --global --add safe.directory {0}", cwd), [
+				{ label: localize('claude.git.unsafe.trust', "Trust Folder for Git"), kind: 'primary', run: () => this.runtime.trustGitFolder(cwd).then(recheck, fail) },
+				{ label: localize('claude.git.terminal', "Open Terminal"), run: () => { this.commandService.executeCommand('workbench.action.terminal.new'); } },
+			]);
+		} else {
+			this.card(parent, Codicon.repo, localize('claude.git.none.title', "This Folder Is Not a Git Repository"), localize('claude.git.none.text', "Checkpoints still work. Review against main, branches and PRs need Git."), [
+				{ label: localize('claude.git.init', "Initialize Git"), kind: 'primary', run: () => this.runtime.initGit(cwd).then(recheck, fail) },
+				{ label: localize('claude.git.notNow', "Not Now"), kind: 'ghost', run: () => { this.gitState = 'ok'; this.renderAll(); } },
+			]);
+		}
+	}
+
+	/** v5-S06: a folder that is not trusted runs Claude in plan mode, which reads but never edits or runs. */
+	private renderRestricted(): void {
+		const banner = append(this.list, $('.claude-restricted'));
+		append(banner, $('span.claude-restricted-text')).textContent = localize('claude.restricted', "Restricted: Claude can read, not edit or run.");
+		const trust = append(banner, $('button.claude-button.claude-ghost')) as HTMLButtonElement;
+		trust.textContent = localize('claude.restricted.trust', "Trust");
+		trust.addEventListener('click', () => this.trust.setWorkspaceTrust(true));
+	}
+
+	/** v5-S35, S36 and S37: the card under the last message when the chat is limited, offline or crashed. */
+	private renderEdge(): void {
+		const edge = this.conversation.edge;
+		if (!edge) {
+			return;
+		}
+		const holder = append(this.list, $('.claude-item'));
+		const resumeAt = (at: number) => {
+			this.resumeTimer.value = disposableTimeout(() => this.resume(), Math.max(0, at - Date.now()));
+			this.renderAll();
+		};
+		switch (edge.kind) {
+			case 'limited': {
+				const at = edge.resetsAt;
+				const left = at ? Math.max(1, Math.round((at - Date.now()) / 60000)) : 0;
+				const inText = left >= 60 ? localize('claude.limit.hours', "{0} h {1} min", Math.floor(left / 60), left % 60) : localize('claude.limit.minutes', "{0} min", left);
+				this.card(holder, Codicon.clock, localize('claude.limit.title', "Usage Limit Reached"), at
+					? localize('claude.limit.text', "Your usage limit resets at {0}, in {1}. Prompts you type now wait until then.", clock(at), inText)
+					: localize('claude.limit.unknown', "Your usage limit was reached. Try again later; prompts you type now wait."), [
+					...(at ? [this.resumeTimer.value
+						? { label: localize('claude.limit.waiting', "Resuming at {0}", clock(at)), run: () => { this.resumeTimer.clear(); this.renderAll(); } }
+						: { label: localize('claude.limit.resume', "Resume at Reset"), kind: 'primary' as const, run: () => resumeAt(at) }] : []),
+					{ label: localize('claude.limit.switch', "Switch Account"), run: () => this.runInTerminal('claude auth login') },
+				]);
+				break;
+			}
+			case 'offline':
+				this.card(holder, Codicon.debugDisconnect, localize('claude.offline.title', "Offline"), localize('claude.offline.text', "Claude can't reach the network. Your prompt is kept; follow-ups you type are queued."), [
+					{ label: localize('claude.offline.retry', "Retry Now"), kind: 'primary', run: () => this.resume() },
+				]);
+				break;
+			case 'crashed': {
+				const changes = this.conversation.changes;
+				this.card(holder, Codicon.error, localize('claude.crash.title', "Claude Code Stopped Unexpectedly"), changes.length
+					? localize('claude.crash.files', "Exit code {0} at {1}. Files touched before it stopped:", edge.exitCode, clock(edge.at))
+					: localize('claude.crash.none', "Exit code {0} at {1}. No files were changed.", edge.exitCode, clock(edge.at)), [
+					{ label: localize('claude.crash.resume', "Resume Chat"), kind: 'primary', run: () => this.resume() },
+					{ label: localize('claude.probe.logs', "Open Logs"), run: () => this.openLogs() },
+				], card => {
+					for (const change of changes) {
+						const line = append(card, $('.claude-card-text.claude-card-file'));
+						append(line, $('span')).textContent = this.relative(change.path);
+						append(line, $('span.claude-added')).textContent = `+${change.added}`;
+						append(line, $('span.claude-removed')).textContent = `−${change.removed}`;
+					}
+				});
+				break;
+			}
+		}
+		this.list.scrollTop = this.list.scrollHeight;
+	}
+
 	/** The empty pane of v5-S07: Recent sessions of this folder, then starters. */
 	private renderEmpty(): void {
 		const empty = this.emptyState = append(this.list, $('.claude-empty'));
+		const blocked = this.renderSetup(empty);
+		this.renderGit(empty);
+		if (blocked) {
+			return;
+		}
 		const open = new Set([this.conversation.sessionId]);
 		const recent = this.recent.filter(session => !open.has(session.id));
 		if (recent.length) {
@@ -723,7 +977,9 @@ export class ClaudeAgentViewPane extends ViewPane {
 
 	private renderComposer(): void {
 		const working = this.conversation.working;
-		this.input.placeholder = working
+		const edge = this.conversation.edge;
+		this.input.placeholder = edge?.kind === 'limited' && edge.resetsAt ? localize('claude.composer.queue.reset', "Queue for {0}", clock(edge.resetsAt))
+			: working || edge?.kind === 'offline'
 			? localize('claude.composer.queue', "Queue a follow-up")
 			: localize('claude.composer.placeholder', "Plan, build or ask · @ for context, / for commands");
 		clearNode(this.attachmentsRow);

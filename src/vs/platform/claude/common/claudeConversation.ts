@@ -59,6 +59,26 @@ export interface IClaudeFileChange {
 	removed: number;
 }
 
+/** A state the chat is stuck in until something outside it changes (v5-S35 limit, S36 offline, S37 crash). */
+export type ClaudeEdge =
+	/** `resetsAt` in milliseconds since the epoch, when the CLI gave one. */
+	| { readonly kind: 'limited'; readonly resetsAt?: number }
+	| { readonly kind: 'offline' }
+	| { readonly kind: 'crashed'; readonly exitCode: number; readonly at: number };
+
+/** Reads the usage-limit and network wording of the CLI's error text; `undefined` for any other error. */
+export function claudeClassifyError(text: string): ClaudeEdge | undefined {
+	if (/usage limit|hit your limit|limit reached|rate limit/i.test(text)) {
+		// older CLIs end the line with `|<epoch seconds>`
+		const reset = /\|(\d{10})\b/.exec(text);
+		return { kind: 'limited', resetsAt: reset ? Number(reset[1]) * 1000 : undefined };
+	}
+	if (/ENOTFOUND|ECONNREFUSED|ECONNRESET|ETIMEDOUT|EAI_AGAIN|ENETUNREACH|unable to connect|fetch failed|network error|socket hang up|connection error/i.test(text)) {
+		return { kind: 'offline' };
+	}
+	return undefined;
+}
+
 const FILE_TOOLS = new Set(['Edit', 'MultiEdit', 'Write']);
 
 /** The tool input field that names what a tool acts on, so a row reads as "Edit total.ts" (v5-S12, D17). */
@@ -212,6 +232,8 @@ export class ClaudeConversation extends Disposable {
 	contextTokens = 0;
 	/** A message for the notice line, or `undefined`. */
 	notice: string | undefined;
+	/** Set while the chat is limited, offline or crashed; the next prompt clears it. */
+	edge: ClaudeEdge | undefined;
 	/** After a stop, until the CLI reports the end of the interrupted turn: its late events are dropped. */
 	private stopping = false;
 
@@ -247,6 +269,7 @@ export class ClaudeConversation extends Disposable {
 		this.working = true;
 		this.stopping = false;
 		this.notice = undefined;
+		this.edge = undefined;
 		this._onDidChange.fire(item);
 	}
 
@@ -345,19 +368,38 @@ export class ClaudeConversation extends Disposable {
 				this._onDidChange.fire(item);
 				break;
 			}
-			case 'result':
+			case 'rateLimit':
+				if (event.status === 'rejected') {
+					// the CLI gives seconds
+					this.edge = { kind: 'limited', resetsAt: event.resetsAt ? event.resetsAt * 1000 : undefined };
+					this.working = false;
+					this._onDidChange.fire(undefined);
+				}
+				break;
+			case 'result': {
 				this.working = false;
 				this.contextTokens = event.usage?.inputTokens ?? this.contextTokens;
-				this.notice = event.isError ? event.text : undefined;
+				const edge = event.isError ? claudeClassifyError(event.text) : undefined;
+				// a limit seen in a rateLimit event keeps its reset time
+				this.edge = edge?.kind === 'limited' && this.edge?.kind === 'limited' ? this.edge : edge;
+				this.notice = event.isError && !edge ? event.text : undefined;
 				this._onDidChange.fire(undefined);
 				break;
-			case 'error':
+			}
+			case 'error': {
 				this.working = false;
-				this.notice = event.message;
+				this.edge = claudeClassifyError(event.message) ?? this.edge;
+				this.notice = this.edge ? undefined : event.message;
 				this._onDidChange.fire(undefined);
 				break;
+			}
 			case 'ended':
 				this.working = false;
+				if (event.exitCode && !this.edge) {
+					// the CLI died while no limit or network error explains it
+					this.edge = { kind: 'crashed', exitCode: event.exitCode, at: Date.now() };
+					this.notice = undefined;
+				}
 				this._onDidChange.fire(undefined);
 				break;
 		}
