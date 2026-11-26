@@ -101,7 +101,7 @@ export function setup(logger: Logger) {
 			const code = application.code;
 			await application.workbench.quickaccess.runCommand('claude.agent.focus');
 			await send(application, 'ASK install zod');
-			await code.waitForElements('.claude-agent .claude-card', false, els => els.some(el => el.textContent.includes('npm install zod@4')));
+			await code.waitForElements('.claude-agent .claude-permission', false, els => els.some(el => el.textContent.includes('npm install zod@4')));
 			await code.waitAndClick('.claude-new-agent');
 			await send(application, 'WORK run the tests');
 			await code.waitAndClick('.claude-new-agent');
@@ -121,7 +121,7 @@ export function setup(logger: Logger) {
 		it('S28 and S30 parallel attempts and compare', async function () {
 			const application = await start('S28', this.defaultOptions);
 			const code = application.code;
-			await application.workbench.quickaccess.runCommand('claude.agents.multitask');
+			await application.workbench.quickaccess.runCommand('claude.agents.multitask', { keepOpen: true });
 			await application.workbench.quickinput.waitForQuickInputOpened();
 			await application.workbench.quickinput.type('Fix the flaky test');
 			await code.dispatchKeybinding('enter', async () => { });
