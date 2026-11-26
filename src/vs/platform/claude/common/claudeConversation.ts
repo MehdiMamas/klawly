@@ -42,6 +42,8 @@ export interface IClaudePermissionItem {
 	readonly target: string;
 	readonly input: Record<string, unknown>;
 	readonly description?: string;
+	/** When the request arrived, for "waiting 2 min" in the Needs you list (v5-S26). */
+	readonly askedAt: number;
 	state: ClaudePermissionState;
 }
 
@@ -363,7 +365,7 @@ export class ClaudeConversation extends Disposable {
 				break;
 			}
 			case 'permission': {
-				const item: IClaudePermissionItem = { kind: 'permission', sessionId: event.sessionId, requestId: event.requestId, toolName: event.toolName, target: claudeToolTarget(event.input), input: event.input, description: event.description, state: 'pending' };
+				const item: IClaudePermissionItem = { kind: 'permission', sessionId: event.sessionId, requestId: event.requestId, toolName: event.toolName, target: claudeToolTarget(event.input), input: event.input, description: event.description, askedAt: Date.now(), state: 'pending' };
 				this._items.push(item);
 				this._onDidChange.fire(item);
 				break;

@@ -41,6 +41,8 @@ export interface IClaudeSendRequest {
 	readonly prompt: string;
 	readonly model?: string;
 	readonly permissionMode?: 'default' | 'acceptEdits' | 'plan' | 'bypassPermissions';
+	/** Starts the session in its own git worktree, named like this (`claude --worktree <name>`). Ignored when a session is resumed. */
+	readonly worktree?: string;
 }
 
 export interface IClaudeSendResult {
@@ -86,6 +88,38 @@ export interface IClaudeSessionInfo {
 export interface IClaudeTranscriptMessage {
 	readonly role: 'user' | 'assistant';
 	readonly text: string;
+}
+
+/** One git worktree the CLI made under `<repo>/.claude/worktrees/` (the Background panel of v5-S27). */
+export interface IClaudeWorktree {
+	/** The folder name under `.claude/worktrees/`, for example `try+fix-1` for `--worktree try/fix-1`. */
+	readonly name: string;
+	readonly path: string;
+	readonly branch?: string;
+	readonly sizeBytes: number;
+	/** Last change, in milliseconds since the epoch. */
+	readonly modified: number;
+	/** Uncommitted changes (or untracked files) that a removal would lose. */
+	readonly dirty: boolean;
+	/** A session that works in it is running now. */
+	readonly running: boolean;
+	/** Its branch is already part of the folder's current branch, so the branch can go with the worktree. */
+	readonly merged: boolean;
+}
+
+/** What a worktree changed against the commit it started from (S28 attempt card and S30 compare). */
+export interface IClaudeWorktreeDiff {
+	readonly added: number;
+	readonly removed: number;
+	readonly files: number;
+	/** The first added line, a hint of what the change is. */
+	readonly firstLine?: string;
+}
+
+/** What one cleanup pass did. */
+export interface IClaudeCleanupResult {
+	readonly removed: readonly string[];
+	readonly kept: readonly string[];
 }
 
 export interface IClaudeSettingsSource {
@@ -137,4 +171,14 @@ export interface IClaudeRuntimeService {
 	listSessions(cwd: string): Promise<IClaudeSessionInfo[]>;
 	/** The messages of a stored session. Read-only. */
 	readTranscript(cwd: string, sessionId: string): Promise<IClaudeTranscriptMessage[]>;
+	/** The worktrees under `<cwd>/.claude/worktrees/`, from `git worktree list --porcelain`, with size, age and state. */
+	listWorktrees(cwd: string): Promise<IClaudeWorktree[]>;
+	/** `git worktree remove` without `--force`, then the branch when it is merged. Rejects with Git's message when the worktree has changes or is in use. */
+	removeWorktree(cwd: string, name: string): Promise<void>;
+	/** Removes the finished, clean, not-running worktrees whose last change is older than `days` days. `0` does nothing. Never forces. */
+	cleanupWorktrees(cwd: string, days: number): Promise<IClaudeCleanupResult>;
+	/** What the worktree changed against the commit it branched from. */
+	worktreeDiff(cwd: string, name: string): Promise<IClaudeWorktreeDiff>;
+	/** Applies the worktree's diff to the folder with `git apply --3way`. Rejects with the conflict message and changes nothing. */
+	applyWorktree(cwd: string, name: string): Promise<void>;
 }

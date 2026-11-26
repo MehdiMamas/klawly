@@ -6,11 +6,17 @@
 import { execFile } from 'child_process';
 import { IClaudeGitStatus } from '../common/claudeRuntime.js';
 
-function git(cwd: string, args: string[], env: NodeJS.ProcessEnv): Promise<{ ok: boolean; output: string }> {
+/** Runs Git. `input` goes to its standard input; `stdout` is the output alone, `output` adds the error text for messages. */
+export function runGit(cwd: string, args: string[], env: NodeJS.ProcessEnv, input?: string): Promise<{ ok: boolean; stdout: string; output: string }> {
 	return new Promise(resolve => {
-		execFile('git', args, { cwd, env, timeout: 10000, windowsHide: true }, (error, stdout, stderr) => resolve({ ok: !error, output: `${stdout}${stderr}${error?.message ?? ''}` }));
+		const child = execFile('git', args, { cwd, env, timeout: 30000, windowsHide: true, maxBuffer: 64 * 1024 * 1024 }, (error, stdout, stderr) => resolve({ ok: !error, stdout, output: `${stdout}${stderr}${error?.message ?? ''}` }));
+		if (input !== undefined) {
+			child.stdin?.end(input);
+		}
 	});
 }
+
+const git = runGit;
 
 /** Tells a normal repo from a folder without Git and from one Git refuses because another user owns it. */
 export async function checkGitFolder(cwd: string, env: NodeJS.ProcessEnv): Promise<IClaudeGitStatus> {

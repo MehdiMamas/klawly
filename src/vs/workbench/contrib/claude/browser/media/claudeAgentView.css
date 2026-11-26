@@ -4,7 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 /* The Agent pane of v5-S07 / S12 / S13 / S42. Sizes come from the Klawly tokens (three type sizes: 12, 13, 15), colours from the theme. */
+.claude-shell {
+	display: flex;
+	height: 100%;
+	min-width: 0;
+}
+
 .claude-agent {
+	flex: 1;
 	display: flex;
 	flex-direction: column;
 	height: 100%;
@@ -14,7 +21,7 @@
 	color: var(--vscode-foreground);
 }
 
-.claude-agent button {
+:is(.claude-agent, .claude-agents-list) button {
 	font-family: inherit;
 	color: inherit;
 	cursor: pointer;
@@ -159,7 +166,7 @@
 }
 
 /* Buttons: compact 24 high, large 28 high */
-.claude-agent .claude-button {
+:is(.claude-agent, .claude-agents-list) .claude-button {
 	height: var(--vscode-klawly-button-height-compact);
 	padding: 0 var(--vscode-klawly-gap-large);
 	border: 1px solid transparent;
@@ -169,34 +176,34 @@
 	font-size: var(--vscode-klawly-fontSize-meta);
 }
 
-.claude-agent .claude-button:hover {
+:is(.claude-agent, .claude-agents-list) .claude-button:hover {
 	background: var(--vscode-button-secondaryHoverBackground);
 }
 
-.claude-agent .claude-button.claude-primary {
+:is(.claude-agent, .claude-agents-list) .claude-button.claude-primary {
 	background: var(--vscode-button-background);
 	color: var(--vscode-button-foreground);
 	font-weight: 600;
 }
 
-.claude-agent .claude-button.claude-primary:hover {
+:is(.claude-agent, .claude-agents-list) .claude-button.claude-primary:hover {
 	background: var(--vscode-button-hoverBackground);
 }
 
-.claude-agent .claude-button.claude-ghost {
+:is(.claude-agent, .claude-agents-list) .claude-button.claude-ghost {
 	background: none;
 }
 
-.claude-agent .claude-button.claude-ghost:hover {
+:is(.claude-agent, .claude-agents-list) .claude-button.claude-ghost:hover {
 	background: var(--vscode-toolbar-hoverBackground);
 }
 
-.claude-agent .claude-button.claude-large {
+:is(.claude-agent, .claude-agents-list) .claude-button.claude-large {
 	height: var(--vscode-klawly-button-height-large);
 	font-size: var(--vscode-klawly-fontSize-body);
 }
 
-.claude-agent button:focus-visible {
+:is(.claude-agent, .claude-agents-list) button:focus-visible {
 	outline: 1px solid var(--vscode-focusBorder);
 	outline-offset: 1px;
 }
@@ -231,7 +238,7 @@
 	white-space: nowrap;
 }
 
-.claude-agent .claude-permission-buttons {
+:is(.claude-agent, .claude-agents-list) .claude-permission-buttons {
 	display: flex;
 	flex-wrap: wrap;
 	gap: var(--vscode-klawly-gap-medium);
@@ -718,4 +725,283 @@
 .claude-agent .claude-restricted-text {
 	flex: 1;
 	min-width: 0;
+}
+
+/* Agents list (S25) and Needs you (S26), left of the chat */
+.claude-agents-list {
+	flex: 0 0 240px;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	border-right: 1px solid var(--vscode-panel-border);
+	font-size: var(--vscode-klawly-fontSize-body);
+	line-height: var(--vscode-klawly-lineHeight-body);
+	color: var(--vscode-foreground);
+}
+
+.claude-agents-list.hidden {
+	display: none;
+}
+
+.claude-agents-head {
+	display: flex;
+	flex-direction: column;
+	gap: var(--vscode-klawly-gap-medium);
+	padding: var(--vscode-klawly-gap-large);
+}
+
+.claude-agents-list .claude-new-agent {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--vscode-klawly-gap-medium);
+}
+
+.claude-agents-search {
+	height: var(--vscode-klawly-button-height-compact);
+	padding: 0 var(--vscode-klawly-gap-large);
+	border: 1px solid var(--vscode-input-border, transparent);
+	border-radius: var(--vscode-klawly-cornerRadius);
+	background: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	font: inherit;
+}
+
+.claude-agents-search:focus {
+	outline: 1px solid var(--vscode-focusBorder);
+}
+
+.claude-needs-entry {
+	display: flex;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-medium);
+	margin: 0 var(--vscode-klawly-gap-large) var(--vscode-klawly-gap-medium);
+	padding: var(--vscode-klawly-gap-medium) var(--vscode-klawly-gap-large);
+	border: 1px solid var(--vscode-button-background);
+	border-radius: var(--vscode-klawly-cornerRadius);
+	background: none;
+	font-weight: 600;
+	text-align: left;
+}
+
+.claude-agents-rows {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 0 var(--vscode-klawly-gap-medium) var(--vscode-klawly-gap-large);
+}
+
+.claude-section-title {
+	padding: var(--vscode-klawly-gap-large) var(--vscode-klawly-gap-medium) var(--vscode-klawly-gap-small, 2px);
+	font-size: var(--vscode-klawly-fontSize-meta);
+	letter-spacing: 0.04em;
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agents-list .claude-agent-row {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	width: 100%;
+	min-width: 0;
+	padding: var(--vscode-klawly-gap-medium);
+	border: 0;
+	border-radius: var(--vscode-klawly-cornerRadius);
+	background: none;
+	text-align: left;
+}
+
+.claude-agents-list .claude-agent-row:hover {
+	background: var(--vscode-list-hoverBackground);
+}
+
+.claude-agents-list .claude-agent-row.selected {
+	background: var(--vscode-list-activeSelectionBackground);
+	color: var(--vscode-list-activeSelectionForeground);
+}
+
+.claude-agent-title,
+.claude-agent-status {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.claude-agent-status {
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-agents-none {
+	padding: var(--vscode-klawly-gap-large);
+	color: var(--vscode-descriptionForeground);
+}
+
+.claude-needs-title {
+	font-weight: 600;
+}
+
+.claude-need,
+.claude-attempt {
+	display: flex;
+	flex-direction: column;
+	gap: var(--vscode-klawly-gap-medium);
+	margin: var(--vscode-klawly-gap-medium) 0;
+	padding: var(--vscode-klawly-gap-large);
+	background: var(--vscode-editorWidget-background);
+	border: 1px solid var(--vscode-panel-border);
+	border-radius: var(--vscode-klawly-cornerRadius-large);
+}
+
+.claude-need-title,
+.claude-attempt-title {
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+
+.claude-need-sub,
+.claude-attempt-stat {
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+}
+
+/* Run Parallel Agents (S28) and Compare (S30) */
+.claude-agent.claude-group .claude-notice,
+.claude-agent.claude-group .claude-composer {
+	display: none;
+}
+
+.claude-attempts {
+	display: flex;
+	flex-direction: column;
+	gap: var(--vscode-klawly-gap-medium);
+}
+
+.claude-attempts-title,
+.claude-compare-headline {
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+
+.claude-compare-head {
+	display: flex;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-medium);
+}
+
+.claude-attempt.failed {
+	border-color: var(--vscode-errorForeground);
+}
+
+.claude-attempt.smallest {
+	border-color: var(--vscode-button-background);
+}
+
+.claude-attempt-error,
+.claude-attempt-line {
+	font-family: var(--monaco-monospace-font);
+	font-size: var(--vscode-klawly-fontSize-meta);
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.claude-attempt-result {
+	display: flex;
+	gap: var(--vscode-klawly-gap-medium);
+	font-size: var(--vscode-klawly-fontSize-meta);
+}
+
+.claude-attempt-result.error {
+	color: var(--vscode-errorForeground);
+}
+
+.claude-agent .claude-back {
+	align-self: flex-start;
+}
+
+/* Background panel (S27) */
+.claude-background {
+	display: flex;
+	flex-direction: column;
+	gap: var(--vscode-klawly-gap-small, 2px);
+	padding: var(--vscode-klawly-gap-large);
+	font-size: var(--vscode-klawly-fontSize-body);
+	color: var(--vscode-foreground);
+}
+
+.claude-background .claude-button {
+	height: var(--vscode-klawly-button-height-compact);
+	padding: 0 var(--vscode-klawly-gap-large);
+	border: 1px solid transparent;
+	border-radius: var(--vscode-klawly-cornerRadius);
+	background: var(--vscode-button-secondaryBackground);
+	color: var(--vscode-button-secondaryForeground);
+	font: inherit;
+	cursor: pointer;
+}
+
+.claude-background .claude-button:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+.claude-bg-row {
+	display: flex;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-large);
+	padding: var(--vscode-klawly-gap-medium) 0;
+}
+
+.claude-bg-text {
+	flex: 1;
+	min-width: 0;
+}
+
+.claude-bg-title {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.claude-bg-footer {
+	margin-top: var(--vscode-klawly-gap-large);
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+}
+
+/* Title bar switch (S25) */
+.claude-layout-switch {
+	display: flex;
+	align-items: center;
+	gap: var(--vscode-klawly-gap-large);
+}
+
+.claude-layout-label {
+	font-size: var(--vscode-klawly-fontSize-meta);
+	color: var(--vscode-descriptionForeground);
+	white-space: nowrap;
+}
+
+.claude-layout-segments {
+	display: flex;
+	border: 1px solid var(--vscode-panel-border);
+	border-radius: var(--vscode-klawly-cornerRadius);
+	overflow: hidden;
+}
+
+.claude-layout-segment {
+	height: 22px;
+	padding: 0 var(--vscode-klawly-gap-large);
+	border: 0;
+	background: none;
+	color: var(--vscode-foreground);
+	font: inherit;
+	font-size: var(--vscode-klawly-fontSize-meta);
+	cursor: pointer;
+}
+
+.claude-layout-segment[aria-pressed="true"] {
+	background: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
 }
