@@ -1,5 +1,7 @@
 # Klawly
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/MehdiMamas/klawly/badge)](https://scorecard.dev/viewer/?uri=github.com/MehdiMamas/klawly)
+
 Klawly is a desktop IDE with Claude Code built in. The agent is part of the workbench, not an extension, a webview or a terminal tab. It works with your own Claude Code: Klawly drives the `claude` command you already have installed and signed in.
 
 Klawly is a fork of [Code - OSS](https://github.com/microsoft/vscode), so editing, extensions, terminals and git work the way you expect.

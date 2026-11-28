@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directories:
+      - "/"
+      - "/build"
+      - "/remote"
+      - "/remote/web"
+      - "/scripts"
+    schedule:
+      interval: weekly
+  - package-ecosystem: cargo
+    directories:
+      - "/cli"
+      - "/build/win32"
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: "/.devcontainer"
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    schedule:
+      interval: weekly
